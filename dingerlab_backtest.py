@@ -372,6 +372,52 @@ MODELS: dict[str, Callable[[PlayerGame], float]] = {
 }
 
 
+def build_eb_shrink(rows: list[PlayerGame]) -> Callable[[PlayerGame], float]:
+    """Empirical-Bayes shrinkage model — the recommended upgrade.
+
+    Fixes v4.3's two failure modes directly:
+      * over-trusting small samples: each batter's HR/PA is shrunk toward the
+        league rate by a strength kappa (estimated from the population), so a
+        50-PA hot streak is pulled back and a 600-PA track record is trusted;
+      * multiplier stacking: only park and a *regressed* pitcher term adjust the
+        rate — no piled-on power/swing/fade proxies that double-count and inflate.
+    """
+    total_pa = sum(r.season_pa for r in rows if r.season_pa > 0)
+    total_hr = sum(r.season_hr for r in rows if r.season_pa > 0)
+    league_rate = (total_hr / total_pa) if total_pa > 0 else LEAGUE_HR_PER_PA
+
+    # Estimate shrinkage strength (beta pseudo-counts) by method of moments.
+    sample = [r.season_hr / r.season_pa for r in rows if r.season_pa >= 100]
+    kappa = 200.0
+    if len(sample) >= 30:
+        m = sum(sample) / len(sample)
+        v = sum((x - m) ** 2 for x in sample) / (len(sample) - 1)
+        if v > 1e-9 and 0 < m < 1:
+            k = m * (1 - m) / v - 1
+            if k == k and k > 0:        # guard against NaN
+                kappa = clamp(k, 80.0, 400.0)
+
+    def model(pg: PlayerGame) -> float:
+        season_shrunk = (pg.season_hr + league_rate * kappa) / (pg.season_pa + kappa)
+        if pg.recent_pa > 0:
+            kr = 120.0                  # recent form gets heavy regression (it's noisy)
+            recent_shrunk = (pg.recent_hr + season_shrunk * kr) / (pg.recent_pa + kr)
+        else:
+            recent_shrunk = season_shrunk
+        rate = season_shrunk * 0.85 + recent_shrunk * 0.15   # recent only nudges
+        pitcher_mult = clamp(1 + ((pg.opp_pitcher_hr9 / LEAGUE_PITCHER_HR9) - 1) * 0.6,
+                             0.78, 1.30)
+        p_pa = clamp(rate * pg.park_hr_factor * pitcher_mult, .001, .12)
+        return clamp(1 - (1 - p_pa) ** expected_pa(pg.lineup_spot), .003, .24)
+    return model
+
+
+def get_model(name: str, rows: list[PlayerGame]) -> Callable[[PlayerGame], float]:
+    if name == "eb_shrink":
+        return build_eb_shrink(rows)
+    return MODELS[name]
+
+
 # --------------------------------------------------------------------------- #
 # Scoring                                                                     #
 # --------------------------------------------------------------------------- #
@@ -413,9 +459,8 @@ def segment_by(rows: list[PlayerGame], preds, key_fn):
     return out
 
 
-def evaluate(rows: list[PlayerGame], model_name: str):
-    model = MODELS[model_name]
-    preds = [model(pg) for pg in rows]
+def evaluate(rows: list[PlayerGame], model_fn: Callable[[PlayerGame], float]):
+    preds = [model_fn(pg) for pg in rows]
     ys = [pg.hit_hr for pg in rows]
     base_rate = sum(ys) / max(1, len(ys))
     base_preds = [base_rate] * len(ys)
@@ -464,6 +509,47 @@ def print_report(res: dict, model_name: str):
         n, sp, sa = res["by_spot"][spot]
         print(f"  {spot:<6}{n:>7}{sp/n:>9.2%}{sa/n:>9.2%}")
     print("=" * 70)
+
+
+def evaluate_picks(rows: list[PlayerGame], preds, n_per_day: int):
+    """The pick-quality test: if you bet the model's top picks each slate, did
+    they actually homer more than the field? This is what a picks tool lives or
+    dies on — more than any aggregate score."""
+    by_day: dict[str, list] = {}
+    for pg, p in zip(rows, preds):
+        by_day.setdefault(pg.game_date, []).append((p, pg.hit_hr))
+    topn_hits = topn_n = top1_hits = top1_n = 0
+    for _, lst in by_day.items():
+        lst.sort(key=lambda x: x[0], reverse=True)
+        picks = lst[:n_per_day]
+        topn_n += len(picks)
+        topn_hits += sum(y for _, y in picks)
+        if lst:
+            top1_n += 1
+            top1_hits += lst[0][1]
+    base = sum(pg.hit_hr for pg in rows) / max(1, len(rows))
+    topn_rate = topn_hits / max(1, topn_n)
+    top1_rate = top1_hits / max(1, top1_n)
+    return {
+        "days": len(by_day), "n_per_day": n_per_day, "base": base,
+        "top1_rate": top1_rate, "topn_rate": topn_rate,
+        "lift_top1": (top1_rate / base) if base > 0 else 0.0,
+        "lift_topn": (topn_rate / base) if base > 0 else 0.0,
+    }
+
+
+def print_picks(pk: dict):
+    print("-" * 70)
+    print("PICK QUALITY — do the top picks actually go deep more than the field?")
+    print(f"  Slate base HR rate:          {pk['base']:.2%}")
+    print(f"  Top-1 pick / slate hit:      {pk['top1_rate']:.2%}   "
+          f"({pk['lift_top1']:.2f}x the field)")
+    print(f"  Top-{pk['n_per_day']} picks / slate hit:     {pk['topn_rate']:.2%}   "
+          f"({pk['lift_topn']:.2f}x the field)")
+    print(f"  over {pk['days']} slates")
+    print("  (A lift above 1.0 means the picks beat random; this is the headline"
+          " number\n   for the tool. True ROI/EV also needs historical odds —"
+          " see notes.)")
 
 
 def write_csv(rows: list[PlayerGame], preds, out_prefix: str):
@@ -541,10 +627,13 @@ def main():
     ap = argparse.ArgumentParser(description="DingerLab HR model backtest harness")
     ap.add_argument("--start", help="YYYY-MM-DD (live mode)")
     ap.add_argument("--end", help="YYYY-MM-DD (live mode)")
-    ap.add_argument("--model", default="v43", choices=list(MODELS.keys()))
+    ap.add_argument("--model", default="eb_shrink",
+                    choices=list(MODELS.keys()) + ["eb_shrink"])
     ap.add_argument("--demo", action="store_true", help="run offline on synthetic data")
     ap.add_argument("--cache-dir", default=CACHE_DIR_DEFAULT)
     ap.add_argument("--recent-games", type=int, default=12)
+    ap.add_argument("--picks-per-day", type=int, default=3,
+                    help="how many top picks per slate to grade for pick quality")
     ap.add_argument("--out", default="backtest", help="output file prefix")
     args = ap.parse_args()
 
@@ -563,9 +652,12 @@ def main():
         print("No graded rows. Nothing to score.")
         return
 
-    res = evaluate(rows, args.model)
+    model_fn = get_model(args.model, rows)
+    res = evaluate(rows, model_fn)
     print()
     print_report(res, args.model)
+    pk = evaluate_picks(rows, res["preds"], args.picks_per_day)
+    print_picks(pk)
     path = write_csv(rows, res["preds"], args.out)
     print(f"\nPer-row predictions written to: {path}")
 

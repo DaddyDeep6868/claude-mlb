@@ -255,3 +255,9 @@ For multi-device use, deploy `dingerlab_server.py` on a small always-on host suc
 - Offline `--demo` mode runs the full predict→outcome→score pipeline on synthetic data (no network) for verification. Live mode needs outbound access to statsapi.mlb.com.
 - Usage: `python3 dingerlab_backtest.py --demo` or `python3 dingerlab_backtest.py --start 2025-04-01 --end 2025-09-28 --model v43 --out results`.
 - Note: this is a dev/analysis tool; it does not change the live app's runtime behavior. No new dependencies (Python standard library only).
+
+## New in v4.8 — Backtest: empirical-Bayes model + pick quality
+- Added an `eb_shrink` model to `dingerlab_backtest.py` (now the default): empirical-Bayes shrinkage of each batter's HR/PA toward the league rate by a population-estimated strength, recent form heavily regressed, and only park + a regressed pitcher term as adjustments — no stacked power/swing/fade proxies. In synthetic testing it is far better calibrated than the v4.3 port (mean prediction ~12.8% vs actual 13.2%, skill score +2.78% vs v4.3's −0.37%).
+- Added a PICK QUALITY report: groups predictions by slate and reports the actual HR hit rate of the model's top-1 and top-N picks per day versus the field (lift). This is the headline metric for a picks tool and needs no odds. Configurable via `--picks-per-day`.
+- Models are resolved through `get_model()`; `--model` now offers `eb_shrink` (default), `v43`, and `season_only` for head-to-head A/B.
+- Note: true ROI/EV/CLV backtesting still requires a historical closing-odds source (not provided by MLB StatsAPI or the live OddsBlaze feed). The live app's runtime behavior is unchanged.
