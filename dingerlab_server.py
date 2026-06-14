@@ -327,6 +327,120 @@ def start_background_worker():
 start_background_worker()
 
 
+# ---------------------------------------------------------------------------
+# v4.9 Research Assistant — optional Agent-Reach connector
+# These endpoints NEVER crash if Agent-Reach (or its upstream CLIs) are
+# missing: they degrade to a helpful message. No API keys, secrets, or cookies
+# are required or stored here. Searches shell out to locally installed CLIs
+# with argv lists only (no shell interpolation), a hard timeout, and bounded
+# output. This is the same scaffold described at github.com/Panniantong/Agent-Reach.
+# ---------------------------------------------------------------------------
+_RESEARCH_CHANNEL_TOOLS = {
+    "web": "curl", "github": "gh", "youtube": "yt-dlp",
+    "twitter": "twitter", "reddit": "rdt",
+}
+
+
+def _which(name):
+    import shutil
+    try:
+        return shutil.which(name) is not None
+    except Exception:
+        return False
+
+
+@app.route("/api/research/status", methods=["GET"])
+def research_status():
+    try:
+        agent_reach = _which("agent-reach")
+        channels = {k: _which(v) for k, v in _RESEARCH_CHANNEL_TOOLS.items()}
+        if agent_reach:
+            msg = "Agent-Reach detected. Per-source availability is shown below."
+        else:
+            msg = ("Agent-Reach is not configured. You can still save manual "
+                   "research findings.")
+        return jsonify({"available": bool(agent_reach), "channels": channels,
+                        "message": msg})
+    except Exception as e:
+        return jsonify({
+            "available": False, "channels": {},
+            "message": ("Agent-Reach is not configured. You can still save "
+                        "manual research findings."),
+            "detail": str(e),
+        }), 200
+
+
+def _run_research_cmd(argv, timeout=25):
+    import subprocess
+    try:
+        out = subprocess.run(argv, capture_output=True, text=True, timeout=timeout)
+        text = out.stdout or ""
+        if out.stderr:
+            text += ("\n[stderr] " + out.stderr)
+        return True, (text[:8000] if text else "(no output)")
+    except FileNotFoundError:
+        return False, "tool-missing"
+    except subprocess.TimeoutExpired:
+        return False, "timeout"
+    except Exception as e:
+        return False, "error: " + str(e)
+
+
+@app.route("/api/research/search", methods=["POST"])
+def research_search():
+    try:
+        body = request.get_json(silent=True) or {}
+        source = str(body.get("source", "")).strip().lower()
+        query = str(body.get("query", "")).strip()
+        if not query:
+            return jsonify({"ok": False, "message": "Provide a topic or URL to scan."}), 200
+        if source in ("", "all"):
+            return jsonify({"ok": False, "message": (
+                "Pick a specific source (Twitter/X, Reddit, GitHub, YouTube, or "
+                "Web) for a backend scan. 'All' is for manual logging.")}), 200
+        tool = _RESEARCH_CHANNEL_TOOLS.get(source)
+        if not tool or not _which(tool):
+            return jsonify({"ok": False, "message": (
+                "Source '" + source + "' is not available on this machine. Run "
+                "`agent-reach install` / configure it, or save a manual finding "
+                "instead.")}), 200
+
+        argv = None
+        if source == "web":
+            if not (query.startswith("http://") or query.startswith("https://")):
+                return jsonify({"ok": False, "message": (
+                    "Web scan needs a full URL (https://...). For keyword search, "
+                    "use a specific platform source.")}), 200
+            argv = ["curl", "-s", "--max-time", "20", "https://r.jina.ai/" + query]
+        elif source == "github":
+            argv = ["gh", "search", "repos", query, "--limit", "10"]
+        elif source == "youtube":
+            if query.startswith("http"):
+                argv = ["yt-dlp", "--skip-download", "--get-title",
+                        "--get-description", query]
+            else:
+                argv = ["yt-dlp", "--skip-download", "--get-title",
+                        "ytsearch5:" + query]
+        elif source == "twitter":
+            argv = ["twitter", "search", query]
+        elif source == "reddit":
+            argv = ["rdt", "search", query]
+
+        ok, text = _run_research_cmd(argv)
+        if not ok:
+            if text == "tool-missing":
+                return jsonify({"ok": False, "message": (
+                    "The CLI for '" + source + "' isn't installed. Run "
+                    "`agent-reach install`, or save a manual finding.")}), 200
+            if text == "timeout":
+                return jsonify({"ok": False, "message": "Scan timed out — try a narrower query."}), 200
+            return jsonify({"ok": False, "message": "Scan failed: " + text}), 200
+        return jsonify({"ok": True, "source": source, "query": query, "results": text})
+    except Exception as e:
+        return jsonify({"ok": False, "message": (
+            "Research scan error (handled, not fatal): " + str(e))}), 200
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", "8501"))
     app.run(host="0.0.0.0", port=port, debug=False)

@@ -261,3 +261,12 @@ For multi-device use, deploy `dingerlab_server.py` on a small always-on host suc
 - Added a PICK QUALITY report: groups predictions by slate and reports the actual HR hit rate of the model's top-1 and top-N picks per day versus the field (lift). This is the headline metric for a picks tool and needs no odds. Configurable via `--picks-per-day`.
 - Models are resolved through `get_model()`; `--model` now offers `eb_shrink` (default), `v43`, and `season_only` for head-to-head A/B.
 - Note: true ROI/EV/CLV backtesting still requires a historical closing-odds source (not provided by MLB StatsAPI or the live OddsBlaze feed). The live app's runtime behavior is unchanged.
+
+## New in v4.9 — Research Assistant Layer
+- Added a Research tab (main navigation) for discovering and grading baseball betting/modeling intelligence from Twitter/X, Reddit, GitHub, YouTube, and the web. It collects, organizes, grades, and exports research signals — it never changes picks automatically.
+- Research scan with topic input, source selector, and research-angle selector; manual finding log that works with or without Agent-Reach (paste tweets, Reddit/GitHub/YouTube notes, article notes).
+- Each finding captures title, source, URL, notes, signal category, usefulness grade (Useful now / Needs verification / Interesting but noisy / Ignore), model-impact tags, and verification status (Unverified / Verified by MLB data / Verified by Statcast-FanGraphs / Verified by odds movement / Rejected), shown as compact cards with delete and "Promote to model idea".
+- Model idea queue: promoted findings become testable ideas with suggested feature, priority (High/Medium/Low) and status (Backlog/Testing/Built/Rejected).
+- Findings and ideas persist in browser localStorage and export to JSON and CSV. A guardrail note and a collapsible Agent-Reach setup guide are included.
+- Optional Agent-Reach connector via two safe Flask endpoints (GET /api/research/status, POST /api/research/search) that never crash if Agent-Reach is missing, require no API keys, store no cookies/secrets, and shell out to local CLIs with argv-only commands, a timeout, and bounded output. On the hosted Streamlit app (no backend) the tab degrades gracefully to the manual log.
+- Additive only: Data, Games, Builder, Live HR tracking, odds logic, confirmed-starters fallback, and the v4.8 fixes are untouched.
