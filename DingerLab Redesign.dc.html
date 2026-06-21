@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<template id="__bundler_thumbnail" data-bg-color="#0a0c11">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#0a0c11"/>
+    <circle cx="600" cy="360" r="200" fill="none" stroke="#1b2030" stroke-width="34"/>
+    <circle cx="600" cy="360" r="200" fill="none" stroke="#ff8a4c" stroke-width="34" stroke-linecap="round" stroke-dasharray="1004 1256" transform="rotate(-90 600 360)"/>
+    <text x="600" y="350" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="120" font-weight="700" fill="#eef1f6">99</text>
+    <text x="600" y="430" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="34" font-weight="600" fill="#7b8597" letter-spacing="6">DINGER</text>
+    <text x="600" y="640" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-size="58" font-weight="700" fill="#eef1f6">Dinger<tspan fill="#ff8a4c">Lab</tspan></text>
+  </svg>
+</template>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;background:#0a0c11;color:#eef1f6;font-family:"Hanken Grotesk",ui-sans-serif,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  *{box-sizing:border-box}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:20px;border:2px solid #0a0c11}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(255,138,76,.5)}
+  @keyframes dlpulse{0%,100%{opacity:1}50%{opacity:.35}}
+  @keyframes dlrise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes dlspin{to{transform:rotate(360deg)}}
+</style>
+</helmet>
+
+<div style="--ac:{{ accent }};--pos:{{ positive }};--pad:{{ pad }};min-height:100vh;background:
+  radial-gradient(1200px 600px at 78% -8%, rgba(255,138,76,.10), transparent 60%),
+  radial-gradient(900px 500px at 6% 4%, rgba(53,208,192,.07), transparent 55%),
+  #0a0c11;display:flex;flex-direction:column">
+
+  <!-- HEADER -->
+  <header style="position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:18px;padding:14px 22px;background:rgba(10,12,17,.78);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.07)">
+    <div style="display:flex;align-items:center;gap:11px">
+      <div style="width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-size:19px;background:linear-gradient(150deg,#ff8a4c,#ff4d7d);box-shadow:0 6px 20px rgba(255,77,125,.35)">🔥</div>
+      <div style="line-height:1">
+        <div style="font-family:'Space Grotesk';font-weight:700;font-size:19px;letter-spacing:-.02em">Dinger<span style="color:var(--ac,#ff8a4c)">Lab</span></div>
+        <div style="font-size:11px;color:#7b8597;letter-spacing:.04em;margin-top:2px">MLB HR INTELLIGENCE</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:10px;background:#13161e;border:1px solid rgba(255,255,255,.07)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9aa3b2" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      <span style="font-size:13px;font-weight:600">{{ dateLabel }}</span>
+      <span style="font-size:12px;color:#7b8597">· {{ gameCount }} games</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:10px;background:{{ statusBg }};border:1px solid {{ statusBorder }}">
+      <span style="width:7px;height:7px;border-radius:50%;background:{{ statusDot }};animation:dlpulse 1.6s infinite"></span>
+      <span style="font-size:12.5px;font-weight:600;color:{{ statusFg }}">{{ statusText }}</span>
+    </div>
+    <div style="flex:1"></div>
+    <button onClick="{{ refresh }}" style="display:flex;align-items:center;gap:7px;padding:9px 14px;border:none;border-radius:10px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:700;font-size:13px;color:#0a0c11;background:var(--ac,#ff8a4c)" style-hover="filter:brightness(1.08)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0a0c11" stroke-width="2.2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>
+      Refresh
+    </button>
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 11px;border-radius:10px;background:#13161e;border:1px solid rgba(255,255,255,.07);font-size:12px;color:#7b8597">v6.0</div>
+  </header>
+
+  <div style="display:grid;grid-template-columns:208px minmax(0,1fr) {{ slipColWidth }};gap:0;flex:1;min-height:0;transition:grid-template-columns .22s ease">
+
+    <!-- RAIL -->
+    <nav style="padding:18px 12px;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:3px;position:sticky;top:67px;align-self:start">
+      <div style="font-size:10.5px;letter-spacing:.12em;color:#5f6878;font-weight:700;padding:4px 10px 8px">NAVIGATE</div>
+      <sc-for list="{{ nav }}" as="n" hint-placeholder-count="8">
+        <button data-tab="{{ n.id }}" onClick="{{ setTab }}" style="display:flex;align-items:center;gap:11px;padding:10px 11px;border:none;border-radius:10px;cursor:pointer;text-align:left;font-family:'Hanken Grotesk';font-weight:600;font-size:13.5px;background:{{ n.bg }};color:{{ n.fg }};position:relative;transition:background .14s,color .14s" style-hover="background:rgba(255,255,255,.05);color:#eef1f6">
+          <span style="position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:18px;border-radius:3px;background:{{ n.bar }}"></span>
+          <span style="font-size:16px;width:18px;text-align:center">{{ n.icon }}</span>
+          <span>{{ n.label }}</span>
+        </button>
+      </sc-for>
+      <div style="margin-top:14px;padding:12px;border-radius:12px;background:linear-gradient(160deg,rgba(255,138,76,.12),rgba(255,77,125,.08));border:1px solid rgba(255,138,76,.18)">
+        <div style="font-size:11px;color:#9aa3b2;font-weight:600">Bankroll discipline</div>
+        <div style="font-family:'Space Grotesk';font-size:22px;font-weight:700;margin-top:3px">38% <span style="font-size:12px;color:#7b8597;font-weight:500">used</span></div>
+        <div style="height:6px;border-radius:6px;background:rgba(255,255,255,.08);margin-top:8px;overflow:hidden"><div style="width:38%;height:100%;background:var(--ac,#ff8a4c)"></div></div>
+      </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main style="padding:22px 26px 60px;min-width:0;overflow:auto">
+
+      <!-- DASHBOARD -->
+      <sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
+      <div style="animation:dlrise .35s ease both">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px">
+          <div>
+            <div style="font-size:11px;letter-spacing:.14em;color:var(--ac,#ff8a4c);font-weight:700;margin-bottom:6px">COMMAND CENTER</div>
+            <h1 style="margin:0;font-family:'Space Grotesk';font-size:30px;font-weight:700;letter-spacing:-.02em">Today's best swings</h1>
+            <p style="margin:6px 0 0;color:#8b94a6;font-size:14px;max-width:560px">{{ dashSub }}</p>
+          </div>
+          <sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:9px;color:#9aa3b2;font-size:13px"><span style="width:15px;height:15px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--ac,#ff8a4c);border-radius:50%;animation:dlspin .7s linear infinite;display:inline-block"></span> Loading slate…</div>
+          </sc-if>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:26px">
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="5">
+            <div style="padding:var(--pad,18px);border-radius:14px;background:#13161e;border:1px solid rgba(255,255,255,.07)">
+              <div style="font-size:11.5px;color:#7b8597;font-weight:600;letter-spacing:.03em">{{ k.k }}</div>
+              <div style="font-family:'Space Grotesk';font-size:30px;font-weight:700;margin-top:6px;color:{{ k.color }}">{{ k.v }}</div>
+              <div style="font-size:12px;color:#7b8597;margin-top:2px">{{ k.s }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:9px"><span style="font-size:18px">⭐</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Top Star Plays</h2></div>
+          <button data-tab="games" onClick="{{ setTab }}" style="background:none;border:1px solid rgba(255,255,255,.12);color:#9aa3b2;font-weight:600;font-size:12.5px;padding:7px 13px;border-radius:9px;cursor:pointer" style-hover="border-color:var(--ac,#ff8a4c);color:#eef1f6">View all games →</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:12px;margin-bottom:30px">
+          <sc-for list="{{ starPlays }}" as="p" hint-placeholder-count="4">
+            <div data-player="{{ p.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:13px;transition:transform .15s,border-color .15s" style-hover="border-color:rgba(255,138,76,.55);transform:translateY(-3px)">
+              <div style="display:flex;align-items:center;gap:12px">
+                <div style="position:relative;width:60px;height:60px;flex:none;border-radius:50%;background:{{ p.ring }};display:grid;place-items:center">
+                  <div style="width:47px;height:47px;border-radius:50%;background:#13161e;display:grid;place-items:center"><span style="font-family:'Space Grotesk';font-weight:700;font-size:19px">{{ p.score }}</span></div>
+                </div>
+                <div style="min-width:0">
+                  <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div>
+                  <div style="font-size:12px;color:#7b8597">{{ p.matchup }}</div>
+                  <div style="font-size:13px;letter-spacing:1.5px;margin-top:3px"><span style="color:#ffc24d">{{ p.starsOn }}</span><span style="color:#3a4150">{{ p.starsOff }}</span></div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 11px;border-radius:11px;background:#0c0e14;border:1px solid rgba(255,255,255,.06)">
+                <div><div style="font-size:10.5px;color:#7b8597;font-weight:600">HR · model</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:16px">{{ p.modelPct }}%</div></div>
+                <div style="text-align:center"><div style="font-size:10.5px;color:#7b8597;font-weight:600">best</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:16px">{{ p.best }}</div></div>
+                <div style="text-align:right"><div style="font-size:10.5px;color:#7b8597;font-weight:600">EV</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:16px;color:{{ p.evColor }}">{{ p.ev }}</div></div>
+              </div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <sc-for list="{{ p.badges }}" as="b" hint-placeholder-count="2">
+                  <span style="font-size:10.5px;font-weight:700;padding:4px 8px;border-radius:7px;background:{{ b.bg }};color:{{ b.fg }}">{{ b.label }}</span>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:18px;margin-bottom:8px">
+          <div>
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="font-size:18px">🧩</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Best Combos</h2></div>
+            <div style="display:flex;flex-direction:column;gap:11px">
+              <sc-for list="{{ combos }}" as="c" hint-placeholder-count="2">
+                <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:15px;padding:15px">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:11px">
+                    <div><div style="font-weight:700;font-size:14px">{{ c.title }}</div><div style="font-size:12px;color:#7b8597">{{ c.sub }}</div></div>
+                    <div style="text-align:right"><div style="font-family:'Space Grotesk';font-weight:700;font-size:19px;color:var(--ac,#ff8a4c)">{{ c.odds }}</div><div style="font-size:11px;color:var(--pos,#35d0c0);font-weight:600">{{ c.evLabel }}</div></div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:11px">
+                    <sc-for list="{{ c.legs }}" as="l" hint-placeholder-count="3">
+                      <div style="display:flex;justify-content:space-between;font-size:13px;padding:7px 10px;border-radius:9px;background:#0c0e14"><span>{{ l.name }}</span><span style="color:#9aa3b2;font-family:'Space Grotesk'">{{ l.odds }}</span></div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex;gap:14px;font-size:12px;color:#7b8597;margin-bottom:11px">
+                    <span>Win chance <b style="color:#eef1f6;font-family:'Space Grotesk'">{{ c.win }}</b></span>
+                    <span>Avg score <b style="color:#eef1f6;font-family:'Space Grotesk'">{{ c.avg }}</b></span>
+                    <span>Grade <b style="color:var(--ac,#ff8a4c);font-family:'Space Grotesk'">{{ c.grade }}</b></span>
+                  </div>
+                  <div style="display:flex;gap:7px">
+                    <button data-combo="{{ $index }}" onClick="{{ addComboLegs }}" style="flex:1;padding:8px;border:none;border-radius:9px;cursor:pointer;font-weight:700;font-size:12px;color:#0a0c11;background:var(--ac,#ff8a4c)">+ Slip</button>
+                    <button data-combo="{{ $index }}" onClick="{{ trackCombo }}" style="flex:1;padding:8px;border:1px solid rgba(255,255,255,.12);border-radius:9px;cursor:pointer;font-weight:600;font-size:12px;color:#c3cad6;background:transparent">Track 📋</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div>
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="font-size:18px">🏟️</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Daily Park Report</h2></div>
+            <div style="display:flex;flex-direction:column;gap:11px">
+              <sc-for list="{{ parkReport }}" as="pk" hint-placeholder-count="3">
+                <div style="background:#13161e;border:1px solid {{ pk.border }};border-radius:15px;padding:14px">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
+                    <div style="display:flex;align-items:center;gap:9px"><span style="font-family:'Space Grotesk';font-weight:700;color:{{ pk.rankColor }}">{{ pk.rank }}</span><span style="font-weight:700;font-size:14px">{{ pk.name }}</span></div>
+                    <div style="font-family:'Space Grotesk';font-weight:700;font-size:17px;color:{{ pk.boostColor }}">{{ pk.boost }}</div>
+                  </div>
+                  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px">
+                    <div style="text-align:center;padding:7px 4px;border-radius:9px;background:#0c0e14"><div style="font-size:10px;color:#7b8597;font-weight:600">PARK</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:13px">{{ pk.park }}</div></div>
+                    <div style="text-align:center;padding:7px 4px;border-radius:9px;background:#0c0e14"><div style="font-size:10px;color:#7b8597;font-weight:600">WIND</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:13px">{{ pk.wind }}</div></div>
+                    <div style="text-align:center;padding:7px 4px;border-radius:9px;background:#0c0e14"><div style="font-size:10px;color:#7b8597;font-weight:600">TEMP</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:13px">{{ pk.temp }}</div></div>
+                    <div style="text-align:center;padding:7px 4px;border-radius:9px;background:#0c0e14"><div style="font-size:10px;color:#7b8597;font-weight:600">ROOF</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:13px">{{ pk.roof }}</div></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- GAMES -->
+      <sc-if value="{{ isGames }}" hint-placeholder-val="{{ false }}">
+      <div style="animation:dlrise .35s ease both">
+        <div style="margin-bottom:18px">
+          <div style="font-size:11px;letter-spacing:.14em;color:var(--ac,#ff8a4c);font-weight:700;margin-bottom:6px">TODAY'S GAMES</div>
+          <h1 style="margin:0;font-family:'Space Grotesk';font-size:28px;font-weight:700;letter-spacing:-.02em">{{ gamesTitle }}</h1>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <sc-for list="{{ games }}" as="g" hint-placeholder-count="4">
+            <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:15px 17px;background:#0f1218">
+                <div style="display:flex;align-items:center;gap:13px">
+                  <div style="font-family:'Space Grotesk';font-weight:700;font-size:16px">{{ g.title }}</div>
+                  <div style="font-size:12px;color:#7b8597">{{ g.meta }}</div>
+                </div>
+                <div style="display:flex;gap:16px;font-size:12px;color:#7b8597">
+                  <span>Proj HR <b style="color:#eef1f6;font-family:'Space Grotesk'">{{ g.projHR }}</b></span>
+                  <span>Park <b style="color:var(--ac,#ff8a4c);font-family:'Space Grotesk'">{{ g.parkBoost }}</b></span>
+                  <span>Pitchers <b style="color:#eef1f6">{{ g.pitchers }}</b></span>
+                </div>
+              </div>
+              <div style="padding:14px 17px;display:grid;grid-template-columns:1fr 1fr;gap:11px">
+                <sc-for list="{{ g.players }}" as="p" hint-placeholder-count="2">
+                  <div data-player="{{ p.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;display:flex;align-items:center;gap:11px;padding:11px;border-radius:12px;background:#0c0e14;border:1px solid rgba(255,255,255,.06)" style-hover="border-color:rgba(255,138,76,.45)">
+                    <div style="width:40px;height:40px;border-radius:50%;flex:none;background:{{ p.ring }};display:grid;place-items:center"><div style="width:31px;height:31px;border-radius:50%;background:#0c0e14;display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:13px">{{ p.score }}</div></div>
+                    <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div><div style="font-size:11px;letter-spacing:1px"><span style="color:#ffc24d">{{ p.starsOn }}</span><span style="color:#3a4150">{{ p.starsOff }}</span> <span style="color:#7b8597;letter-spacing:0">HR {{ p.modelPct }}%</span></div></div>
+                    <div style="text-align:right"><div style="font-family:'Space Grotesk';font-weight:700;font-size:14px">{{ p.best }}</div><div style="font-size:11px;color:{{ p.evColor }};font-weight:600">{{ p.ev }}</div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- DATA -->
+      <sc-if value="{{ isData }}" hint-placeholder-val="{{ false }}">
+      <div style="animation:dlrise .35s ease both">
+        <div style="margin-bottom:18px">
+          <div style="font-size:11px;letter-spacing:.14em;color:var(--ac,#ff8a4c);font-weight:700;margin-bottom:6px">DATA INTELLIGENCE</div>
+          <h1 style="margin:0;font-family:'Space Grotesk';font-size:28px;font-weight:700;letter-spacing:-.02em">Player-market feature store</h1>
+          <p style="margin:6px 0 0;color:#8b94a6;font-size:14px;max-width:600px">Every qualified hitter as a model-ready row — season power, regressed HR rate, park &amp; matchup adjustment, and Dinger Score.</p>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:18px">
+          <div style="padding:12px 16px;border-radius:13px;background:#13161e;border:1px solid rgba(255,255,255,.07)"><div style="font-size:11px;color:#7b8597;font-weight:600">ROWS</div><div style="font-family:'Space Grotesk';font-size:22px;font-weight:700">{{ dataCount }}</div></div>
+          <div style="padding:12px 16px;border-radius:13px;background:#13161e;border:1px solid rgba(255,255,255,.07)"><div style="font-size:11px;color:#7b8597;font-weight:600">SOURCE</div><div style="font-family:'Space Grotesk';font-size:22px;font-weight:700">{{ dataSource }}</div></div>
+          <div style="padding:12px 16px;border-radius:13px;background:#13161e;border:1px solid rgba(255,255,255,.07)"><div style="font-size:11px;color:#7b8597;font-weight:600">SEASON</div><div style="font-family:'Space Grotesk';font-size:22px;font-weight:700">{{ seasonYr }}</div></div>
+          <div style="flex:1"></div>
+          <button style="padding:9px 14px;border:1px solid rgba(255,255,255,.14);border-radius:10px;cursor:pointer;font-weight:600;font-size:12.5px;color:#c3cad6;background:transparent">⬇ CSV</button>
+        </div>
+        <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden">
+          <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:720px">
+            <thead><tr style="background:#0c0e14;color:#7b8597;text-align:left">
+              <th style="padding:11px 14px;font-weight:600;font-size:11px">PLAYER</th>
+              <th style="padding:11px 10px;font-weight:600;font-size:11px">TEAM</th>
+              <th style="padding:11px 10px;font-weight:600;font-size:11px;text-align:right">HR/PA</th>
+              <th style="padding:11px 10px;font-weight:600;font-size:11px;text-align:right">OPS</th>
+              <th style="padding:11px 10px;font-weight:600;font-size:11px;text-align:right">MODEL%</th>
+              <th style="padding:11px 10px;font-weight:600;font-size:11px;text-align:right">PARK</th>
+              <th style="padding:11px 10px;font-weight:600;font-size:11px;text-align:right">SCORE</th>
+              <th style="padding:11px 14px;font-weight:600;font-size:11px">POWER</th>
+            </tr></thead>
+            <tbody style="font-family:'Space Grotesk';font-variant-numeric:tabular-nums">
+              <sc-for list="{{ dataRows }}" as="r" hint-placeholder-count="10">
+                <tr style="border-top:1px solid rgba(255,255,255,.05)">
+                  <td style="padding:11px 14px;font-family:'Hanken Grotesk';font-weight:600">{{ r.name }}</td>
+                  <td style="padding:11px 10px;color:#9aa3b2">{{ r.team }}</td>
+                  <td style="padding:11px 10px;text-align:right">{{ r.hrpa }}</td>
+                  <td style="padding:11px 10px;text-align:right;color:#9aa3b2">{{ r.ops }}</td>
+                  <td style="padding:11px 10px;text-align:right;color:var(--pos,#35d0c0)">{{ r.modelPct }}</td>
+                  <td style="padding:11px 10px;text-align:right">{{ r.park }}</td>
+                  <td style="padding:11px 10px;text-align:right;color:var(--ac,#ff8a4c)">{{ r.score }}</td>
+                  <td style="padding:11px 14px;font-family:'Hanken Grotesk';font-size:12px;color:{{ r.powerColor }}">{{ r.power }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- LIVE -->
+      <sc-if value="{{ isLive }}" hint-placeholder-val="{{ false }}">
+      <div style="animation:dlrise .35s ease both">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px">
+          <div>
+            <div style="font-size:11px;letter-spacing:.14em;color:var(--ac,#ff8a4c);font-weight:700;margin-bottom:6px">LIVE HR FEED</div>
+            <h1 style="margin:0;font-family:'Space Grotesk';font-size:28px;font-weight:700;letter-spacing:-.02em">Dingers as they happen</h1>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 13px;border-radius:10px;background:rgba(53,208,192,.08);border:1px solid rgba(53,208,192,.22)">
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--pos,#35d0c0);animation:dlpulse 1.6s infinite"></span>
+            <span style="font-size:12.5px;font-weight:600;color:var(--pos,#35d0c0)">{{ liveStatus }}</span>
+          </div>
+        </div>
+        <sc-if value="{{ hasLive }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ liveHRs }}" as="h" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;background:#13161e;border:1px solid {{ h.border }}">
+                <div style="font-size:24px">💥</div>
+                <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px">{{ h.player }} <span style="font-size:12px;color:#7b8597;font-weight:500">· {{ h.detail }}</span></div><div style="font-size:12px;color:#8b94a6;margin-top:2px">{{ h.line }}</div></div>
+                <span style="font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:7px;background:{{ h.tagBg }};color:{{ h.tagFg }}">{{ h.tag }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ noLive }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;align-items:center;padding:30px 0 16px;text-align:center;color:#7b8597;margin-bottom:22px">
+            <div style="font-size:36px;margin-bottom:12px;opacity:.6">⚾</div>
+            <div style="font-family:'Space Grotesk';font-size:18px;font-weight:700;color:#c3cad6">No home runs yet</div>
+            <p style="margin:8px 0 0;font-size:13.5px;max-width:360px">{{ liveEmpty }}</p>
+          </div>
+          <sc-if value="{{ hasSchedule }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'Space Grotesk';font-weight:700;font-size:14px;margin-bottom:11px">Today's schedule</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:9px">
+              <sc-for list="{{ scheduleGames }}" as="g" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 13px;border-radius:12px;background:#13161e;border:1px solid rgba(255,255,255,.07)">
+                  <div><div style="font-weight:700;font-size:13.5px">{{ g.title }}</div><div style="font-size:11.5px;color:#7b8597;margin-top:2px">{{ g.venue }}</div></div>
+                  <div style="text-align:right"><div style="font-family:'Space Grotesk';font-size:13px;font-weight:600">{{ g.time }}</div><div style="font-size:10.5px;color:#7b8597;margin-top:2px">{{ g.state }}</div></div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <!-- BUILDER / TRACKING / RESEARCH / TOOLS (static design screens) -->
+      <sc-if value="{{ isBuilder }}" hint-placeholder-val="{{ false }}">
+      <div style="animation:dlrise .35s ease both">
+        <div style="margin-bottom:18px">
+          <div style="font-size:11px;letter-spacing:.14em;color:var(--ac,#ff8a4c);font-weight:700;margin-bottom:6px">CROSS PLAY BUILDER</div>
+          <h1 style="margin:0;font-family:'Space Grotesk';font-size:28px;font-weight:700;letter-spacing:-.02em">Build cross-game slips</h1>
+          <p style="margin:6px 0 0;color:#8b94a6;font-size:14px;max-width:560px">Legs across different games stay near-independent — higher true win probability than a same-game parlay. Built from today's model board.</p>
+        </div>
+        <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px;display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end;margin-bottom:22px">
+          <div>
+            <div style="font-size:11px;color:#7b8597;font-weight:700;letter-spacing:.04em;margin-bottom:7px">LEGS</div>
+            <div style="display:flex;gap:6px">
+              <button data-legs="2" onClick="{{ setBuilderLegs }}" style="{{ bL2 }};width:34px;height:34px;display:grid;place-items:center;border-radius:9px;font-family:'Space Grotesk';font-weight:700;cursor:pointer">2</button>
+              <button data-legs="3" onClick="{{ setBuilderLegs }}" style="{{ bL3 }};width:34px;height:34px;display:grid;place-items:center;border-radius:9px;font-family:'Space Grotesk';font-weight:700;cursor:pointer">3</button>
+              <button data-legs="4" onClick="{{ setBuilderLegs }}" style="{{ bL4 }};width:34px;height:34px;display:grid;place-items:center;border-radius:9px;font-family:'Space Grotesk';font-weight:700;cursor:pointer">4</button>
+              <button data-legs="5" onClick="{{ setBuilderLegs }}" style="{{ bL5 }};width:34px;height:34px;display:grid;place-items:center;border-radius:9px;font-family:'Space Grotesk';font-weight:700;cursor:pointer">5</button>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#7b8597;font-weight:700;letter-spacing:.04em;margin-bottom:7px">STYLE</div>
+            <div style="display:flex;gap:6px">
+              <button data-style="safe" onClick="{{ setBuilderStyle }}" style="{{ bSafe }};padding:8px 13px;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer">Safe</button>
+              <button data-style="balanced" onClick="{{ setBuilderStyle }}" style="{{ bBal }};padding:8px 13px;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer">Balanced</button>
+              <button data-style="longshot" onClick="{{ setBuilderStyle }}" style="{{ bLong }};padding:8px 13px;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer">Longshot</button>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#7b8597;font-weight:700;letter-spacing:.04em;margin-bottom:7px">MARKETS</div>
+            <div style="display:flex;gap:6px">
+              <button data-market="hr" onClick="{{ setBuilderMarket }}" style="{{ bHR }};padding:8px 13px;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer">HR only</button>
+              <button data-market="all" onClick="{{ setBuilderMarket }}" style="{{ bAll }};padding:8px 13px;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer">All markets</button>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="font-size:18px">🧩</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Generated cross plays</h2></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">
+          <sc-for list="{{ combos }}" as="c" hint-placeholder-count="3">
+            <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:15px;padding:16px">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+                <div><div style="font-weight:700;font-size:15px">{{ c.title }}</div><div style="font-size:12px;color:#7b8597">{{ c.sub }}</div></div>
+                <div style="text-align:right"><div style="font-family:'Space Grotesk';font-weight:700;font-size:21px;color:var(--ac,#ff8a4c)">{{ c.odds }}</div><div style="font-size:11px;color:var(--pos,#35d0c0);font-weight:600">{{ c.evLabel }}</div></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+                <sc-for list="{{ c.legs }}" as="l" hint-placeholder-count="3">
+                  <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 11px;border-radius:9px;background:#0c0e14"><span>{{ l.name }}</span><span style="color:#9aa3b2;font-family:'Space Grotesk'">{{ l.odds }}</span></div>
+                </sc-for>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+                <div style="text-align:center;padding:7px 4px;border-radius:9px;background:#0c0e14"><div style="font-size:10px;color:#7b8597;font-weight:600">WIN</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:13px">{{ c.win }}</div></div>
+                <div style="text-align:center;padding:7px 4px;border-radius:9px;background:#0c0e14"><div style="font-size:10px;color:#7b8597;font-weight:600">AVG</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:13px;color:var(--pos,#35d0c0)">{{ c.avg }}</div></div>
+                <div style="text-align:center;padding:7px 4px;border-radius:9px;background:#0c0e14"><div style="font-size:10px;color:#7b8597;font-weight:600">GRADE</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:13px;color:var(--ac,#ff8a4c)">{{ c.grade }}</div></div>
+              </div>
+              <div style="display:flex;gap:7px;margin-top:11px">
+                <button data-combo="{{ $index }}" onClick="{{ addComboLegs }}" style="flex:1;padding:9px;border:none;border-radius:10px;cursor:pointer;font-weight:700;font-size:12.5px;color:#0a0c11;background:var(--ac,#ff8a4c)">+ Slip</button>
+                <button data-combo="{{ $index }}" onClick="{{ trackCombo }}" style="flex:1;padding:9px;border:1px solid rgba(255,255,255,.14);border-radius:10px;cursor:pointer;font-weight:600;font-size:12.5px;color:#c3cad6;background:transparent">Track 📋</button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isTrack }}" hint-placeholder-val="{{ false }}">
+      <div style="animation:dlrise .35s ease both">
+        <div style="margin-bottom:18px">
+          <div style="font-size:11px;letter-spacing:.14em;color:var(--ac,#ff8a4c);font-weight:700;margin-bottom:6px">TRACKING & CLV</div>
+          <h1 style="margin:0;font-family:'Space Grotesk';font-size:28px;font-weight:700;letter-spacing:-.02em">Saved plays</h1>
+          <p style="margin:6px 0 0;color:#8b94a6;font-size:14px;max-width:560px">Build a slip, hit <b style="color:#c3cad6">Save → Track</b>, and every play lands here with odds, model EV and grade. Mark results to track your edge.</p>
+        </div>
+
+        <sc-if value="{{ hasGraded }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px">
+            <div style="padding:15px;border-radius:14px;background:#13161e;border:1px solid rgba(255,255,255,.07)"><div style="font-size:11px;color:#7b8597;font-weight:600">WIN RATE</div><div style="font-family:'Space Grotesk';font-size:28px;font-weight:700;margin-top:5px;color:var(--pos,#35d0c0)">{{ hitRate }}%</div><div style="font-size:11.5px;color:#7b8597;margin-top:2px">{{ winsCount }}/{{ gradedCount }} graded</div></div>
+            <div style="padding:15px;border-radius:14px;background:#13161e;border:1px solid rgba(255,255,255,.07)"><div style="font-size:11px;color:#7b8597;font-weight:600">NET ROI</div><div style="font-family:'Space Grotesk';font-size:28px;font-weight:700;margin-top:5px">${{ roi }}</div><div style="font-size:11.5px;color:#7b8597;margin-top:2px">on graded slips</div></div>
+            <div style="padding:15px;border-radius:14px;background:#13161e;border:1px solid rgba(255,255,255,.07)"><div style="font-size:11px;color:#7b8597;font-weight:600">PENDING</div><div style="font-family:'Space Grotesk';font-size:28px;font-weight:700;margin-top:5px;color:#ffc24d">{{ pendingCount }}</div><div style="font-size:11.5px;color:#7b8597;margin-top:2px">awaiting results</div></div>
+            <div style="padding:15px;border-radius:14px;background:#13161e;border:1px solid rgba(255,255,255,.07)"><div style="font-size:11px;color:#7b8597;font-weight:600">TOTAL SAVED</div><div style="font-family:'Space Grotesk';font-size:28px;font-weight:700;margin-top:5px">{{ totalTracked }}</div><div style="font-size:11.5px;color:#7b8597;margin-top:2px">slips tracked</div></div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ noTracked }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:40vh;text-align:center;color:#7b8597;border:1px dashed rgba(255,255,255,.1);border-radius:16px;padding:40px">
+            <div style="font-size:38px;margin-bottom:12px;opacity:.6">📋</div>
+            <div style="font-family:'Space Grotesk';font-size:18px;font-weight:700;color:#c3cad6">No tracked bets yet</div>
+            <p style="margin:8px 0 0;font-size:13.5px;max-width:380px">Save a parlay from the slip or use <b style="color:#c3cad6">Track 📋</b> on any combo card — it saves here instantly.</p>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ hasTracked }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:11px">
+            <sc-for list="{{ trackedList }}" as="t" hint-placeholder-count="3">
+              <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 16px">
+                <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+                  <span style="font-size:11px;font-weight:700;padding:5px 11px;border-radius:20px;flex:none;background:{{ t.statusBg }};color:{{ t.statusFg }}">{{ t.statusLabel }}</span>
+                  <div style="flex:1;min-width:180px">
+                    <div style="font-weight:700;font-size:14px">{{ t.label }}</div>
+                    <div style="font-size:12px;color:#7b8597;margin-top:2px">{{ t.legsPreview }} · ${{ t.stake }} · {{ t.date }}</div>
+                  </div>
+                  <div style="display:flex;gap:14px;font-family:'Space Grotesk';flex-wrap:wrap">
+                    <div style="text-align:center"><div style="font-size:10px;color:#7b8597;font-weight:600">ODDS</div><div style="font-weight:700">{{ t.odds }}</div></div>
+                    <div style="text-align:center"><div style="font-size:10px;color:#7b8597;font-weight:600">WIN</div><div style="font-weight:700">{{ t.win }}</div></div>
+                    <div style="text-align:center"><div style="font-size:10px;color:#7b8597;font-weight:600">EV</div><div style="font-weight:700;color:var(--pos,#35d0c0)">{{ t.ev }}</div></div>
+                  </div>
+                </div>
+                <sc-if value="{{ t.pending }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;gap:8px;margin-top:11px">
+                    <button data-id="{{ t.id }}" data-result="won" onClick="{{ setResult }}" style="flex:1;padding:8px;border:1px solid rgba(53,208,192,.3);border-radius:9px;cursor:pointer;font-weight:700;font-size:12.5px;color:var(--pos,#35d0c0);background:rgba(53,208,192,.08)">✓ Won</button>
+                    <button data-id="{{ t.id }}" data-result="lost" onClick="{{ setResult }}" style="flex:1;padding:8px;border:1px solid rgba(255,107,107,.25);border-radius:9px;cursor:pointer;font-weight:700;font-size:12.5px;color:#ff8d8d;background:rgba(255,107,107,.07)">✗ Lost</button>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <!-- RESEARCH (live) -->
+      <sc-if value="{{ isResearch }}" hint-placeholder-val="{{ false }}">
+      <div style="animation:dlrise .35s ease both">
+        <div style="margin-bottom:20px">
+          <div style="font-size:11px;letter-spacing:.14em;color:var(--ac,#ff8a4c);font-weight:700;margin-bottom:6px">RESEARCH · AWARENESS</div>
+          <h1 style="margin:0;font-family:'Space Grotesk';font-size:28px;font-weight:700;letter-spacing:-.02em">Market intelligence</h1>
+          <p style="margin:6px 0 0;color:#8b94a6;font-size:14px;max-width:580px">Live book disagreement, price moves since your last session, and top-value plays from today's model board.</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:18px;align-items:start">
+          <div>
+            <!-- TOP VALUE PLAYS -->
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="font-size:17px">🎯</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:17px;font-weight:700">Top value plays</h2><span style="font-size:11px;color:#7b8597;margin-left:2px">{{ hasOdds ? 'ranked by edge' : 'ranked by model' }}</span></div>
+            <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;margin-bottom:18px">
+              <table style="width:100%;border-collapse:collapse;font-size:13px">
+                <thead><tr style="background:#0c0e14;color:#7b8597">
+                  <th style="padding:10px 14px;font-weight:600;font-size:11px;text-align:left">PLAYER</th>
+                  <th style="padding:10px 10px;font-weight:600;font-size:11px;text-align:right">MODEL%</th>
+                  <th style="padding:10px 10px;font-weight:600;font-size:11px;text-align:right">BEST</th>
+                  <th style="padding:10px 10px;font-weight:600;font-size:11px;text-align:right">EV</th>
+                  <th style="padding:10px 14px;font-weight:600;font-size:11px;text-align:right">SCORE</th>
+                </tr></thead>
+                <tbody>
+                  <sc-for list="{{ topValue }}" as="p" hint-placeholder-count="8">
+                    <tr style="border-top:1px solid rgba(255,255,255,.05);cursor:pointer" data-player="{{ p.id }}" onClick="{{ openDrawer }}">
+                      <td style="padding:10px 14px;font-weight:600">{{ p.name }}<span style="color:#7b8597;font-size:11px;margin-left:7px">{{ p.teamAbbr }}</span></td>
+                      <td style="padding:10px 10px;font-family:'Space Grotesk';text-align:right">{{ p.modelPct }}%</td>
+                      <td style="padding:10px 10px;font-family:'Space Grotesk';font-weight:700;text-align:right">{{ p.best }}</td>
+                      <td style="padding:10px 10px;font-family:'Space Grotesk';font-weight:700;text-align:right;color:var(--pos,#35d0c0)">{{ p.ev }}</td>
+                      <td style="padding:10px 14px;font-family:'Space Grotesk';font-weight:700;text-align:right;color:var(--ac,#ff8a4c)">{{ p.score }}</td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- WHAT CHANGED -->
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="font-size:17px">📈</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:17px;font-weight:700">What changed</h2><span style="font-size:11px;color:#7b8597;margin-left:2px">vs last session</span></div>
+            <sc-if value="{{ hasDiff }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ diffItems }}" as="d" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:13px;background:#13161e;border:1px solid rgba(255,255,255,.07)">
+                    <span style="font-size:16px">{{ d.move.startsWith('▲') ? '📈' : '📉' }}</span>
+                    <div style="flex:1"><div style="font-weight:700;font-size:13.5px">{{ d.name }}</div><div style="font-size:12px;color:#8b94a6;margin-top:2px">{{ d.prev }} → <b style="color:#eef1f6">{{ d.cur }}</b> <span style="color:{{ d.moveColor }}">{{ d.move }}</span></div></div>
+                    <span style="font-size:11px;font-weight:700;padding:4px 9px;border-radius:7px;background:{{ d.moveColor === 'var(--pos,#35d0c0)' ? 'rgba(53,208,192,.12)' : 'rgba(255,141,141,.10)' }};color:{{ d.moveColor }}">{{ d.dir }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noDiff }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:14px 16px;border-radius:13px;background:#13161e;border:1px solid rgba(255,255,255,.07);color:#7b8597;font-size:13.5px">
+                No price moves detected yet — the feed populates after your second refresh of the day once odds snapshot is stored.
+              </div>
+            </sc-if>
+          </div>
+
+          <!-- STEAM RADAR -->
+          <div>
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="font-size:17px">🔥</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:17px;font-weight:700">Steam radar</h2></div>
+            <sc-if value="{{ hasSteam }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <sc-for list="{{ steam }}" as="s" hint-placeholder-count="4">
+                  <div style="padding:14px;border-radius:14px;background:#13161e;border:1px solid rgba(255,94,168,.24)">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                      <div><div style="font-weight:700;font-size:14px">{{ s.name }}</div><div style="font-size:11.5px;color:#7b8597">{{ s.team }}</div></div>
+                      <span style="font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:7px;background:rgba(255,94,168,.14);color:#ff5ea8">{{ s.spread }}pp spread</span>
+                    </div>
+                    <div style="font-size:12.5px;color:#c3cad6;line-height:1.5">{{ s.sharpBook }} moved to <b style="color:#eef1f6">{{ s.sharpOdds }}</b>. {{ s.laggingBook }} still at <b style="color:var(--pos,#35d0c0)">{{ s.laggingOdds }}</b> — potential stale value.</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noSteam }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:16px;border-radius:14px;background:#13161e;border:1px solid rgba(255,255,255,.07);color:#7b8597;font-size:13px;line-height:1.5">
+                <sc-if value="{{ oddsConnected }}" hint-placeholder-val="{{ false }}">
+                  No significant book disagreements on today's HR market right now. Radar updates on each Refresh.
+                </sc-if>
+                <sc-if value="{{ oddsNotConnected }}" hint-placeholder-val="{{ true }}">
+                  Odds not connected. The steam radar compares all 4 books — connect via Refresh to activate it.
+                </sc-if>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- TOOLS -->
+      <sc-if value="{{ isTools }}" hint-placeholder-val="{{ false }}">
+      <div style="animation:dlrise .35s ease both">
+        <div style="margin-bottom:20px">
+          <div style="font-size:11px;letter-spacing:.14em;color:var(--ac,#ff8a4c);font-weight:700;margin-bottom:6px">TOOLS & METHODOLOGY</div>
+          <h1 style="margin:0;font-family:'Space Grotesk';font-size:28px;font-weight:700;letter-spacing:-.02em">Controls & exports</h1>
+          <p style="margin:6px 0 0;color:#8b94a6;font-size:14px;max-width:560px">Model tuning, exposure guardrails, exports and methodology — the deeper machinery, out of the main flow.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px">
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:16px"><span style="font-size:17px">⚙️</span><div style="font-family:'Space Grotesk';font-weight:700;font-size:15px">Model settings</div></div>
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:8px"><span style="color:#9aa3b2">Season regression</span><span style="font-family:'Space Grotesk';font-weight:700;color:var(--ac,#ff8a4c)">0.62</span></div>
+                <div style="height:6px;border-radius:6px;background:rgba(255,255,255,.08);position:relative"><div style="width:62%;height:100%;border-radius:6px;background:var(--ac,#ff8a4c)"></div><div style="position:absolute;left:62%;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#eef1f6;box-shadow:0 1px 4px rgba(0,0,0,.5)"></div></div>
+                <div style="font-size:11px;color:#7b8597;margin-top:5px">Weights season HR/PA towards regressed mean. Higher = more trust in small samples.</div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:8px"><span style="color:#9aa3b2">Recent-form weight</span><span style="font-family:'Space Grotesk';font-weight:700;color:var(--ac,#ff8a4c)">0.40</span></div>
+                <div style="height:6px;border-radius:6px;background:rgba(255,255,255,.08);position:relative"><div style="width:40%;height:100%;border-radius:6px;background:var(--ac,#ff8a4c)"></div><div style="position:absolute;left:40%;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#eef1f6;box-shadow:0 1px 4px rgba(0,0,0,.5)"></div></div>
+                <div style="font-size:11px;color:#7b8597;margin-top:5px">Last-30-day HR rate multiplier. 0 = ignore recency, 1 = replace season rate.</div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:8px"><span style="color:#9aa3b2">Park / weather factor</span><span style="font-family:'Space Grotesk';font-weight:700;color:var(--ac,#ff8a4c)">0.75</span></div>
+                <div style="height:6px;border-radius:6px;background:rgba(255,255,255,.08);position:relative"><div style="width:75%;height:100%;border-radius:6px;background:var(--ac,#ff8a4c)"></div><div style="position:absolute;left:75%;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#eef1f6;box-shadow:0 1px 4px rgba(0,0,0,.5)"></div></div>
+                <div style="font-size:11px;color:#7b8597;margin-top:5px">Blend of park HR factor with the raw rate. 1.0 = full park adjustment.</div>
+              </div>
+            </div>
+          </div>
+          <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px">
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:16px"><span style="font-size:17px">🎯</span><div style="font-family:'Space Grotesk';font-weight:700;font-size:15px">Exposure guardrails</div></div>
+            <div style="display:flex;flex-direction:column;gap:11px">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-radius:11px;background:#0c0e14"><span style="font-size:13px;color:#c3cad6">Max slips per player</span><span style="font-family:'Space Grotesk';font-weight:700;font-size:17px">2</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-radius:11px;background:#0c0e14"><span style="font-size:13px;color:#c3cad6">Max daily stake</span><span style="font-family:'Space Grotesk';font-weight:700;font-size:17px">$120</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-radius:11px;background:#0c0e14"><span style="font-size:13px;color:#c3cad6">Kelly fraction</span><span style="font-family:'Space Grotesk';font-weight:700;font-size:17px">¼</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-radius:11px;background:#0c0e14"><span style="font-size:13px;color:#c3cad6">Min edge to bet</span><span style="font-family:'Space Grotesk';font-weight:700;font-size:17px;color:var(--pos,#35d0c0)">+3.0%</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-radius:11px;background:#0c0e14"><span style="font-size:13px;color:#c3cad6">Min PA (qualified)</span><span style="font-family:'Space Grotesk';font-weight:700;font-size:17px">90</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px;margin-bottom:16px">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px"><span style="font-size:17px">🔌</span><div style="font-family:'Space Grotesk';font-weight:700;font-size:15px">Live odds proxy</div></div>
+          <div style="font-size:12.5px;color:#8b94a6;line-height:1.5;margin-bottom:14px">Your OddsBlaze key is read from the <code style="background:#0c0e14;padding:2px 6px;border-radius:5px;font-size:12px">ODDSBLAZE_KEY</code> env variable on your Render server. Point the app at whichever Render deployment URL you use.</div>
+          <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:11px">
+            <div style="display:flex;align-items:center;flex:1;min-width:240px;padding:10px 13px;border-radius:11px;background:#0c0e14;border:1px solid rgba(255,138,76,.3)">
+              <span style="font-size:12.5px;color:#9aa3b2;white-space:nowrap;margin-right:8px">Proxy URL</span>
+              <input type="text" value="{{ proxyUrl }}" onChange="{{ setProxyUrl }}" placeholder="https://your-app.onrender.com" style="flex:1;background:transparent;border:none;color:#eef1f6;font-size:13px;font-weight:600;outline:none;min-width:0">
+            </div>
+            <button onClick="{{ saveProxyUrl }}" style="padding:10px 16px;border:none;border-radius:10px;cursor:pointer;font-weight:700;font-size:13px;color:#0a0c11;background:var(--ac,#ff8a4c);white-space:nowrap">Save & reload</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12.5px"><span style="width:7px;height:7px;border-radius:50%;background:{{ oddsProxyColor }};flex:none"></span><span style="color:{{ oddsProxyColor }};font-weight:600">{{ oddsProxyStatus }}</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px">
+          <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px;cursor:pointer" style-hover="border-color:rgba(255,138,76,.4)"><div style="font-size:22px;margin-bottom:9px">✍️</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:14.5px">Manual entry</div><div style="font-size:12.5px;color:#8b94a6;margin-top:5px;line-height:1.4">Add a game or prop by hand when a book hasn't posted.</div></div>
+          <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px;cursor:pointer" style-hover="border-color:rgba(255,138,76,.4)"><div style="font-size:22px;margin-bottom:9px">⬇️</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:14.5px">Export data</div><div style="font-size:12.5px;color:#8b94a6;margin-top:5px;line-height:1.4">Feature store CSV / JSON and frozen board snapshots for analysis.</div></div>
+          <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px;cursor:pointer" style-hover="border-color:rgba(255,138,76,.4)"><div style="font-size:22px;margin-bottom:9px">🧪</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:14.5px">Recalibrate</div><div style="font-size:12.5px;color:#8b94a6;margin-top:5px;line-height:1.4">Re-fit HR probabilities from your graded tracking results.</div></div>
+          <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px;cursor:pointer" style-hover="border-color:rgba(255,138,76,.4)"><div style="font-size:22px;margin-bottom:9px">📐</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:14.5px">Methodology</div><div style="font-size:12.5px;color:#8b94a6;margin-top:5px;line-height:1.4">Poisson rate model + Gaussian-copula correlation. k=130 regression, 4-book OddsBlaze.</div></div>
+        </div>
+      </div>
+      </sc-if>
+
+    </main>
+
+    <!-- BET SLIP -->
+    <aside style="border-left:1px solid rgba(255,255,255,.06);padding:20px 18px;position:sticky;top:67px;align-self:start;height:calc(100vh - 67px);overflow:auto;overflow-x:hidden">
+    <sc-if value="{{ slipOpen }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:9px"><span style="font-size:17px">🎟️</span><h3 style="margin:0;font-family:'Space Grotesk';font-size:16px;font-weight:700">Bet Slip</h3></div>
+        <button onClick="{{ toggleSlip }}" style="width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:#161a24;color:#9aa3b2;cursor:pointer;font-size:14px;display:grid;place-items:center" style-hover="color:#eef1f6" title="Hide slip">✕</button>
+        <div style="display:flex;align-items:center;gap:7px">
+          <sc-if value="{{ hasSlip }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:var(--ac,#ff8a4c);color:#0a0c11">{{ slipCountLabel }}</span>
+            <button onClick="{{ clearSlip }}" style="padding:4px 9px;border:1px solid rgba(255,255,255,.14);border-radius:8px;background:transparent;color:#9aa3b2;font-size:11.5px;font-weight:600;cursor:pointer">✕ Clear</button>
+          </sc-if>
+          <sc-if value="{{ hasNoSlip }}" hint-placeholder-val="{{ true }}">
+            <span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.07);color:#7b8597">empty</span>
+          </sc-if>
+        </div>
+      </div>
+
+      <sc-if value="{{ hasNoSlip }}" hint-placeholder-val="{{ true }}">
+        <div style="border:1px dashed rgba(255,255,255,.12);border-radius:13px;padding:22px 14px;text-align:center;color:#7b8597;margin-bottom:16px">
+          <div style="font-size:13px;line-height:1.5">Tap a play to open its report, then <b style="color:#c3cad6">+ Add to slip</b> to build a parlay here.</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ hasSlip }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+          <sc-for list="{{ slipLegs }}" as="leg" hint-placeholder-count="2">
+            <div style="display:flex;align-items:flex-start;gap:10px;padding:11px 12px;border-radius:12px;background:#13161e;border:1px solid rgba(255,255,255,.08)">
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:700;font-size:13.5px">{{ leg.name }}</div>
+                <div style="font-size:12px;color:#7b8597;margin-top:2px">{{ leg.market }} · <span style="font-family:'Space Grotesk';color:var(--ac,#ff8a4c)">{{ leg.odds }}</span></div>
+              </div>
+              <button data-legid="{{ leg.id }}" onClick="{{ removeFromSlip }}" style="background:transparent;border:none;color:#7b8597;cursor:pointer;font-size:15px;padding:2px 4px;flex:none" style-hover="color:#ff6b6b">✕</button>
+            </div>
+          </sc-for>
+        </div>
+        <div style="padding:14px;border-radius:13px;background:#0f1218;border:1px solid rgba(255,255,255,.07);margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px"><span style="color:#9aa3b2">Parlay odds</span><span style="font-family:'Space Grotesk';font-weight:700">{{ parlayOdds }}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px"><span style="color:#9aa3b2">Win chance</span><span style="font-family:'Space Grotesk';font-weight:700">{{ parlayWin }}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:12px"><span style="color:#9aa3b2">Model EV</span><span style="font-family:'Space Grotesk';font-weight:700;color:var(--pos,#35d0c0)">{{ parlayEv }}</span></div>
+          <div style="margin-bottom:7px">
+            <div style="font-size:11px;color:#7b8597;font-weight:600;letter-spacing:.04em;margin-bottom:7px">STAKE</div>
+            <div style="display:flex;align-items:center;padding:11px 14px;border-radius:12px;background:#0c0e14;border:2px solid rgba(255,138,76,.35)">
+              <span style="font-size:17px;font-weight:700;color:#9aa3b2;margin-right:5px">$</span>
+              <input type="text" inputMode="decimal" value="{{ stake }}" onChange="{{ setStake }}" placeholder="25" style="flex:1;background:transparent;border:none;color:#eef1f6;font-family:'Space Grotesk';font-size:22px;font-weight:700;outline:none;min-width:0;width:100%">
+            </div>
+            <div style="display:flex;gap:6px;margin-top:8px">
+              <button data-amount="10" onClick="{{ setStakePreset }}" style="flex:1;padding:7px 4px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:transparent;color:#9aa3b2;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="border-color:var(--ac,#ff8a4c);color:#eef1f6">$10</button>
+              <button data-amount="25" onClick="{{ setStakePreset }}" style="flex:1;padding:7px 4px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:transparent;color:#9aa3b2;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="border-color:var(--ac,#ff8a4c);color:#eef1f6">$25</button>
+              <button data-amount="50" onClick="{{ setStakePreset }}" style="flex:1;padding:7px 4px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:transparent;color:#9aa3b2;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="border-color:var(--ac,#ff8a4c);color:#eef1f6">$50</button>
+              <button data-amount="100" onClick="{{ setStakePreset }}" style="flex:1;padding:7px 4px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:transparent;color:#9aa3b2;font-size:12.5px;font-weight:600;cursor:pointer" style-hover="border-color:var(--ac,#ff8a4c);color:#eef1f6">$100</button>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-top:10px;padding:9px 13px;border-radius:10px;background:#0c0e14;border:1px solid rgba(255,255,255,.07)">
+              <span style="color:#9aa3b2">To win</span>
+              <span style="font-family:'Space Grotesk';font-weight:700;font-size:15px;color:var(--ac,#ff8a4c)">{{ parlayPayout }}</span>
+            </div>
+          </div>
+          <button onClick="{{ saveTrack }}" style="width:100%;padding:12px;border:none;border-radius:11px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:800;font-size:14px;color:#0a0c11;background:var(--ac,#ff8a4c)" style-hover="filter:brightness(1.08)">Save → Track 📋</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{ oddsConnected }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:14px;border-radius:13px;background:rgba(53,208,192,.06);border:1px solid rgba(53,208,192,.22)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><span style="width:7px;height:7px;border-radius:50%;background:var(--pos,#35d0c0);animation:dlpulse 1.6s infinite"></span><span style="font-size:12px;color:var(--pos,#35d0c0);font-weight:700">ODDS CONNECTED · {{ booksLabel }}</span></div>
+          <p style="margin:0;font-size:12.5px;color:#8b94a6;line-height:1.5">Live OddsBlaze prices via your proxy — best price, EV and edge are live across every screen.</p>
+        </div>
+      </sc-if>
+      <sc-if value="{{ oddsNotConnected }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:14px;border-radius:13px;background:#0f1218;border:1px solid rgba(255,255,255,.07)">
+          <div style="font-size:12px;color:#7b8597;font-weight:600;margin-bottom:9px">CONNECT ODDS</div>
+          <p style="margin:0 0 12px;font-size:12.5px;color:#8b94a6;line-height:1.5">Best price, EV and payouts come from your OddsBlaze proxy. If books haven't posted props yet, retry closer to game time.</p>
+          <button onClick="{{ refresh }}" style="width:100%;padding:11px;border:1px solid rgba(255,138,76,.4);border-radius:11px;cursor:pointer;font-weight:700;font-size:13px;color:var(--ac,#ff8a4c);background:rgba(255,138,76,.08)">↻ Retry odds feed</button>
+        </div>
+      </sc-if>
+    </sc-if>
+    </aside>
+  </div>
+
+  <!-- Floating reopen button -->
+  <sc-if value="{{ slipNotOpen }}" hint-placeholder-val="{{ false }}">
+    <button onClick="{{ toggleSlip }}" style="position:fixed;bottom:22px;right:22px;z-index:50;display:flex;align-items:center;gap:9px;padding:11px 16px;border:none;border-radius:14px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:700;font-size:13.5px;color:#0a0c11;background:var(--ac,#ff8a4c);box-shadow:0 6px 24px rgba(255,138,76,.4)" style-hover="filter:brightness(1.08)">
+      🎟️ Open slip<sc-if value="{{ hasSlip }}" hint-placeholder-val="{{ false }}"><span style="background:rgba(0,0,0,.25);border-radius:20px;padding:2px 7px;font-size:11px;margin-left:2px">{{ slipCountLabel }}</span></sc-if>
+    </button>
+  </sc-if>
+
+  <!-- DRAWER -->
+  <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeDrawer }}" style="position:fixed;inset:0;z-index:90;background:rgba(5,6,9,.6);backdrop-filter:blur(3px);animation:dlrise .2s ease both"></div>
+  <div style="position:fixed;top:0;right:0;bottom:0;z-index:91;width:min(460px,94vw);background:#0d0f15;border-left:1px solid rgba(255,255,255,.1);box-shadow:-30px 0 80px rgba(0,0,0,.5);overflow:auto;animation:dlrise .26s cubic-bezier(.2,.8,.2,1) both">
+    <div style="position:sticky;top:0;z-index:2;background:rgba(13,15,21,.92);backdrop-filter:blur(10px);padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.08)">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+        <div>
+          <div style="font-size:11px;letter-spacing:.12em;color:var(--ac,#ff8a4c);font-weight:700">INTELLIGENCE REPORT</div>
+          <h2 style="margin:5px 0 2px;font-family:'Space Grotesk';font-size:23px;font-weight:700">{{ p.name }}</h2>
+          <div style="font-size:13px;color:#8b94a6">{{ p.sub }}</div>
+        </div>
+        <button onClick="{{ closeDrawer }}" style="width:34px;height:34px;flex:none;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#161a24;color:#9aa3b2;cursor:pointer;font-size:17px" style-hover="color:#fff">✕</button>
+      </div>
+      <div style="display:flex;gap:7px;margin-top:13px;flex-wrap:wrap">
+        <sc-for list="{{ p.markets }}" as="m" hint-placeholder-count="2">
+          <span style="font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:8px;background:{{ m.bg }};color:{{ m.fg }}">{{ m.label }}</span>
+        </sc-for>
+      </div>
+    </div>
+    <div style="padding:20px">
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;margin-bottom:20px">
+        <div style="position:relative;width:96px;height:96px;flex:none;border-radius:50%;background:{{ p.ring }};display:grid;place-items:center">
+          <div style="width:76px;height:76px;border-radius:50%;background:#0d0f15;display:grid;place-items:center"><span style="font-family:'Space Grotesk';font-weight:700;font-size:30px;line-height:1">{{ p.score }}</span></div>
+        </div>
+        <div>
+          <div style="font-size:17px;letter-spacing:2px;margin-bottom:7px"><span style="color:#ffc24d">{{ p.starsOn }}</span><span style="color:#3a4150">{{ p.starsOff }}</span></div>
+          <div style="font-size:12px;color:#9aa3b2;font-weight:600;margin-bottom:5px">MODEL HR PROBABILITY · {{ p.modelPct }}%</div>
+          <div style="height:9px;border-radius:9px;background:rgba(255,255,255,.08);overflow:hidden"><div style="height:100%;width:{{ p.probBar }};background:linear-gradient(90deg,var(--ac,#ff8a4c),#ff5ea8)"></div></div>
+        </div>
+      </div>
+      <div style="font-family:'Space Grotesk';font-weight:700;font-size:14px;margin-bottom:11px">Edge Profile</div>
+      <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:22px">
+        <sc-for list="{{ p.profile }}" as="f" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:128px 1fr 40px;align-items:center;gap:10px">
+            <span style="font-size:12.5px;color:#9aa3b2">{{ f.label }}</span>
+            <span style="height:8px;border-radius:8px;background:rgba(255,255,255,.07);overflow:hidden;display:block"><span style="display:block;height:100%;width:{{ f.pct }};background:{{ f.color }}"></span></span>
+            <span style="font-family:'Space Grotesk';font-weight:700;font-size:12.5px;text-align:right">{{ f.val }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:18px">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--pos,#35d0c0);margin-bottom:8px">WHY IT HITS</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <sc-for list="{{ p.reasons }}" as="r" hint-placeholder-count="3">
+              <div style="font-size:12px;color:#c3cad6;line-height:1.4;padding-left:14px;position:relative"><span style="position:absolute;left:0;color:var(--pos,#35d0c0)">+</span>{{ r }}</div>
+            </sc-for>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#ff8d8d;margin-bottom:8px">RISKS</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <sc-for list="{{ p.risks }}" as="r" hint-placeholder-count="2">
+              <div style="font-size:12px;color:#c3cad6;line-height:1.4;padding-left:14px;position:relative"><span style="position:absolute;left:0;color:#ff8d8d">−</span>{{ r }}</div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      <button onClick="{{ addToSlip }}" style="width:100%;padding:13px;border:none;border-radius:12px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:800;font-size:14px;color:#0a0c11;background:var(--ac,#ff8a4c)" style-hover="filter:brightness(1.08)">+ Add {{ p.name }} to slip</button>
+    </div>
+  </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 1440, &quot;height&quot;: 940 },
+  &quot;accent&quot;: { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#ff8a4c&quot;, &quot;tsType&quot;: &quot;string&quot; },
+  &quot;positive&quot;: { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#35d0c0&quot;, &quot;tsType&quot;: &quot;string&quot; },
+  &quot;compact&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot; }
+}">
+class Component extends DCLogic {
+  state = { tab: 'dashboard', drawerOpen: false, player: null, status: 'loading', data: null, slip: [], tracked: [], stake: '25', builderLegs: 3, builderStyle: 'balanced', builderMarket: 'hr', slipOpen: true, proxyUrl: 'https://mlb-slate.onrender.com' };
+
+  componentDidMount() {
+    try { const p = localStorage.getItem('dl_odds_proxy'); if (p) this.setState({ proxyUrl: p }); } catch (e) {}
+    try { const t = localStorage.getItem('dl_tracked_v1'); if (t) this.setState({ tracked: JSON.parse(t) }); } catch (e) {}
+    this.load();
+  }
+
+  dateStr() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  localTime(iso) {
+    try { return new Date(iso).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); } catch (e) { return ''; }
+  }
+  park(v) {
+    const M = { 'Coors Field': 122, 'Great American Ball Park': 113, 'Yankee Stadium': 110, 'Citizens Bank Park': 107, 'Oriole Park at Camden Yards': 106, 'Camden Yards': 106, 'Wrigley Field': 104, 'Rate Field': 104, 'Guaranteed Rate Field': 104, 'Fenway Park': 103, 'Globe Life Field': 103, 'Truist Park': 103, 'Rogers Centre': 103, 'American Family Field': 102, 'Chase Field': 102, 'Dodger Stadium': 101, 'Nationals Park': 101, 'Target Field': 101, 'Angel Stadium': 101, 'Daikin Park': 101, 'Minute Maid Park': 101, 'Progressive Field': 99, 'Tropicana Field': 98, 'Citi Field': 97, 'Busch Stadium': 97, 'PNC Park': 96, 'Kauffman Stadium': 96, 'loanDepot park': 95, 'Comerica Park': 95, 'T-Mobile Park': 94, 'Oracle Park': 92, 'Petco Park': 96 };
+    return M[v] || 100;
+  }
+  normName(s) { return (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\./g, '').replace(/\b(jr|sr|ii|iii|iv|v)\b/g, '').replace(/[^a-z\s-]/g, '').replace(/\s+/g, ' ').trim(); }
+  amDec(a) { return a > 0 ? 1 + a / 100 : 1 + 100 / (-a); }
+  amImp(a) { return a > 0 ? 100 / (a + 100) : (-a) / (-a + 100); }
+  decAm(d) { return d >= 2 ? ('+' + Math.round((d - 1) * 100)) : ('-' + Math.round(100 / (d - 1))); }
+  async fetchOdds() {
+    const books = ['draftkings', 'fanatics', 'betmgm', 'caesars'];
+    const proxyBase = ((() => { try { return localStorage.getItem('dl_odds_proxy'); } catch (e) { return null; } })() || 'https://mlb-slate.onrender.com').replace(/\/$/, '');
+    const res = await Promise.all(books.map(bk => fetch(proxyBase + '/api/oddsblaze?sportsbook=' + bk + '&league=mlb').then(r => r.ok ? r.json() : null).catch(() => null)));
+    const best = {}, perBook = {}; let booksOk = 0;
+    res.forEach((j, bi) => {
+      if (!j || !j.events) return; booksOk++;
+      const bk = books[bi];
+      j.events.forEach(ev => { (ev.odds || []).forEach(o => { if (!/home\s*run/i.test(o.market || '')) return; const sel = o.selection || {}; if (sel.side !== 'Over' || sel.line !== 0.5) return; if (!o.player || !o.player.name || o.price == null) return; const a = parseInt(String(o.price), 10); if (!isFinite(a) || a === 0) return; const k = this.normName(o.player.name); if (best[k] == null || a > best[k]) best[k] = a; if (!perBook[k]) perBook[k] = {}; if (perBook[k][bk] == null || a > perBook[k][bk]) perBook[k][bk] = a; }); });
+    });
+    return { best, perBook, booksOk };
+  }
+  async bulkPeople(ids, group, season) {
+    const out = {};
+    for (let i = 0; i < ids.length; i += 40) {
+      const chunk = ids.slice(i, i + 40);
+      try {
+        const r = await fetch('https://statsapi.mlb.com/api/v1/people?personIds=' + chunk.join(',') + '&hydrate=stats(group=' + group + ',type=season,season=' + season + ')');
+        const j = await r.json();
+        (j.people || []).forEach(p => {
+          const st = (p.stats && p.stats[0] && p.stats[0].splits && p.stats[0].splits[0] && p.stats[0].splits[0].stat) || {};
+          out[p.id] = Object.assign({ name: p.fullName }, st);
+        });
+      } catch (e) {}
+    }
+    return out;
+  }
+
+  async load() {
+    this.setState({ status: 'loading' });
+    try {
+      const date = this.dateStr();
+      const season = date.slice(0, 4);
+      const sched = await fetch('https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=' + date + '&hydrate=probablePitcher,venue,team,linescore').then(r => r.json());
+      const games = ((sched.dates && sched.dates[0] && sched.dates[0].games) || []);
+      if (!games.length) throw new Error('no games');
+
+      const pids = [...new Set(games.flatMap(g => [g.teams.away.probablePitcher && g.teams.away.probablePitcher.id, g.teams.home.probablePitcher && g.teams.home.probablePitcher.id]).filter(Boolean))];
+      const pstats = await this.bulkPeople(pids, 'pitching', season);
+      const hr9 = id => { const s = pstats[id]; if (!s || !s.inningsPitched) return 1.2; const ip = parseFloat(s.inningsPitched); return ip > 0 ? (s.homeRuns * 9 / ip) : 1.2; };
+
+      const teamIds = [...new Set(games.flatMap(g => [g.teams.away.team.id, g.teams.home.team.id]))];
+      const rosters = {};
+      await Promise.all(teamIds.map(async tid => {
+        try { const r = await fetch('https://statsapi.mlb.com/api/v1/teams/' + tid + '/roster/active').then(r => r.json()); rosters[tid] = (r.roster || []).filter(p => p.position.type !== 'Pitcher').map(p => p.person.id); }
+        catch (e) { rosters[tid] = []; }
+      }));
+      const allHitters = [...new Set(Object.values(rosters).flat())];
+      const hstats = await this.bulkPeople(allHitters, 'hitting', season);
+
+      const players = [];
+      const gameModel = {};
+      games.forEach(g => {
+        const venue = (g.venue && g.venue.name) || '';
+        const parkF = this.park(venue);
+        const time = this.localTime(g.gameDate);
+        gameModel[g.gamePk] = 0;
+        [['away', 'home'], ['home', 'away']].forEach(([side, opp]) => {
+          const team = g.teams[side].team, oppTeam = g.teams[opp].team;
+          const oppP = g.teams[opp].probablePitcher;
+          const oppHR9 = oppP ? hr9(oppP.id) : 1.2;
+          (rosters[team.id] || []).forEach(pid => {
+            const s = hstats[pid];
+            if (!s || (s.plateAppearances || 0) < 40) return;
+            const pa = s.plateAppearances, hr = s.homeRuns || 0, ops = parseFloat(s.ops || '0.700');
+            const adj = (hr + 130 * 0.0325) / (pa + 130);
+            const pMult = Math.min(1.25, Math.max(0.82, oppHR9 / 1.2));
+            const rate = adj * (parkF / 100) * pMult;
+            const hrProb = 1 - Math.pow(1 - rate, 4.1);
+            const score = Math.max(40, Math.min(99, Math.round(34 + hrProb * 195 + (ops - 0.72) * 22)));
+            gameModel[g.gamePk] += hrProb;
+            players.push({ id: String(pid), raw: s, name: s.name, teamAbbr: team.abbreviation, oppAbbr: oppTeam.abbreviation, venue, parkF, gameId: g.gamePk, time, oppPitcher: (oppP && oppP.fullName) || 'TBD', hr, pa, ops, iso: ((parseFloat(s.slg || '0') - parseFloat(s.avg || '0')) || 0), modelPct: +(hrProb * 100).toFixed(1), score, oppHR9: +oppHR9.toFixed(2) });
+          });
+        });
+      });
+      players.sort((a, b) => b.score - a.score);
+
+      let oddsMap = {}, perBookMap = {}, booksOk = 0;
+      try {
+        const od = await Promise.race([this.fetchOdds(), new Promise((res) => setTimeout(() => res({ best: {}, perBook: {}, booksOk: 0 }), 30000))]);
+        oddsMap = od.best || {}; perBookMap = od.perBook || {}; booksOk = od.booksOk || 0;
+      } catch (e) {}
+      players.forEach(p => { const k = this.normName(p.name); const a = oddsMap[k]; if (a != null) p.oddsAm = a; const pb = perBookMap[k]; if (pb) p.oddsPerBook = pb; });
+
+      // Price-diff snapshot for Research "What changed"
+      const nowSnap = players.filter(p => p.oddsAm != null).slice(0, 120).map(p => ({ k: this.normName(p.name), name: p.name, odds: p.oddsAm }));
+      let priceDiff = [];
+      try {
+        const prev = JSON.parse(localStorage.getItem('dl_snap_v1') || '[]');
+        const prevMap = {}; prev.forEach(s => { prevMap[s.k] = s.odds; });
+        priceDiff = nowSnap.filter(s => prevMap[s.k] != null && Math.abs(s.odds - prevMap[s.k]) >= 12).map(s => ({ name: s.name, prev: prevMap[s.k], cur: s.odds, move: s.odds - prevMap[s.k] })).sort((a, b) => Math.abs(b.move) - Math.abs(a.move));
+      } catch (e) {}
+      try { localStorage.setItem('dl_snap_v1', JSON.stringify(nowSnap)); } catch (e) {}
+
+      this.setState({ status: 'live', data: { date, season, games, players, gameModel, oddsCount: Object.keys(oddsMap).length, booksOk, priceDiff } });
+    } catch (e) {
+      this.setState({ status: 'sample', data: null });
+    }
+  }
+
+  refresh = () => { this.load(); };
+
+  addToSlip = () => {
+    const p = this.state.player; if (!p || !p.name) return;
+    const leg = { id: p.id, name: p.name, team: p.teamAbbr, market: 'HR', oddsAm: p.oddsAm, odds: (p.oddsAm != null ? (p.oddsAm > 0 ? '+' : '') + p.oddsAm : '—'), modelPct: p.modelPct, time: p.time };
+    if (!this.state.slip.find(l => l.id === leg.id)) this.setState(s => ({ slip: [...s.slip, leg] }));
+    this.setState({ drawerOpen: false });
+  };
+  removeFromSlip = (e) => { const id = e.currentTarget.dataset.legid; this.setState(s => ({ slip: s.slip.filter(l => l.id !== id) })); };
+  clearSlip = () => this.setState({ slip: [] });
+  setStake = (e) => { this.setState({ stake: e.target.value }); };
+  setStakePreset = (e) => { this.setState({ stake: String(parseInt(e.currentTarget.dataset.amount, 10)) }); };
+  setBuilderLegs = (e) => { this.setState({ builderLegs: parseInt(e.currentTarget.dataset.legs, 10) }); };
+  setBuilderStyle = (e) => { this.setState({ builderStyle: e.currentTarget.dataset.style }); };
+  setBuilderMarket = (e) => { this.setState({ builderMarket: e.currentTarget.dataset.market }); };
+  toggleSlip = () => { this.setState(s => ({ slipOpen: !s.slipOpen })); };
+  setProxyUrl = (e) => { this.setState({ proxyUrl: e.target.value }); };
+  saveProxyUrl = () => { try { localStorage.setItem('dl_odds_proxy', this.state.proxyUrl.trim()); } catch (e) {} this.load(); };
+  saveTrack = () => {
+    const { slip } = this.state; const stake = parseFloat(this.state.stake) || 0; if (!slip.length) return;
+    const entry = { id: Date.now().toString(), date: new Date().toLocaleDateString(), label: slip.map(l => l.name).join(' + '), legs: slip.map(l => ({ name: l.name, market: l.market, odds: l.odds })), odds: '—', win: '—', ev: '—', stake, status: 'pending' };
+    if (slip.every(l => l.oddsAm != null)) { const dec = slip.reduce((s, l) => s * this.amDec(l.oddsAm), 1); entry.odds = this.decAm(dec); const win = slip.reduce((s, l) => s * (l.modelPct / 100), 1); entry.win = (win * 100).toFixed(1) + '%'; entry.ev = ((win * dec - 1) * 100).toFixed(1) + '%'; }
+    const tracked = [entry, ...this.state.tracked];
+    try { localStorage.setItem('dl_tracked_v1', JSON.stringify(tracked.slice(0, 50))); } catch (e) {}
+    this.setState({ tracked, slip: [] });
+  };
+  addComboLegs = (e) => {
+    const idx = parseInt(e.currentTarget.dataset.combo || '0', 10);
+    const c = (this._lastCombos || [])[idx]; if (!c) return;
+    const legs = c.legs.map(l => ({ id: l._id || String(Math.random()), name: l.name.replace(' — HR', ''), market: 'HR', oddsAm: l.oddsAm, odds: l.odds, modelPct: null }));
+    this.setState({ slip: legs });
+  };
+  trackCombo = (e) => {
+    const idx = parseInt(e.currentTarget.dataset.combo || '0', 10);
+    const c = (this._lastCombos || [])[idx]; if (!c) return;
+    const entry = { id: Date.now().toString(), date: new Date().toLocaleDateString(), label: c.legs.map(l => l.name).join(' + '), legs: c.legs.map(l => ({ name: l.name, market: 'HR', odds: l.odds })), odds: c.odds, win: c.win, ev: c.evLabel, stake: parseFloat(this.state.stake) || 0, status: 'pending' };
+    const tracked = [entry, ...this.state.tracked];
+    try { localStorage.setItem('dl_tracked_v1', JSON.stringify(tracked.slice(0, 50))); } catch (e) {}
+    this.setState({ tracked });
+  };
+  setResult = (e) => {
+    const { id, result } = e.currentTarget.dataset;
+    const tracked = this.state.tracked.map(t => t.id === id ? Object.assign({}, t, { status: result }) : t);
+    try { localStorage.setItem('dl_tracked_v1', JSON.stringify(tracked)); } catch (e) {}
+    this.setState({ tracked });
+  };
+
+  // ---------- enrichment ----------
+  starsN(score) { return score >= 88 ? 5 : score >= 80 ? 4 : score >= 72 ? 3 : score >= 62 ? 2 : 1; }
+  badgesFor(p) {
+    const AC = 'rgba(255,138,76,.13)', ACF = 'var(--ac,#ff8a4c)', GO = 'rgba(255,194,77,.13)', GOF = '#ffc24d', PO = 'rgba(53,208,192,.13)', POF = 'var(--pos,#35d0c0)';
+    const out = [];
+    if (p.score >= 92) out.push({ label: '🏆 Trophy', bg: GO, fg: GOF });
+    if (p.ops >= 0.880) out.push({ label: 'Power', bg: AC, fg: ACF });
+    if (p.parkF >= 107) out.push({ label: 'Park Edge', bg: AC, fg: ACF });
+    if (p.oppHR9 >= 1.45) out.push({ label: 'P-Weak', bg: AC, fg: ACF });
+    if (p.hr >= 25) out.push({ label: 'Slugger', bg: PO, fg: POF });
+    if (!out.length) out.push({ label: 'Model', bg: PO, fg: POF });
+    return out.slice(0, 3);
+  }
+  enrich(p) {
+    const n = this.starsN(p.score);
+    const isoPts = Math.round((p.iso || 0) * 1000);
+    let best = '—', ev = 'add key', evColor = '#7b8597', edge = null;
+    if (p.oddsAm != null) {
+      const dec = this.amDec(p.oddsAm); const imp = this.amImp(p.oddsAm) * 100; const evv = (p.modelPct / 100 * dec - 1) * 100;
+      best = (p.oddsAm > 0 ? '+' : '') + p.oddsAm;
+      ev = (evv >= 0 ? '+' : '') + evv.toFixed(1) + '%';
+      evColor = evv >= 0 ? 'var(--pos,#35d0c0)' : '#ff6b6b';
+      edge = +(p.modelPct - imp).toFixed(1);
+    }
+    const oddsMarket = (p.oddsAm != null) ? { label: 'Best ' + best + ' · EV ' + ev, bg: 'rgba(53,208,192,.14)', fg: 'var(--pos,#35d0c0)' } : { label: 'Odds: connect key', bg: 'rgba(255,255,255,.06)', fg: '#9aa3b2' };
+    return Object.assign({}, p, {
+      ring: 'conic-gradient(var(--ac,#ff8a4c) ' + p.score + '%, rgba(255,255,255,.08) 0)',
+      starsOn: '★'.repeat(n), starsOff: '★'.repeat(5 - n),
+      matchup: p.teamAbbr + ' vs ' + p.oppAbbr,
+      sub: p.teamAbbr + ' vs ' + p.oppAbbr + ' · vs ' + p.oppPitcher,
+      best: best, ev: ev, evColor: evColor, edge: edge,
+      probBar: Math.min(100, Math.round(p.modelPct / 0.30)) + '%',
+      badges: this.badgesFor(p),
+      markets: [{ label: 'HR · ' + p.modelPct + '% model', bg: 'rgba(255,138,76,.14)', fg: 'var(--ac,#ff8a4c)' }, oddsMarket],
+      profile: [
+        { label: 'Season power', pct: Math.min(100, Math.round((p.ops / 1.05) * 100)) + '%', val: isoPts, color: 'var(--ac,#ff8a4c)' },
+        { label: 'HR rate', pct: Math.min(100, Math.round(p.hr / Math.max(1, p.pa) / 0.07 * 100)) + '%', val: p.hr, color: 'var(--ac,#ff8a4c)' },
+        { label: 'Pitcher matchup', pct: Math.min(100, Math.round(p.oppHR9 / 2 * 100)) + '%', val: p.oppHR9, color: 'var(--pos,#35d0c0)' },
+        { label: 'Park / weather', pct: Math.min(100, Math.max(0, Math.round((p.parkF - 88) / 0.4))) + '%', val: (p.parkF - 100 >= 0 ? '+' : '') + (p.parkF - 100), color: p.parkF >= 104 ? 'var(--ac,#ff8a4c)' : '#9aa3b2' },
+        { label: 'Sample size', pct: Math.min(100, Math.round(p.pa / 5)) + '%', val: p.pa, color: '#9aa3b2' },
+        { label: 'Dinger Score', pct: p.score + '%', val: p.score, color: 'var(--pos,#35d0c0)' }
+      ],
+      reasons: [
+        'Season ' + p.hr + ' HR in ' + p.pa + ' PA · .' + String(isoPts).padStart(3, '0') + ' ISO',
+        p.venue + ' — park HR factor ' + p.parkF,
+        'Faces ' + p.oppPitcher + ' (' + p.oppHR9 + ' HR/9)'
+      ],
+      risks: [
+        'Odds not connected — EV unknown until a book feed is added',
+        'Lineup not yet confirmed (' + p.time + ' first pitch)'
+      ]
+    });
+  }
+
+  sample() {
+    const mk = (id, name, teamAbbr, oppAbbr, oppPitcher, parkF, venue, hr, pa, ops, score, modelPct, oppHR9) =>
+      ({ id, name, teamAbbr, oppAbbr, oppPitcher, parkF, venue, hr, pa, ops, iso: (ops - 0.55) * 0.3, score, modelPct, oppHR9, time: '7:05 PM', gameId: 'g' + id });
+    return [
+      mk('s1', 'Aaron Judge', 'NYY', 'BOS', 'B. Bello', 110, 'Yankee Stadium', 33, 320, 1.020, 96, 21.4, 1.5),
+      mk('s2', 'Kyle Schwarber', 'PHI', 'MIA', 'S. Alcantara', 107, 'Citizens Bank Park', 28, 300, 0.940, 90, 18.9, 1.3),
+      mk('s3', 'Shohei Ohtani', 'LAD', 'SF', 'L. Webb', 101, 'Dodger Stadium', 30, 330, 0.985, 88, 17.5, 1.1),
+      mk('s4', 'Yordan Alvarez', 'HOU', 'SEA', 'L. Castillo', 101, 'Daikin Park', 24, 290, 0.960, 84, 16.8, 1.4),
+      mk('s5', 'Cal Raleigh', 'SEA', 'HOU', 'F. Valdez', 94, 'T-Mobile Park', 31, 310, 0.900, 82, 15.1, 1.2),
+      mk('s6', 'Bobby Witt Jr.', 'KC', 'DET', 'T. Skubal', 96, 'Kauffman Stadium', 22, 340, 0.880, 79, 13.4, 0.9)
+    ];
+  }
+
+  renderVals() {
+    const tab = this.state.tab;
+    const live = this.state.status === 'live' && this.state.data;
+    const hasOdds = !!(live && this.state.data.oddsCount > 0);
+    const { slip, stake, tracked, builderLegs: bLegs, builderStyle: bStyle, builderMarket: bMarket } = this.state;
+    const players = (live ? this.state.data.players : this.sample());
+    const gamesRaw = live ? this.state.data.games : null;
+    const enriched = players.map(p => this.enrich(p));
+    const byId = {}; enriched.forEach(p => byId[p.id] = p);
+
+    // KPIs
+    const slateHR = live ? Math.round(players.reduce((s, p) => s + p.modelPct / 100, 0)) : 24;
+    const topScore = enriched.length ? enriched[0].score : '—';
+    const topPct = enriched.length ? enriched[0].modelPct : '—';
+    let hotPark = 100, hotName = '—';
+    enriched.forEach(p => { if (p.parkF > hotPark) { hotPark = p.parkF; hotName = p.venue; } });
+    let bestEv = null, bestEvName = '';
+    if (hasOdds) { enriched.forEach(p => { if (p.oddsAm != null && p.pa >= 120 && p.oddsAm <= 500 && p.oddsAm >= -400) { const evv = (p.modelPct / 100 * this.amDec(p.oddsAm) - 1) * 100; if (bestEv == null || evv > bestEv) { bestEv = evv; bestEvName = p.name; } } }); }
+    const kpis = [
+      { k: 'PROJECTED HRs', v: slateHR, s: 'model sum', color: '#eef1f6' },
+      { k: 'HITTERS ON BOARD', v: enriched.length, s: 'qualified (40+ PA)', color: '#eef1f6' },
+      { k: 'TOP DINGER SCORE', v: topScore, s: enriched.length ? enriched[0].name : '', color: 'var(--ac,#ff8a4c)' },
+      (hasOdds && bestEv != null) ? { k: 'BEST EV', v: (bestEv >= 0 ? '+' : '') + bestEv.toFixed(1) + '%', s: bestEvName, color: bestEv >= 0 ? 'var(--pos,#35d0c0)' : '#ff6b6b' } : { k: 'TOP MODEL HR%', v: topPct + '%', s: 'best single play', color: 'var(--pos,#35d0c0)' },
+      { k: 'HOT PARK', v: (hotPark - 100 >= 0 ? '+' : '') + (hotPark - 100) + '%', s: hotName || '—', color: 'var(--ac,#ff8a4c)' }
+    ];
+
+    const qualStar = enriched.filter(p => (p.pa || 0) >= 90);
+    const starPlays = (qualStar.length >= 6 ? qualStar : enriched).slice(0, 8);
+
+    // Park report
+    const seen = {}; const parkArr = [];
+    enriched.forEach(p => { if (!seen[p.venue]) { seen[p.venue] = 1; parkArr.push({ name: p.venue, parkF: p.parkF, team: p.teamAbbr }); } });
+    parkArr.sort((a, b) => b.parkF - a.parkF);
+    const parkReport = parkArr.slice(0, 4).map((pk, i) => ({
+      rank: '#' + (i + 1), rankColor: i === 0 ? 'var(--ac,#ff8a4c)' : '#9aa3b2',
+      name: pk.name, boost: (pk.parkF - 100 >= 0 ? '+' : '') + (pk.parkF - 100) + '%',
+      boostColor: pk.parkF >= 104 ? 'var(--ac,#ff8a4c)' : pk.parkF >= 99 ? '#ffc24d' : '#ff6b6b',
+      border: i === 0 ? 'rgba(255,138,76,.25)' : 'rgba(255,255,255,.08)',
+      park: (pk.parkF - 100 >= 0 ? '+' : '') + (pk.parkF - 100), wind: '—', temp: '—', roof: '—'
+    }));
+
+    // Games view
+    let games;
+    if (live) {
+      games = gamesRaw.map(g => {
+        const gp = enriched.filter(p => p.gameId === g.gamePk).sort((a, b) => b.score - a.score).slice(0, 4);
+        const venue = (g.venue && g.venue.name) || '';
+        const parkF = this.park(venue);
+        const ap = g.teams.away.probablePitcher, hp = g.teams.home.probablePitcher;
+        return {
+          title: g.teams.away.team.abbreviation + ' @ ' + g.teams.home.team.abbreviation,
+          meta: this.localTime(g.gameDate) + ' · ' + venue,
+          projHR: (this.state.data.gameModel[g.gamePk] || 0).toFixed(1),
+          parkBoost: (parkF - 100 >= 0 ? '+' : '') + (parkF - 100) + '%',
+          pitchers: ((ap && ap.lastName) || 'TBD') + ' / ' + ((hp && hp.lastName) || 'TBD'),
+          players: gp
+        };
+      }).filter(g => g.players.length);
+    } else {
+      games = [
+        { title: 'BOS @ NYY', meta: '7:05 PM · Yankee Stadium', projHR: '2.4', parkBoost: '+10%', pitchers: 'Bello / Rodón', players: starPlays.slice(0, 2) },
+        { title: 'SF @ LAD', meta: '9:10 PM · Dodger Stadium', projHR: '2.1', parkBoost: '+1%', pitchers: 'Webb / Glasnow', players: starPlays.slice(2, 4) }
+      ];
+    }
+
+    // Data rows
+    const dataRows = enriched.slice(0, 40).map(p => ({
+      name: p.name, team: p.teamAbbr, hrpa: (p.hr / Math.max(1, p.pa)).toFixed(3).slice(1),
+      ops: (typeof p.ops === 'number' ? p.ops.toFixed(3) : p.ops), modelPct: p.modelPct, park: p.parkF,
+      score: p.score, power: p.ops >= 0.9 ? 'Elite' : p.ops >= 0.8 ? 'Plus' : 'Avg',
+      powerColor: p.ops >= 0.9 ? '#c4b5fd' : p.ops >= 0.8 ? '#9aa3b2' : '#7b8597'
+    }));
+
+    // Combos — parameterised by builder controls
+    const combos = [];
+    let comboSrc = enriched.slice();
+    if (bStyle === 'safe') comboSrc = comboSrc.sort((a, b) => b.modelPct - a.modelPct);
+    else if (bStyle === 'longshot') comboSrc = comboSrc.filter(p => !p.oddsAm || p.oddsAm >= 280).sort((a, b) => (b.oddsAm || 0) - (a.oddsAm || 0));
+    if (bMarket === 'all') comboSrc = enriched.slice(); // keep full board
+    const pool = comboSrc.slice(0, Math.max(20, bLegs * 6));
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const rot = pool.slice(attempt * 3).concat(pool.slice(0, attempt * 3));
+      const use = []; const ug = {};
+      for (const p of rot) { if (use.length >= bLegs) break; if (ug[p.gameId]) continue; ug[p.gameId] = 1; use.push({ _id: p.id, name: p.name + ' — HR', oddsAm: p.oddsAm, odds: (p.oddsAm != null ? ((p.oddsAm > 0 ? '+' : '') + p.oddsAm) : '—'), prob: p.modelPct / 100, score: p.score }); }
+      if (use.length < 2) continue;
+      const win = use.reduce((s, l) => s * l.prob, 1);
+      const avg = Math.round(use.reduce((s, l) => s + l.score, 0) / use.length);
+      let oddsStr = '—', evLabel = 'odds: connect key';
+      if (use.every(l => l.oddsAm != null)) {
+        const dec = use.reduce((s, l) => s * this.amDec(l.oddsAm), 1);
+        oddsStr = this.decAm(dec);
+        const evv = (win * dec - 1) * 100;
+        evLabel = 'EV ' + (evv >= 0 ? '+' : '') + evv.toFixed(1) + '%';
+      }
+      const styleLabel = bStyle === 'safe' ? 'Safe' : bStyle === 'longshot' ? 'Longshot' : 'Balanced';
+      combos.push({ title: use.length + '-leg · ' + styleLabel, sub: use.length + ' games · ' + (bMarket === 'all' ? 'all markets' : 'HR market'), odds: oddsStr, evLabel: evLabel, legs: use, win: (win * 100).toFixed(1) + '%', avg: avg, grade: avg >= 90 ? 'A' : avg >= 84 ? 'A-' : 'B+' });
+    }
+    const combosOut = combos.length ? combos : [{ title: '3-leg · Balanced', sub: '3 games · HR market', odds: '—', evLabel: 'odds: connect key', legs: starPlays.slice(0, 3).map(p => ({ name: p.name + ' — HR', odds: '—' })), win: '5.0%', avg: 88, grade: 'A' }];
+
+    // Live HRs (none until games start)
+    const liveHRs = [];
+    const liveEmpty = live ? 'Games start through the evening — homers from the live slate will stream in here, tagged on/off your model board.' : 'Connect to the live slate to stream home runs as they happen.';
+
+    // Research data
+    const steam = [];
+    if (hasOdds) {
+      enriched.forEach(p => {
+        if (!p.oddsPerBook) return;
+        const entries = Object.entries(p.oddsPerBook);
+        if (entries.length < 2) return;
+        const imps = entries.map(([, a]) => this.amImp(a) * 100);
+        const spread = Math.max(...imps) - Math.min(...imps);
+        if (spread < 2.0) return;
+        const lagging = entries.reduce((b, e) => (!b || e[1] > b[1]) ? e : b, null);
+        const sharp = entries.reduce((b, e) => (!b || e[1] < b[1]) ? e : b, null);
+        const bkLabel = { draftkings: 'DraftKings', fanatics: 'FanDuel', betmgm: 'BetMGM', caesars: 'Caesars' };
+        steam.push({ name: p.name, team: p.teamAbbr, laggingBook: bkLabel[lagging[0]] || lagging[0], laggingOdds: (lagging[1] > 0 ? '+' : '') + lagging[1], sharpBook: bkLabel[sharp[0]] || sharp[0], sharpOdds: (sharp[1] > 0 ? '+' : '') + sharp[1], spread: spread.toFixed(1), spreadNum: spread });
+      });
+      steam.sort((a, b) => b.spreadNum - a.spreadNum);
+    }
+    const topValue = hasOdds ? enriched.filter(p => p.oddsAm != null && p.pa >= 100 && p.edge != null && p.edge > 0).sort((a, b) => b.edge - a.edge).slice(0, 12) : enriched.slice(0, 12);
+    const priceDiff = (live && this.state.data.priceDiff) || [];
+    const hasDiff = priceDiff.length > 0;
+    const diffItems = priceDiff.slice(0, 10).map(d => ({ name: d.name, prev: (d.prev > 0 ? '+' : '') + d.prev, cur: (d.cur > 0 ? '+' : '') + d.cur, move: (d.move > 0 ? '▲ ' : '▼ ') + Math.abs(d.move) + ' pts', moveColor: d.move > 0 ? '#ff8d8d' : 'var(--pos,#35d0c0)', dir: d.move > 0 ? 'longer' : 'shorter' }));
+
+    // Builder chip styles
+    const cSt = (on) => on ? 'background:var(--ac,#ff8a4c);color:#0a0c11;border:1px solid transparent' : 'background:#0c0e14;border:1px solid rgba(255,255,255,.1);color:#9aa3b2';
+    const bL2 = cSt(bLegs === 2), bL3 = cSt(bLegs === 3), bL4 = cSt(bLegs === 4), bL5 = cSt(bLegs === 5);
+    const bSafe = cSt(bStyle === 'safe'), bBal = cSt(bStyle === 'balanced'), bLong = cSt(bStyle === 'longshot');
+    const bHR = cSt(bMarket === 'hr'), bAll = cSt(bMarket === 'all');
+    // Tracking CLV scorecard
+    const graded = tracked.filter(t => t.status !== 'pending'), wins = graded.filter(t => t.status === 'won').length;
+    const hitRate = graded.length > 0 ? Math.round(wins / graded.length * 100) : null;
+    const roi = graded.length > 0 ? +(graded.reduce((s, t) => { const stake = t.stake || 0; if (t.status === 'won') { const dec = t.oddsAm && t.oddsAm !== '—' ? (parseInt(String(t.oddsAm), 10) > 0 ? 1 + parseInt(String(t.oddsAm), 10) / 100 : 1 + 100 / (-parseInt(String(t.oddsAm), 10))) : 1; return s + stake * (dec - 1); } return s - stake; }, 0)).toFixed(2) : null;
+    // Live schedule games for display
+    const scheduleGames = live ? this.state.data.games.map(g => ({ title: g.teams.away.team.abbreviation + ' @ ' + g.teams.home.team.abbreviation, time: this.localTime(g.gameDate), state: g.status && g.status.abstractGameState, venue: (g.venue && g.venue.name) || '' })) : [];
+    // Slip summary
+    this._lastCombos = combosOut;
+    const hasSlip = slip.length > 0;
+    const stakeNum = Math.max(0, parseFloat(stake) || 0);
+    let parlayOdds = '—', parlayWin = '—', parlayEv = '—', parlayPayout = '—';
+    if (hasSlip) {
+      const win = slip.reduce((s, l) => s * ((l.modelPct || 15) / 100), 1);
+      parlayWin = (win * 100).toFixed(1) + '%';
+      if (slip.every(l => l.oddsAm != null)) {
+        const dec = slip.reduce((s, l) => s * this.amDec(l.oddsAm), 1);
+        parlayOdds = this.decAm(dec);
+        const evv = (win * dec - 1) * 100;
+        parlayEv = (evv >= 0 ? '+' : '') + evv.toFixed(1) + '%';
+        parlayPayout = '$' + (stakeNum * dec).toFixed(2);
+      }
+    }
+    // Tracked display
+    const trackedList = tracked.map(t => Object.assign({}, t, {
+      statusLabel: t.status === 'won' ? 'WON' : t.status === 'lost' ? 'LOST' : 'PENDING',
+      statusBg: t.status === 'won' ? 'rgba(53,208,192,.14)' : t.status === 'lost' ? 'rgba(255,107,107,.14)' : 'rgba(255,194,77,.14)',
+      statusFg: t.status === 'won' ? 'var(--pos,#35d0c0)' : t.status === 'lost' ? '#ff8d8d' : '#ffc24d',
+      legsPreview: t.legs ? t.legs.map(l => l.name).join(' · ').slice(0, 55) : '',
+      won: t.status === 'won', lost: t.status === 'lost', pending: t.status === 'pending'
+    }));
+
+    // Nav
+    const nav = [
+      { id: 'dashboard', label: 'Dashboard', icon: '◎' }, { id: 'games', label: 'Games', icon: '◆' },
+      { id: 'builder', label: 'Builder', icon: '⊞' }, { id: 'data', label: 'Data', icon: '🧠' },
+      { id: 'research', label: 'Research', icon: '🔎' }, { id: 'track', label: 'Tracking', icon: '◈' },
+      { id: 'tools', label: 'Tools', icon: '⚙' }, { id: 'live', label: 'Live', icon: '◉' }
+    ].map(n => { const on = n.id === tab; return Object.assign({}, n, { bg: on ? 'rgba(255,138,76,.13)' : 'transparent', fg: on ? '#eef1f6' : '#9aa3b2', bar: on ? 'var(--ac,#ff8a4c)' : 'transparent' }); });
+    const otherMap = { research: ['🔎', 'Research'], tools: ['⚙', 'Tools'] };
+    const other = otherMap[tab] || ['◎', 'Section'];
+
+    // Status pill
+    const st = this.state.status;
+    const statusMap = {
+      loading: { text: 'Loading MLB…', bg: 'rgba(255,194,77,.08)', border: 'rgba(255,194,77,.22)', fg: '#ffc24d', dot: '#ffc24d' },
+      live: { text: 'Live MLB model', bg: 'rgba(53,208,192,.08)', border: 'rgba(53,208,192,.22)', fg: 'var(--pos,#35d0c0)', dot: 'var(--pos,#35d0c0)' },
+      sample: { text: 'Sample data (offline)', bg: 'rgba(255,255,255,.05)', border: 'rgba(255,255,255,.12)', fg: '#9aa3b2', dot: '#7b8597' }
+    };
+    const sp = Object.assign({}, statusMap[st] || statusMap.loading);
+    if (hasOdds) { sp.text = 'Live odds · ' + this.state.data.booksOk + ' books'; }
+    const dl = new Date();
+
+    return {
+      accent: this.props.accent ?? '#ff8a4c', positive: this.props.positive ?? '#35d0c0', pad: (this.props.compact ? '12px' : '18px'),
+      nav, setTab: (e) => this.setState({ tab: e.currentTarget.dataset.tab }),
+      isDash: tab === 'dashboard', isGames: tab === 'games', isBuilder: tab === 'builder',
+      isData: tab === 'data', isTrack: tab === 'track', isLive: tab === 'live',
+      isResearch: tab === 'research', isTools: tab === 'tools', isMisc: false,
+      otherIcon: other[0], otherTitle: other[1],
+      loading: st === 'loading',
+      dateLabel: dl.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }),
+      gameCount: live ? this.state.data.games.length : (st === 'loading' ? '…' : 2),
+      statusText: sp.text, statusBg: sp.bg, statusBorder: sp.border, statusFg: sp.fg, statusDot: sp.dot,
+      refresh: this.refresh,
+      dashSub: live ? 'Live MLB model — every qualified hitter ranked by Dinger Score (regressed HR rate, park & opposing-starter adjusted).' : 'Sample board shown — the live MLB model loads automatically when online.',
+      kpis, starPlays, parkReport, combos: combosOut, games,
+      gamesTitle: live ? (this.state.data.games.length + '-game slate · ' + kpis[0].v + ' projected HRs') : 'Sample slate',
+      dataRows, dataCount: enriched.length, dataSource: live ? 'MLB API' : 'Sample', seasonYr: live ? this.state.data.season : '—',
+      hasLive: liveHRs.length > 0, noLive: liveHRs.length === 0, liveHRs, liveEmpty,
+      liveStatus: live ? 'Polling · ' + this.state.data.games.length + ' games today' : 'Offline',
+      oddsConnected: hasOdds, oddsNotConnected: !hasOdds, booksLabel: (live ? this.state.data.booksOk : 0) + ' books',
+      openDrawer: (e) => { const id = e.currentTarget.dataset.player; if (byId[id]) this.setState({ drawerOpen: true, player: byId[id] }); },
+      closeDrawer: () => this.setState({ drawerOpen: false }),
+      drawerOpen: this.state.drawerOpen, p: this.state.player || {},
+      // Slip
+      hasSlip, hasNoSlip: !hasSlip, slipLegs: slip, slipCount: slip.length, slipCountLabel: slip.length + (slip.length === 1 ? ' leg' : ' legs'),
+      parlayOdds, parlayWin, parlayEv, parlayPayout, stake,
+      addToSlip: this.addToSlip, removeFromSlip: this.removeFromSlip, clearSlip: this.clearSlip,
+      saveTrack: this.saveTrack, addComboLegs: this.addComboLegs, trackCombo: this.trackCombo,
+      setResult: this.setResult, setStake: this.setStake, setStakePreset: this.setStakePreset,
+      // Tracking
+      trackedList, hasTracked: tracked.length > 0, noTracked: tracked.length === 0,
+      // Research
+      steam: steam.slice(0, 8), hasSteam: steam.length > 0, noSteam: steam.length === 0,
+      topValue, diffItems, hasDiff, noDiff: !hasDiff,
+      // Builder chips + handlers
+      bL2, bL3, bL4, bL5, bSafe, bBal, bLong, bHR, bAll, bLegs, bStyle,
+      setBuilderLegs: this.setBuilderLegs, setBuilderStyle: this.setBuilderStyle, setBuilderMarket: this.setBuilderMarket,
+      slipOpen: this.state.slipOpen, slipNotOpen: !this.state.slipOpen, slipColWidth: this.state.slipOpen ? '320px' : '0', toggleSlip: this.toggleSlip,
+      proxyUrl: this.state.proxyUrl, setProxyUrl: this.setProxyUrl, saveProxyUrl: this.saveProxyUrl,
+      oddsProxyStatus: hasOdds ? ('✓ Connected · ' + (live ? this.state.data.booksOk : 0) + ' books · ' + (live ? this.state.data.oddsCount : 0) + ' players priced') : (live ? 'Fetched but no HR props posted yet — retry closer to game time' : 'Not connected'),
+      oddsProxyColor: hasOdds ? 'var(--pos,#35d0c0)' : live ? '#ffc24d' : '#ff8d8d',
+      // Tracking CLV
+      hitRate, roi, gradedCount: graded.length, winsCount: wins,
+      hasGraded: graded.length > 0, noGraded: graded.length === 0, pendingCount: tracked.filter(t => t.status === 'pending').length, totalTracked: tracked.length,
+      // Live schedule
+      scheduleGames, hasSchedule: scheduleGames.length > 0
+    };
+  }
+}
+</script>
+</body>
+</html>

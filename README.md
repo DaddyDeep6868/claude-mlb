@@ -1,30 +1,73 @@
-# DingerLab — Stadium Night (v6.0)
+# DingerLab v6.0 — Stadium Night
 
-MLB home-run prop & parlay intelligence. `index.html` is a single
-self-contained file — open it in a browser, no build step required.
+MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 
-## What's live (no key needed)
-- **Real MLB slate** — today's games, venues, probable pitchers from MLB Stats API
-- **Real HR model** — regressed season HR rate, park factor + opposing-starter adjusted, every qualified hitter (40+ PA) ranked by Dinger Score
-- **Live HR feed** — home runs as they happen (Live tab)
-- **Sample fallback** — works offline, shows representative data
+---
 
-## What's connected via your proxy
-- **Live sportsbook odds** — fetches DraftKings, FanDuel, BetMGM, Caesars HR prices
-  from `mlb-slate.onrender.com/api/oddsblaze` (CORS-enabled)
-- **Real EV & edge** — model probability vs devigged implied probability per book
-- **BEST EV** KPI, live prices on every play card, real parlay payouts in Builder
-- **"Odds Connected · N books"** panel in Bet Slip when live
+## Files
 
-## Deploy on GitHub Pages
-1. Add `index.html` + this README to a repo.
-2. **Settings → Pages → Build from branch** → your branch, root `/`.
-3. Live at `https://<you>.github.io/<repo>/` — model + odds load automatically.
+| File | Purpose |
+|---|---|
+| `index.html` | Bundled app — GitHub Pages, open in any browser, no build step |
+| `DingerLab Redesign.dc.html` | Source design component (edit this, re-bundle to update `index.html`) |
+| `dingerlab_server.py` | Flask server — multi-device sync, server-side odds proxy, auto-grading |
+| `streamlit_app.py` | Streamlit wrapper — alternative cloud deploy on Streamlit Community Cloud |
+| `requirements.txt` | Python dependencies |
 
-## Local use
-Opening as a `file://` URL blocks cross-origin fetches — the app shows sample
-data. Serve locally with `python3 -m http.server 8080` and open
-`http://localhost:8080` instead.
+---
+
+## Deploy on GitHub Pages (front-end only)
+
+1. Push this repo to GitHub.
+2. **Settings → Pages → Branch:** `main`, root `/`.
+3. Done — live at `https://<you>.github.io/<repo>/`.
+
+The app fetches live MLB data automatically (no key needed):
+- Today's slate, rosters, probable pitchers → MLB Stats API
+- Real HR model (park × opposing-starter adjusted) for every qualified hitter
+- Live HR feed once games start
+
+**Odds:** open `Tools → Live odds proxy`, enter your Render server URL and hit **Save & reload**. Your `ODDSBLAZE_KEY` env var on Render is used automatically.
+
+---
+
+## Run the Flask server (multi-device sync + server-side odds)
+
+```bash
+pip install -r requirements.txt
+python dingerlab_server.py
+```
+
+Then open `http://localhost:8501`.
+
+Set env vars before running (Render dashboard → Environment):
+
+```
+ODDSBLAZE_KEY=your-key-here
+PORT=8501          # optional, defaults to 8501
+```
+
+The server handles:
+- `/api/oddsblaze` — CORS-enabled OddsBlaze proxy (reads `ODDSBLAZE_KEY` from env)
+- `/api/state` — saved parlays + board snapshots sync across devices
+- `/api/grade` — auto-grades pending legs from MLB boxscores
+
+Data is written to `server_data/dingerlab_server_state.json`. Use a host with persistent disk.
+
+---
+
+## Deploy server on Render
+
+1. New Web Service → connect this repo.
+2. Build command: `pip install -r requirements.txt`
+3. Start command: `python dingerlab_server.py`
+4. Environment → add `ODDSBLAZE_KEY`.
+5. Your URL (e.g. `https://mlb-slate.onrender.com`) goes in the app's **Tools → Live odds proxy**.
+
+> **Security note:** `dingerlab_server.py` contains a hardcoded `ODDSBLAZE_DEFAULT_KEY` fallback. Remove or blank it before making the repo public — the Render env var takes priority and is all you need.
+
+---
 
 ## Screens
-Dashboard (Command Center) · Games · Builder · Data · Tracking · Research · Tools · Live.
+
+Dashboard (Command Center) · Games · Builder (cross-play generator) · Data (feature store) · Research (steam radar, value plays, what changed) · Tracking (CLV, W/L results) · Tools (odds proxy, model settings, exposure) · Live (HR feed + schedule)
