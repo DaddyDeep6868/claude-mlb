@@ -743,7 +743,7 @@
   &quot;compact&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot; }
 }">
 class Component extends DCLogic {
-  state = { tab: 'dashboard', drawerOpen: false, player: null, status: 'loading', data: null, slip: [], tracked: [], stake: '25', builderLegs: 3, builderStyle: 'balanced', builderMarket: 'hr', slipOpen: true, proxyUrl: 'https://mlb-slate.onrender.com' };
+  state = { tab: 'dashboard', drawerOpen: false, player: null, status: 'loading', data: null, slip: [], tracked: [], stake: '25', builderLegs: 3, builderStyle: 'balanced', builderMarket: 'hr', slipOpen: true, proxyUrl: 'https://claude-mlb.onrender.com' };
 
   componentDidMount() {
     try { const p = localStorage.getItem('dl_odds_proxy'); if (p) this.setState({ proxyUrl: p }); } catch (e) {}
@@ -768,7 +768,7 @@ class Component extends DCLogic {
   decAm(d) { return d >= 2 ? ('+' + Math.round((d - 1) * 100)) : ('-' + Math.round(100 / (d - 1))); }
   async fetchOdds() {
     const books = ['draftkings', 'fanatics', 'betmgm', 'caesars'];
-    const proxyBase = ((() => { try { return localStorage.getItem('dl_odds_proxy'); } catch (e) { return null; } })() || 'https://mlb-slate.onrender.com').replace(/\/$/, '');
+    const proxyBase = ((() => { try { return localStorage.getItem('dl_odds_proxy'); } catch (e) { return null; } })() || 'https://claude-mlb.onrender.com').replace(/\/$/, '');
     const res = await Promise.all(books.map(bk => fetch(proxyBase + '/api/oddsblaze?sportsbook=' + bk + '&league=mlb').then(r => r.ok ? r.json() : null).catch(() => null)));
     const best = {}, perBook = {}; let booksOk = 0;
     res.forEach((j, bi) => {
@@ -926,10 +926,10 @@ class Component extends DCLogic {
     if (!out.length) out.push({ label: 'Model', bg: PO, fg: POF });
     return out.slice(0, 3);
   }
-  enrich(p) {
+  enrich(p, hasOdds) {
     const n = this.starsN(p.score);
     const isoPts = Math.round((p.iso || 0) * 1000);
-    let best = '—', ev = 'add key', evColor = '#7b8597', edge = null;
+    let best = '—', ev = '—', evColor = '#5f6878', edge = null;
     if (p.oddsAm != null) {
       const dec = this.amDec(p.oddsAm); const imp = this.amImp(p.oddsAm) * 100; const evv = (p.modelPct / 100 * dec - 1) * 100;
       best = (p.oddsAm > 0 ? '+' : '') + p.oddsAm;
@@ -937,7 +937,11 @@ class Component extends DCLogic {
       evColor = evv >= 0 ? 'var(--pos,#35d0c0)' : '#ff6b6b';
       edge = +(p.modelPct - imp).toFixed(1);
     }
-    const oddsMarket = (p.oddsAm != null) ? { label: 'Best ' + best + ' · EV ' + ev, bg: 'rgba(53,208,192,.14)', fg: 'var(--pos,#35d0c0)' } : { label: 'Odds: connect key', bg: 'rgba(255,255,255,.06)', fg: '#9aa3b2' };
+    const oddsMarket = (p.oddsAm != null)
+      ? { label: 'Best ' + best + ' · EV ' + ev, bg: 'rgba(53,208,192,.14)', fg: 'var(--pos,#35d0c0)' }
+      : (hasOdds
+          ? { label: 'No line posted yet', bg: 'rgba(255,255,255,.05)', fg: '#7b8597' }
+          : { label: 'Odds — set proxy in Tools', bg: 'rgba(255,255,255,.05)', fg: '#7b8597' });
     return Object.assign({}, p, {
       ring: 'conic-gradient(var(--ac,#ff8a4c) ' + p.score + '%, rgba(255,255,255,.08) 0)',
       starsOn: '★'.repeat(n), starsOff: '★'.repeat(5 - n),
@@ -961,9 +965,9 @@ class Component extends DCLogic {
         'Faces ' + p.oppPitcher + ' (' + p.oppHR9 + ' HR/9)'
       ],
       risks: [
-        'Odds not connected — EV unknown until a book feed is added',
+        p.oddsAm != null ? null : (hasOdds ? 'No book line posted for this player yet' : 'Set your odds proxy in Tools to unlock EV & edge'),
         'Lineup not yet confirmed (' + p.time + ' first pitch)'
-      ]
+      ].filter(Boolean)
     });
   }
 
@@ -987,7 +991,7 @@ class Component extends DCLogic {
     const { slip, stake, tracked, builderLegs: bLegs, builderStyle: bStyle, builderMarket: bMarket } = this.state;
     const players = (live ? this.state.data.players : this.sample());
     const gamesRaw = live ? this.state.data.games : null;
-    const enriched = players.map(p => this.enrich(p));
+    const enriched = players.map(p => this.enrich(p, hasOdds));
     const byId = {}; enriched.forEach(p => byId[p.id] = p);
 
     // KPIs
@@ -1067,7 +1071,7 @@ class Component extends DCLogic {
       if (use.length < 2) continue;
       const win = use.reduce((s, l) => s * l.prob, 1);
       const avg = Math.round(use.reduce((s, l) => s + l.score, 0) / use.length);
-      let oddsStr = '—', evLabel = 'odds: connect key';
+      let oddsStr = '—', evLabel = hasOdds ? 'EV: no line yet' : 'EV: set proxy in Tools';
       if (use.every(l => l.oddsAm != null)) {
         const dec = use.reduce((s, l) => s * this.amDec(l.oddsAm), 1);
         oddsStr = this.decAm(dec);
@@ -1077,7 +1081,7 @@ class Component extends DCLogic {
       const styleLabel = bStyle === 'safe' ? 'Safe' : bStyle === 'longshot' ? 'Longshot' : 'Balanced';
       combos.push({ title: use.length + '-leg · ' + styleLabel, sub: use.length + ' games · ' + (bMarket === 'all' ? 'all markets' : 'HR market'), odds: oddsStr, evLabel: evLabel, legs: use, win: (win * 100).toFixed(1) + '%', avg: avg, grade: avg >= 90 ? 'A' : avg >= 84 ? 'A-' : 'B+' });
     }
-    const combosOut = combos.length ? combos : [{ title: '3-leg · Balanced', sub: '3 games · HR market', odds: '—', evLabel: 'odds: connect key', legs: starPlays.slice(0, 3).map(p => ({ name: p.name + ' — HR', odds: '—' })), win: '5.0%', avg: 88, grade: 'A' }];
+    const combosOut = combos.length ? combos : [{ title: '3-leg · Balanced', sub: '3 games · HR market', odds: '—', evLabel: hasOdds ? 'EV: no line yet' : 'EV: set proxy in Tools', legs: starPlays.slice(0, 3).map(p => ({ name: p.name + ' — HR', odds: '—' })), win: '5.0%', avg: 88, grade: 'A' }];
 
     // Live HRs (none until games start)
     const liveHRs = [];
