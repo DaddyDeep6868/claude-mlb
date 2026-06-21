@@ -12,6 +12,7 @@ from pathlib import Path
 
 import requests
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 
 APP_DIR = Path(__file__).resolve().parent
 DATA_DIR = APP_DIR / "server_data"
@@ -20,8 +21,9 @@ STATE_PATH = DATA_DIR / "dingerlab_server_state.json"
 LOCK = threading.Lock()
 
 app = Flask(__name__, static_folder=str(APP_DIR), static_url_path="")
+CORS(app)  # allow cross-origin calls from GitHub Pages / any client
 
-ODDSBLAZE_DEFAULT_KEY = "14485da5-3b9e-4061-aea1-9d1ed356b253"
+ODDSBLAZE_DEFAULT_KEY = ""  # set ODDSBLAZE_KEY in Render env vars — do not hardcode here
 ODDSBLAZE_BOOKS = {"draftkings", "fanatics", "betmgm", "caesars"}
 
 DEFAULT_STATE = {
@@ -94,13 +96,18 @@ def merge_exports(old, new):
 
 @app.get("/")
 def index():
-    html = (APP_DIR / "DingerLab.html").read_text("utf-8")
-    inject = "<script>window.DL_SERVER_MODE=true;</script>"
-    if "</head>" in html:
-        html = html.replace("</head>", inject + "</head>", 1)
-    else:
-        html = inject + html
-    return html
+    # Serve the new bundled design first; fall back to legacy DingerLab.html
+    for fname in ("index.html", "DingerLab.html"):
+        p = APP_DIR / fname
+        if p.exists():
+            html = p.read_text("utf-8")
+            inject = "<script>window.DL_SERVER_MODE=true;</script>"
+            if "</head>" in html:
+                html = html.replace("</head>", inject + "</head>", 1)
+            else:
+                html = inject + html
+            return html
+    return "DingerLab: no HTML found", 404
 
 
 @app.get("/api/state")
