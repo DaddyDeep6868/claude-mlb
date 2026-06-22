@@ -62,6 +62,26 @@
         <div style="font-size:11px;color:#7b8597;letter-spacing:.04em;margin-top:2px">MLB HR INTELLIGENCE</div>
       </div>
     </div>
+    <div style="position:relative;min-width:0;flex:0 1 260px">
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;background:#13161e;border:1px solid rgba(255,255,255,.09)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7b8597" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input type="text" value="{{ search }}" onInput="{{ setSearch }}" placeholder="Search 350+ hitters…" style="flex:1;min-width:0;background:transparent;border:none;color:#eef1f6;font-family:'Hanken Grotesk';font-size:13px;font-weight:500;outline:none">
+        <sc-if value="{{ searchActive }}" hint-placeholder-val="{{ false }}"><button onClick="{{ clearSearch }}" style="background:none;border:none;color:#7b8597;cursor:pointer;font-size:14px;padding:0 2px">✕</button></sc-if>
+      </div>
+      <sc-if value="{{ hasSearch }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:46px;left:0;right:0;z-index:60;background:#13161e;border:1px solid rgba(255,255,255,.12);border-radius:12px;box-shadow:0 18px 50px rgba(0,0,0,.55);overflow:hidden;animation:dlrise .16s ease both">
+          <sc-for list="{{ searchResults }}" as="r" hint-placeholder-count="4">
+            <div data-player="{{ r.id }}" onClick="{{ openDrawer }}" style="display:flex;align-items:center;gap:11px;padding:10px 13px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.05)" style-hover="background:rgba(255,138,76,.08)">
+              <div style="width:30px;height:30px;flex:none;border-radius:8px;background:#0c0e14;display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:13px;color:var(--ac,#ff8a4c)">{{ r.score }}</div>
+              <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }} <span style="color:#ffc24d">{{ r.watched }}</span></div><div style="font-size:11px;color:#7b8597">{{ r.sub }}</div></div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ noSearchResults }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:46px;left:0;right:0;z-index:60;background:#13161e;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:13px;font-size:12.5px;color:#7b8597">No hitter found — try a last name.</div>
+      </sc-if>
+    </div>
     <div data-mhide style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:10px;background:#13161e;border:1px solid rgba(255,255,255,.07)">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9aa3b2" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
       <span style="font-size:13px;font-weight:600">{{ dateLabel }}</span>
@@ -72,6 +92,12 @@
       <span style="font-size:12.5px;font-weight:600;color:{{ statusFg }}">{{ statusText }}</span>
     </div>
     <div style="flex:1"></div>
+    <sc-if value="{{ hasLastUpdated }}" hint-placeholder-val="{{ false }}">
+      <span data-mhide style="font-size:11.5px;color:#7b8597;white-space:nowrap">{{ lastUpdatedLabel }}</span>
+    </sc-if>
+    <button onClick="{{ toggleAutoPoll }}" title="Toggle 60s auto-refresh" style="display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:10px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:600;font-size:12.5px;background:{{ autoPollBg }};border:1px solid {{ autoPollBorder }};color:{{ autoPollFg }}">
+      <span style="width:7px;height:7px;border-radius:50%;background:{{ autoPollDot }};animation:dlpulse 1.6s infinite"></span>{{ autoPollLabel }}
+    </button>
     <button onClick="{{ refresh }}" style="display:flex;align-items:center;gap:7px;padding:9px 14px;border:none;border-radius:10px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:700;font-size:13px;color:#0a0c11;background:var(--ac,#ff8a4c)" style-hover="filter:brightness(1.08)">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0a0c11" stroke-width="2.2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>
       Refresh
@@ -125,6 +151,30 @@
           </sc-for>
         </div>
 
+        <sc-if value="{{ hasWatch }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="font-size:18px">★</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Your watchlist</h2><span style="font-size:12px;color:#7b8597">{{ watchCount }} pinned</span></div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:12px;margin-bottom:30px">
+            <sc-for list="{{ watchlist }}" as="p" hint-placeholder-count="2">
+              <div style="background:#13161e;border:1px solid rgba(255,194,77,.22);border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:13px">
+                <div style="display:flex;align-items:center;gap:12px">
+                  <div data-player="{{ p.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;position:relative;width:54px;height:54px;flex:none;border-radius:50%;background:{{ p.ring }};display:grid;place-items:center">
+                    <div style="width:42px;height:42px;border-radius:50%;background:#13161e;display:grid;place-items:center"><span style="font-family:'Space Grotesk';font-weight:700;font-size:17px">{{ p.score }}</span></div>
+                  </div>
+                  <div data-player="{{ p.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;min-width:0;flex:1">
+                    <div style="font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div>
+                    <div style="font-size:12px;color:#7b8597">{{ p.matchup }} · HR {{ p.modelPct }}%</div>
+                    <div style="font-size:13px;letter-spacing:1.5px;margin-top:3px"><span style="color:#ffc24d">{{ p.starsOn }}</span><span style="color:#3a4150">{{ p.starsOff }}</span></div>
+                  </div>
+                  <button data-watchid="{{ p.id }}" onClick="{{ toggleWatch }}" title="Unpin" style="background:none;border:none;color:#ffc24d;cursor:pointer;font-size:18px;align-self:flex-start;padding:2px">★</button>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 11px;border-radius:11px;background:#0c0e14;border:1px solid rgba(255,255,255,.06)">
+                  <div><div style="font-size:10.5px;color:#7b8597;font-weight:600">best</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:15px">{{ p.best }}</div></div>
+                  <div style="text-align:right"><div style="font-size:10.5px;color:#7b8597;font-weight:600">EV</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:15px;color:{{ p.evColor }}">{{ p.ev }}</div></div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
           <div style="display:flex;align-items:center;gap:9px"><span style="font-size:18px">⭐</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Top Star Plays</h2></div>
           <button data-tab="games" onClick="{{ setTab }}" style="background:none;border:1px solid rgba(255,255,255,.12);color:#9aa3b2;font-weight:600;font-size:12.5px;padding:7px 13px;border-radius:9px;cursor:pointer" style-hover="border-color:var(--ac,#ff8a4c);color:#eef1f6">View all games →</button>
@@ -345,6 +395,82 @@
           <h1 style="margin:0;font-family:'Space Grotesk';font-size:28px;font-weight:700;letter-spacing:-.02em">Build cross-game slips</h1>
           <p style="margin:6px 0 0;color:#8b94a6;font-size:14px;max-width:560px">Legs across different games stay near-independent — higher true win probability than a same-game parlay. Built from today's model board.</p>
         </div>
+
+        <!-- ULX HR PARLAY BUILDER -->
+        <sc-if value="{{ hasUlx }}" hint-placeholder-val="{{ false }}">
+        <div style="background:linear-gradient(165deg,#15181f,#101319);border:1px solid {{ ulxGateBorder }};border-radius:18px;padding:18px;margin-bottom:24px;box-shadow:0 10px 40px rgba(0,0,0,.3)">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:22px;background:linear-gradient(150deg,#ff8a4c,#ff4d7d);box-shadow:0 6px 18px rgba(255,77,125,.3)">🧬</div>
+              <div>
+                <div style="font-family:'Space Grotesk';font-weight:700;font-size:18px;letter-spacing:-.01em">ULX HR Parlay</div>
+                <div style="font-size:12px;color:#8b94a6">Roles, not names — one Anchor, one Value, one Longshot</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:9px">
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:11px;font-family:'Space Grotesk';font-weight:700;font-size:14px;background:{{ ulxGateBg }};border:1px solid {{ ulxGateBorder }};color:{{ ulxGateFg }}">{{ ulxGateLabel }}</div>
+              <button onClick="{{ rerollUlx }}" title="Reroll" style="display:flex;align-items:center;gap:6px;padding:9px 13px;border:1px solid rgba(255,255,255,.14);border-radius:11px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:600;font-size:13px;color:#c3cad6;background:transparent" style-hover="border-color:var(--ac,#ff8a4c);color:#eef1f6">⟳ Reroll</button>
+            </div>
+          </div>
+
+          <div data-mcol1 style="display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:16px">
+            <sc-for list="{{ ulxLegs }}" as="l" hint-placeholder-count="3">
+              <div style="background:#0c0e14;border:1px solid {{ l.roleAccent }};border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:11px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:18px">{{ l.roleIcon }}</span>
+                  <div><div style="font-family:'Space Grotesk';font-weight:700;font-size:13px;color:{{ l.roleColor }}">{{ l.role }}</div><div style="font-size:10.5px;color:#7b8597">{{ l.roleTag }}</div></div>
+                </div>
+                <div>
+                  <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ l.name }}</div>
+                  <div style="font-size:11.5px;color:#8b94a6;margin-top:1px">{{ l.matchup }} · {{ l.arche }}</div>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <div><div style="font-size:10px;color:#7b8597;font-weight:600">HR MODEL</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:16px">{{ l.modelPct }}%</div></div>
+                  <div style="text-align:center"><div style="font-size:10px;color:#7b8597;font-weight:600">ODDS</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:16px;color:{{ l.roleColor }}">{{ l.oddsStr }}</div></div>
+                  <div style="text-align:right"><div style="font-size:10px;color:#7b8597;font-weight:600">EDGE</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:16px;color:{{ l.edgeColor }}">{{ l.edgeStr }}</div></div>
+                </div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;font-size:10.5px;color:#9aa3b2">
+                  <span style="padding:3px 7px;border-radius:6px;background:rgba(255,255,255,.05)">PWR {{ l.power }}</span>
+                  <span style="padding:3px 7px;border-radius:6px;background:rgba(255,255,255,.05)">#{{ l.spot }} spot</span>
+                  <span style="padding:3px 7px;border-radius:6px;background:rgba(255,255,255,.05)">{{ l.batLine }}</span>
+                </div>
+                <div style="font-size:10.5px;color:#7b8597">{{ l.env }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:16px">
+            <div style="text-align:center;padding:10px 4px;border-radius:11px;background:#0c0e14"><div style="font-size:10px;color:#7b8597;font-weight:600">PARLAY ODDS</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:18px;color:var(--ac,#ff8a4c)">{{ ulxOdds }}</div></div>
+            <div style="text-align:center;padding:10px 4px;border-radius:11px;background:#0c0e14"><div style="font-size:10px;color:#7b8597;font-weight:600">MODEL WIN</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:18px">{{ ulxWin }}</div></div>
+            <div style="text-align:center;padding:10px 4px;border-radius:11px;background:#0c0e14"><div style="font-size:10px;color:#7b8597;font-weight:600">$10 PAYS</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:18px;color:var(--pos,#35d0c0)">{{ ulxPayout }}</div></div>
+            <div style="text-align:center;padding:10px 4px;border-radius:11px;background:#0c0e14"><div style="font-size:10px;color:#7b8597;font-weight:600">GREEN-LIGHT</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:18px;color:{{ ulxGateFg }}">{{ ulxPassesLabel }}</div></div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px"><span style="font-size:14px">🚦</span><div style="font-family:'Space Grotesk';font-weight:700;font-size:13.5px">Green-light gate · 7-of-10 to clear</div></div>
+          <div data-mcol1 style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:16px">
+            <sc-for list="{{ ulxChecks }}" as="c" hint-placeholder-count="10">
+              <div style="display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:10px;background:{{ c.rowBg }}">
+                <span style="width:18px;height:18px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;color:#0a0c11;background:{{ c.markColor }}">{{ c.mark }}</span>
+                <div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:600">{{ c.k }}</div><div style="font-size:11px;color:#7b8597">{{ c.detail }}</div></div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <button onClick="{{ addUlxToSlip }}" style="flex:1;min-width:160px;padding:12px;border:none;border-radius:11px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:800;font-size:14px;color:#0a0c11;background:var(--ac,#ff8a4c)" style-hover="filter:brightness(1.08)">+ Add 3 legs to slip</button>
+            <button onClick="{{ trackUlx }}" style="flex:1;min-width:140px;padding:12px;border:1px solid rgba(255,255,255,.14);border-radius:11px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:700;font-size:14px;color:#c3cad6;background:transparent" style-hover="border-color:var(--pos,#35d0c0);color:#eef1f6">Track 📋</button>
+            <span style="font-size:11.5px;color:#7b8597">{{ ulxOddsMode }}</span>
+          </div>
+        </div>
+        </sc-if>
+        <sc-if value="{{ noUlx }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#13161e;border:1px dashed rgba(255,255,255,.12);border-radius:16px;padding:28px;text-align:center;color:#7b8597;margin-bottom:24px">
+          <div style="font-size:30px;margin-bottom:10px;opacity:.6">🧬</div>
+          <div style="font-family:'Space Grotesk';font-weight:700;font-size:16px;color:#c3cad6">ULX needs a full board</div>
+          <p style="margin:7px 0 0;font-size:13px;max-width:380px;margin-inline:auto">Once today's slate loads (3+ games with qualified hitters), the role-based parlay assembles here automatically.</p>
+        </div>
+        </sc-if>
+
         <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px;display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end;margin-bottom:22px">
           <div>
             <div style="font-size:11px;color:#7b8597;font-weight:700;letter-spacing:.04em;margin-bottom:7px">LEGS</div>
@@ -408,8 +534,10 @@
         </div>
 
         <sc-if value="{{ hasGraded }}" hint-placeholder-val="{{ false }}">
-          <div data-mcol2 style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px">
+          <div data-mcol2 style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px">
             <div style="padding:15px;border-radius:14px;background:#13161e;border:1px solid rgba(255,255,255,.07)"><div style="font-size:11px;color:#7b8597;font-weight:600">WIN RATE</div><div style="font-family:'Space Grotesk';font-size:28px;font-weight:700;margin-top:5px;color:var(--pos,#35d0c0)">{{ hitRate }}%</div><div style="font-size:11.5px;color:#7b8597;margin-top:2px">{{ winsCount }}/{{ gradedCount }} graded</div></div>
+            <div style="padding:15px;border-radius:14px;background:#13161e;border:1px solid rgba(53,208,192,.2)"><div style="font-size:11px;color:#7b8597;font-weight:600">BEAT THE CLOSE</div><div style="font-family:'Space Grotesk';font-size:28px;font-weight:700;margin-top:5px;color:var(--pos,#35d0c0)">{{ beatCloseLabel }}</div><div style="font-size:11.5px;color:#7b8597;margin-top:2px">CLV positive</div></div>
+            <div style="padding:15px;border-radius:14px;background:#13161e;border:1px solid rgba(53,208,192,.2)"><div style="font-size:11px;color:#7b8597;font-weight:600">AVG CLV</div><div style="font-family:'Space Grotesk';font-size:28px;font-weight:700;margin-top:5px;color:var(--pos,#35d0c0)">{{ avgClvLabel }}</div><div style="font-size:11.5px;color:#7b8597;margin-top:2px">prob points</div></div>
             <div style="padding:15px;border-radius:14px;background:#13161e;border:1px solid rgba(255,255,255,.07)"><div style="font-size:11px;color:#7b8597;font-weight:600">NET ROI</div><div style="font-family:'Space Grotesk';font-size:28px;font-weight:700;margin-top:5px">${{ roi }}</div><div style="font-size:11.5px;color:#7b8597;margin-top:2px">on graded slips</div></div>
             <div style="padding:15px;border-radius:14px;background:#13161e;border:1px solid rgba(255,255,255,.07)"><div style="font-size:11px;color:#7b8597;font-weight:600">PENDING</div><div style="font-family:'Space Grotesk';font-size:28px;font-weight:700;margin-top:5px;color:#ffc24d">{{ pendingCount }}</div><div style="font-size:11.5px;color:#7b8597;margin-top:2px">awaiting results</div></div>
             <div style="padding:15px;border-radius:14px;background:#13161e;border:1px solid rgba(255,255,255,.07)"><div style="font-size:11px;color:#7b8597;font-weight:600">TOTAL SAVED</div><div style="font-family:'Space Grotesk';font-size:28px;font-weight:700;margin-top:5px">{{ totalTracked }}</div><div style="font-size:11.5px;color:#7b8597;margin-top:2px">slips tracked</div></div>
@@ -434,6 +562,9 @@
                     <div style="font-weight:700;font-size:14px">{{ t.label }}</div>
                     <div style="font-size:12px;color:#7b8597;margin-top:2px">{{ t.legsPreview }} · ${{ t.stake }} · {{ t.date }}</div>
                   </div>
+                  <sc-if value="{{ t.hasClv }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;align-self:center;background:{{ t.clvBg }};color:{{ t.clvFg }}">{{ t.clvLabel }}</span>
+                  </sc-if>
                   <div style="display:flex;gap:14px;font-family:'Space Grotesk';flex-wrap:wrap">
                     <div style="text-align:center"><div style="font-size:10px;color:#7b8597;font-weight:600">ODDS</div><div style="font-weight:700">{{ t.odds }}</div></div>
                     <div style="text-align:center"><div style="font-size:10px;color:#7b8597;font-weight:600">WIN</div><div style="font-weight:700">{{ t.win }}</div></div>
@@ -707,7 +838,10 @@
           <h2 style="margin:5px 0 2px;font-family:'Space Grotesk';font-size:23px;font-weight:700">{{ p.name }}</h2>
           <div style="font-size:13px;color:#8b94a6">{{ p.sub }}</div>
         </div>
-        <button onClick="{{ closeDrawer }}" style="width:34px;height:34px;flex:none;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#161a24;color:#9aa3b2;cursor:pointer;font-size:17px" style-hover="color:#fff">✕</button>
+        <div style="display:flex;gap:8px;flex:none">
+          <button data-watchid="{{ p.id }}" onClick="{{ toggleWatch }}" title="Watchlist" style="width:34px;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:{{ drawerWatchBg }};color:{{ drawerWatchFg }};cursor:pointer;font-size:17px">{{ drawerWatchStar }}</button>
+          <button onClick="{{ closeDrawer }}" style="width:34px;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#161a24;color:#9aa3b2;cursor:pointer;font-size:17px" style-hover="color:#fff">✕</button>
+        </div>
       </div>
       <div style="display:flex;gap:7px;margin-top:13px;flex-wrap:wrap">
         <sc-for list="{{ p.markets }}" as="m" hint-placeholder-count="2">
@@ -768,13 +902,65 @@
   &quot;compact&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot; }
 }">
 class Component extends DCLogic {
-  state = { tab: 'dashboard', drawerOpen: false, player: null, status: 'loading', data: null, slip: [], tracked: [], stake: '25', builderLegs: 3, builderStyle: 'balanced', builderMarket: 'hr', slipOpen: true, proxyUrl: 'https://claude-mlb.onrender.com' };
+  state = { tab: 'dashboard', drawerOpen: false, player: null, status: 'loading', data: null, slip: [], tracked: [], stake: '25', builderLegs: 3, builderStyle: 'balanced', builderMarket: 'hr', slipOpen: true, proxyUrl: 'https://claude-mlb.onrender.com', autoPoll: true, lastUpdated: null, search: '', watch: [], ulxSeed: 0 };
 
   componentDidMount() {
     try { const p = localStorage.getItem('dl_odds_proxy'); if (p) this.setState({ proxyUrl: p }); } catch (e) {}
     try { const t = localStorage.getItem('dl_tracked_v1'); if (t) this.setState({ tracked: JSON.parse(t) }); } catch (e) {}
+    try { const w = localStorage.getItem('dl_watch_v1'); if (w) this.setState({ watch: JSON.parse(w) }); } catch (e) {}
     this.load();
+    this._pollId = setInterval(() => { if (this.state.autoPoll && this.state.status === 'live' && !this._refreshing) this.liveRefresh(); }, 60000);
   }
+  componentWillUnmount() { if (this._pollId) clearInterval(this._pollId); }
+
+  async liveRefresh() {
+    if (!this.state.data) return;
+    this._refreshing = true;
+    try {
+      const { players, games } = this.state.data;
+      const od = await Promise.race([this.fetchOdds(), new Promise((res) => setTimeout(() => res({ best: {}, perBook: {}, booksOk: 0 }), 25000))]);
+      const oddsMap = od.best || {}, perBookMap = od.perBook || {}, booksOk = od.booksOk || 0;
+      players.forEach(p => { const k = this.normName(p.name); const a = oddsMap[k]; if (a != null) p.oddsAm = a; else delete p.oddsAm; const pb = perBookMap[k]; if (pb) p.oddsPerBook = pb; });
+      // price diff vs stored snapshot
+      const nowSnap = players.filter(p => p.oddsAm != null).slice(0, 120).map(p => ({ k: this.normName(p.name), name: p.name, odds: p.oddsAm }));
+      let priceDiff = [];
+      try {
+        const prev = JSON.parse(localStorage.getItem('dl_snap_v1') || '[]');
+        const prevMap = {}; prev.forEach(s => { prevMap[s.k] = s.odds; });
+        priceDiff = nowSnap.filter(s => prevMap[s.k] != null && Math.abs(s.odds - prevMap[s.k]) >= 12).map(s => ({ name: s.name, prev: prevMap[s.k], cur: s.odds, move: s.odds - prevMap[s.k] })).sort((a, b) => Math.abs(b.move) - Math.abs(a.move));
+      } catch (e) {}
+      try { localStorage.setItem('dl_snap_v1', JSON.stringify(nowSnap)); } catch (e) {}
+      const boardSet = new Set(players.map(p => this.normName(p.name)));
+      let liveHRs = this.state.data.liveHRs || [], homeredSet = new Set();
+      try { const r = await this.fetchTodayHRs(games, boardSet); liveHRs = r.feed; homeredSet = r.homered; } catch (e) {}
+      const statusMap = this.state.data.statusMap || {};
+      const gradedTracked = this.gradeTracked(this.state.tracked, homeredSet, statusMap, oddsMap);
+      try { localStorage.setItem('dl_tracked_v1', JSON.stringify(gradedTracked.slice(0, 50))); } catch (e) {}
+      this.setState({ tracked: gradedTracked, data: Object.assign({}, this.state.data, { oddsCount: Object.keys(oddsMap).length, booksOk, priceDiff, liveHRs }), lastUpdated: Date.now() });
+    } catch (e) {}
+    this._refreshing = false;
+  }
+  toggleAutoPoll = () => { this.setState(s => ({ autoPoll: !s.autoPoll })); };
+  rerollUlx = () => { this.setState(s => ({ ulxSeed: s.ulxSeed + 1 })); };
+  addUlxToSlip = () => {
+    const u = this._ulx; if (!u || !u.legs || u.legs.length < 3) return;
+    const legs = u.legs.map(l => ({ id: l.id, name: l.name, market: 'HR', oddsAm: l.oddsAm, odds: l.oddsStr, modelPct: l.modelPct }));
+    this.setState({ slip: legs, slipOpen: true });
+  };
+  trackUlx = () => {
+    const u = this._ulx; if (!u || !u.legs || u.legs.length < 3) return;
+    const legs = u.legs.map(l => ({ name: l.name, market: 'HR', odds: l.oddsStr, key: this.normName(l.name), gameId: l.gameId, betAm: l.oddsAm != null ? l.oddsAm : null, betImp: l.oddsAm != null ? this.amImp(l.oddsAm) : null }));
+    const entry = { id: Date.now().toString(), date: new Date().toLocaleDateString(), label: 'ULX · ' + u.legs.map(l => l.name).join(' + '), legs, odds: u.oddsStr, win: u.winStr, ev: u.gateLabel, stake: parseFloat(this.state.stake) || 0, status: 'pending', avgClv: null };
+    const tracked = [entry, ...this.state.tracked];
+    try { localStorage.setItem('dl_tracked_v1', JSON.stringify(tracked.slice(0, 50))); } catch (e) {}
+    this.setState({ tracked });
+  };
+  setSearch = (e) => { this.setState({ search: e.target.value }); };
+  clearSearch = () => { this.setState({ search: '' }); };
+  toggleWatch = (e) => {
+    const id = e.currentTarget.dataset.watchid; if (!id) return;
+    this.setState(s => { const has = s.watch.includes(id); const watch = has ? s.watch.filter(x => x !== id) : [...s.watch, id]; try { localStorage.setItem('dl_watch_v1', JSON.stringify(watch)); } catch (er) {} return { watch }; });
+  };
 
   dateStr() {
     const d = new Date();
@@ -803,6 +989,100 @@ class Component extends DCLogic {
     });
     return { best, perBook, booksOk };
   }
+  async fetchTodayHRs(games, boardSet) {
+    const relevant = games.filter(g => { const s = g.status && g.status.abstractGameState; return s === 'Live' || s === 'Final' || (g.status && /progress/i.test(g.status.detailedState || '')); });
+    const feed = []; const homered = new Set();
+    await Promise.all(relevant.map(async g => {
+      try {
+        const j = await fetch('https://statsapi.mlb.com/api/v1.1/game/' + g.gamePk + '/feed/live').then(r => r.ok ? r.json() : null);
+        if (!j) return;
+        const awayAbbr = g.teams.away.team.abbreviation, homeAbbr = g.teams.home.team.abbreviation;
+        const isFinal = (g.status && g.status.abstractGameState) === 'Final';
+        const plays = (j.liveData && j.liveData.plays && j.liveData.plays.allPlays) || [];
+        plays.forEach(pl => {
+          if (!pl.result || pl.result.eventType !== 'home_run') return;
+          const batter = (pl.matchup && pl.matchup.batter && pl.matchup.batter.fullName) || '';
+          homered.add(this.normName(batter));
+          const top = pl.about && pl.about.isTopInning;
+          const inn = (top ? 'T' : 'B') + (pl.about ? pl.about.inning : '');
+          const hd = (pl.playEvents || []).map(e => e.hitData).filter(Boolean).pop() || {};
+          const mph = hd.launchSpeed ? hd.launchSpeed.toFixed(1) + ' mph' : '';
+          const dist = hd.totalDistance ? Math.round(hd.totalDistance) + ' ft' : '';
+          const aS = pl.result.awayScore, hS = pl.result.homeScore;
+          const rbi = pl.result.rbi || 1;
+          feed.push({ player: batter, detail: (rbi > 1 ? rbi + '-run HR' : 'solo HR') + ' · ' + inn + (isFinal ? ' · Final' : ''), line: [mph, dist].filter(Boolean).join(' · ') + (mph || dist ? ' · ' : '') + awayAbbr + ' ' + aS + '–' + hS + ' ' + homeAbbr, onBoard: boardSet.has(this.normName(batter)), ts: (pl.about && pl.about.endTime) || '' });
+        });
+      } catch (e) {}
+    }));
+    feed.sort((a, b) => (b.ts || '').localeCompare(a.ts || ''));
+    return { feed, homered };
+  }
+
+  platoonMult(batSide, pitchHand) {
+    if (!batSide || !pitchHand) return 1;
+    if (batSide === 'S') return 1.05;
+    const adv = (batSide === 'L' && pitchHand === 'R') || (batSide === 'R' && pitchHand === 'L');
+    return adv ? 1.07 : 0.94;
+  }
+  parkGeo() {
+    return {
+      'Coors Field': { lat: 39.756, lon: -104.994, cf: 2 }, 'Great American Ball Park': { lat: 39.097, lon: -84.507, cf: 36 },
+      'Yankee Stadium': { lat: 40.829, lon: -73.926, cf: 24 }, 'Citizens Bank Park': { lat: 39.906, lon: -75.166, cf: 15 },
+      'Oriole Park at Camden Yards': { lat: 39.284, lon: -76.622, cf: 32 }, 'Camden Yards': { lat: 39.284, lon: -76.622, cf: 32 },
+      'Wrigley Field': { lat: 41.948, lon: -87.655, cf: 32 }, 'Rate Field': { lat: 41.830, lon: -87.634, cf: 124 }, 'Guaranteed Rate Field': { lat: 41.830, lon: -87.634, cf: 124 },
+      'Fenway Park': { lat: 42.346, lon: -71.097, cf: 50 }, 'Globe Life Field': { lat: 32.747, lon: -97.084, cf: 0, dome: true },
+      'Truist Park': { lat: 33.890, lon: -84.468, cf: 60 }, 'Rogers Centre': { lat: 43.641, lon: -79.389, cf: 0 },
+      'American Family Field': { lat: 43.028, lon: -87.971, cf: 60 }, 'Chase Field': { lat: 33.445, lon: -112.067, cf: 0 },
+      'Dodger Stadium': { lat: 34.073, lon: -118.240, cf: 25 }, 'Nationals Park': { lat: 38.873, lon: -77.007, cf: 30 },
+      'Target Field': { lat: 44.982, lon: -93.277, cf: 78 }, 'Angel Stadium': { lat: 33.800, lon: -117.883, cf: 45 },
+      'Daikin Park': { lat: 29.757, lon: -95.355, cf: 0 }, 'Minute Maid Park': { lat: 29.757, lon: -95.355, cf: 0 },
+      'Progressive Field': { lat: 41.496, lon: -81.685, cf: 30 }, 'Tropicana Field': { lat: 27.768, lon: -82.653, cf: 0, dome: true },
+      'Citi Field': { lat: 40.757, lon: -73.846, cf: 28 }, 'Busch Stadium': { lat: 38.622, lon: -90.193, cf: 30 },
+      'PNC Park': { lat: 40.447, lon: -80.006, cf: 60 }, 'Kauffman Stadium': { lat: 39.051, lon: -94.480, cf: 50 },
+      'loanDepot park': { lat: 25.778, lon: -80.220, cf: 40, dome: true }, 'Comerica Park': { lat: 42.339, lon: -83.049, cf: 30 },
+      'T-Mobile Park': { lat: 47.591, lon: -122.333, cf: 60 }, 'Oracle Park': { lat: 37.778, lon: -122.389, cf: 50 },
+      'Petco Park': { lat: 32.707, lon: -117.157, cf: 40 }
+    };
+  }
+  async fetchWeather(games) {
+    const geo = this.parkGeo(); const out = {};
+    await Promise.all(games.map(async g => {
+      const v = (g.venue && g.venue.name) || ''; const info = geo[v];
+      if (!info) { out[g.gamePk] = { mult: 1 }; return; }
+      if (info.dome) { out[g.gamePk] = { mult: 1, temp: 72, label: 'Roof closed', roof: 'Dome' }; return; }
+      try {
+        const u = 'https://api.open-meteo.com/v1/forecast?latitude=' + info.lat + '&longitude=' + info.lon + '&current=temperature_2m,wind_speed_10m,wind_direction_10m&temperature_unit=fahrenheit&wind_speed_unit=mph';
+        const j = await fetch(u).then(r => r.ok ? r.json() : null); const c = j && j.current;
+        if (!c) { out[g.gamePk] = { mult: 1 }; return; }
+        const temp = c.temperature_2m, spd = c.wind_speed_10m || 0, dir = c.wind_direction_10m || 0;
+        const windTo = (dir + 180) % 360; let diff = Math.abs(windTo - info.cf) % 360; if (diff > 180) diff = 360 - diff;
+        const comp = Math.cos(diff * Math.PI / 180) * spd;
+        const tempMult = 1 + ((temp - 70) * 0.004); const windMult = 1 + comp * 0.011;
+        let mult = tempMult * windMult; mult = Math.max(0.85, Math.min(1.18, mult));
+        const label = comp > 3 ? (Math.round(spd) + ' mph out') : comp < -3 ? (Math.round(spd) + ' mph in') : (Math.round(spd) + ' mph cross');
+        out[g.gamePk] = { mult, temp: Math.round(temp), windSpeed: Math.round(spd), comp: +comp.toFixed(1), label, roof: 'Open' };
+      } catch (e) { out[g.gamePk] = { mult: 1 }; }
+    }));
+    return out;
+  }
+  gradeTracked(tracked, homered, statusMap, oddsMap) {
+    return tracked.map(t => {
+      if (t.status !== 'pending') return t;
+      const legs = (t.legs || []).map(l => Object.assign({}, l));
+      let allDone = true, anyLost = false;
+      legs.forEach(l => {
+        const st = l.gameId != null ? statusMap[l.gameId] : null;
+        if (st && st !== 'Final' && st !== 'Live') { const cur = oddsMap[l.key]; if (cur != null) { l.closeAm = cur; l.closeImp = this.amImp(cur); } }
+        if (st === 'Final') { l.won = homered.has(l.key); l.done = true; if (!l.won) anyLost = true; }
+        else { allDone = false; }
+      });
+      const clvs = legs.map(l => (l.closeImp != null && l.betImp != null) ? (l.closeImp - l.betImp) * 100 : null).filter(x => x != null);
+      const avgClv = clvs.length ? +(clvs.reduce((a, b) => a + b, 0) / clvs.length).toFixed(1) : (t.avgClv != null ? t.avgClv : null);
+      let status = t.status;
+      if (anyLost) status = 'lost'; else if (allDone && legs.length) status = 'won';
+      return Object.assign({}, t, { legs, status, avgClv });
+    });
+  }
   async bulkPeople(ids, group, season) {
     const out = {};
     for (let i = 0; i < ids.length; i += 40) {
@@ -812,7 +1092,7 @@ class Component extends DCLogic {
         const j = await r.json();
         (j.people || []).forEach(p => {
           const st = (p.stats && p.stats[0] && p.stats[0].splits && p.stats[0].splits[0] && p.stats[0].splits[0].stat) || {};
-          out[p.id] = Object.assign({ name: p.fullName }, st);
+          out[p.id] = Object.assign({ name: p.fullName, batSide: p.batSide && p.batSide.code, pitchHand: p.pitchHand && p.pitchHand.code }, st);
         });
       } catch (e) {}
     }
@@ -840,17 +1120,22 @@ class Component extends DCLogic {
       }));
       const allHitters = [...new Set(Object.values(rosters).flat())];
       const hstats = await this.bulkPeople(allHitters, 'hitting', season);
+      const weather = await this.fetchWeather(games);
+      const weatherByVenue = {};
 
       const players = [];
       const gameModel = {};
       games.forEach(g => {
         const venue = (g.venue && g.venue.name) || '';
         const parkF = this.park(venue);
+        const wx = weather[g.gamePk] || { mult: 1 };
+        weatherByVenue[venue] = wx;
         const time = this.localTime(g.gameDate);
         gameModel[g.gamePk] = 0;
         [['away', 'home'], ['home', 'away']].forEach(([side, opp]) => {
           const team = g.teams[side].team, oppTeam = g.teams[opp].team;
           const oppP = g.teams[opp].probablePitcher;
+          const oppHand = (oppP && pstats[oppP.id] && pstats[oppP.id].pitchHand) || null;
           const oppHR9 = oppP ? hr9(oppP.id) : 1.2;
           (rosters[team.id] || []).forEach(pid => {
             const s = hstats[pid];
@@ -858,11 +1143,13 @@ class Component extends DCLogic {
             const pa = s.plateAppearances, hr = s.homeRuns || 0, ops = parseFloat(s.ops || '0.700');
             const adj = (hr + 130 * 0.0325) / (pa + 130);
             const pMult = Math.min(1.25, Math.max(0.82, oppHR9 / 1.2));
-            const rate = adj * (parkF / 100) * pMult;
+            const platoon = this.platoonMult(s.batSide, oppHand);
+            const wxMult = wx.mult || 1;
+            const rate = adj * (parkF / 100) * pMult * platoon * wxMult;
             const hrProb = 1 - Math.pow(1 - rate, 4.1);
             const score = Math.max(40, Math.min(99, Math.round(34 + hrProb * 195 + (ops - 0.72) * 22)));
             gameModel[g.gamePk] += hrProb;
-            players.push({ id: String(pid), raw: s, name: s.name, teamAbbr: team.abbreviation, oppAbbr: oppTeam.abbreviation, venue, parkF, gameId: g.gamePk, time, oppPitcher: (oppP && oppP.fullName) || 'TBD', hr, pa, ops, iso: ((parseFloat(s.slg || '0') - parseFloat(s.avg || '0')) || 0), modelPct: +(hrProb * 100).toFixed(1), score, oppHR9: +oppHR9.toFixed(2) });
+            players.push({ id: String(pid), raw: s, name: s.name, teamAbbr: team.abbreviation, oppAbbr: oppTeam.abbreviation, venue, parkF, gameId: g.gamePk, time, oppPitcher: (oppP && oppP.fullName) || 'TBD', hr, pa, ops, iso: ((parseFloat(s.slg || '0') - parseFloat(s.avg || '0')) || 0), modelPct: +(hrProb * 100).toFixed(1), score, oppHR9: +oppHR9.toFixed(2), batSide: s.batSide || null, oppHand, platoon: +platoon.toFixed(2), wx });
           });
         });
       });
@@ -885,7 +1172,15 @@ class Component extends DCLogic {
       } catch (e) {}
       try { localStorage.setItem('dl_snap_v1', JSON.stringify(nowSnap)); } catch (e) {}
 
-      this.setState({ status: 'live', data: { date, season, games, players, gameModel, oddsCount: Object.keys(oddsMap).length, booksOk, priceDiff } });
+      // Live + final HR feed and grading
+      const boardSet = new Set(players.map(p => this.normName(p.name)));
+      let liveHRs = [], homeredSet = new Set();
+      try { const r = await this.fetchTodayHRs(games, boardSet); liveHRs = r.feed; homeredSet = r.homered; } catch (e) {}
+      const statusMap = {}; games.forEach(g => { statusMap[g.gamePk] = g.status && g.status.abstractGameState; });
+      const gradedTracked = this.gradeTracked(this.state.tracked, homeredSet, statusMap, oddsMap);
+      try { localStorage.setItem('dl_tracked_v1', JSON.stringify(gradedTracked.slice(0, 50))); } catch (e) {}
+
+      this.setState({ status: 'live', tracked: gradedTracked, data: { date, season, games, players, gameModel, oddsCount: Object.keys(oddsMap).length, booksOk, priceDiff, liveHRs, weatherByVenue, statusMap } });
     } catch (e) {
       this.setState({ status: 'sample', data: null });
     }
@@ -911,7 +1206,9 @@ class Component extends DCLogic {
   saveProxyUrl = () => { try { localStorage.setItem('dl_odds_proxy', this.state.proxyUrl.trim()); } catch (e) {} this.load(); };
   saveTrack = () => {
     const { slip } = this.state; const stake = parseFloat(this.state.stake) || 0; if (!slip.length) return;
-    const entry = { id: Date.now().toString(), date: new Date().toLocaleDateString(), label: slip.map(l => l.name).join(' + '), legs: slip.map(l => ({ name: l.name, market: l.market, odds: l.odds })), odds: '—', win: '—', ev: '—', stake, status: 'pending' };
+    const byId = {}; ((this.state.data && this.state.data.players) || []).forEach(p => byId[p.id] = p);
+    const legs = slip.map(l => { const pl = byId[l.id]; const betAm = l.oddsAm; return { name: l.name, market: l.market, odds: l.odds, key: this.normName(l.name), gameId: pl ? pl.gameId : null, betAm: betAm != null ? betAm : null, betImp: betAm != null ? this.amImp(betAm) : null }; });
+    const entry = { id: Date.now().toString(), date: new Date().toLocaleDateString(), label: slip.map(l => l.name).join(' + '), legs, odds: '—', win: '—', ev: '—', stake, status: 'pending', avgClv: null };
     if (slip.every(l => l.oddsAm != null)) { const dec = slip.reduce((s, l) => s * this.amDec(l.oddsAm), 1); entry.odds = this.decAm(dec); const win = slip.reduce((s, l) => s * (l.modelPct / 100), 1); entry.win = (win * 100).toFixed(1) + '%'; entry.ev = ((win * dec - 1) * 100).toFixed(1) + '%'; }
     const tracked = [entry, ...this.state.tracked];
     try { localStorage.setItem('dl_tracked_v1', JSON.stringify(tracked.slice(0, 50))); } catch (e) {}
@@ -926,7 +1223,9 @@ class Component extends DCLogic {
   trackCombo = (e) => {
     const idx = parseInt(e.currentTarget.dataset.combo || '0', 10);
     const c = (this._lastCombos || [])[idx]; if (!c) return;
-    const entry = { id: Date.now().toString(), date: new Date().toLocaleDateString(), label: c.legs.map(l => l.name).join(' + '), legs: c.legs.map(l => ({ name: l.name, market: 'HR', odds: l.odds })), odds: c.odds, win: c.win, ev: c.evLabel, stake: parseFloat(this.state.stake) || 0, status: 'pending' };
+    const byId = {}; ((this.state.data && this.state.data.players) || []).forEach(p => byId[p.id] = p);
+    const legs = c.legs.map(l => { const pl = byId[l._id]; const nm = l.name.replace(' — HR', ''); const betAm = l.oddsAm; return { name: nm, market: 'HR', odds: l.odds, key: this.normName(nm), gameId: pl ? pl.gameId : null, betAm: betAm != null ? betAm : null, betImp: betAm != null ? this.amImp(betAm) : null }; });
+    const entry = { id: Date.now().toString(), date: new Date().toLocaleDateString(), label: c.legs.map(l => l.name).join(' + '), legs, odds: c.odds, win: c.win, ev: c.evLabel, stake: parseFloat(this.state.stake) || 0, status: 'pending', avgClv: null };
     const tracked = [entry, ...this.state.tracked];
     try { localStorage.setItem('dl_tracked_v1', JSON.stringify(tracked.slice(0, 50))); } catch (e) {}
     this.setState({ tracked });
@@ -980,14 +1279,15 @@ class Component extends DCLogic {
         { label: 'Season power', pct: Math.min(100, Math.round((p.ops / 1.05) * 100)) + '%', val: isoPts, color: 'var(--ac,#ff8a4c)' },
         { label: 'HR rate', pct: Math.min(100, Math.round(p.hr / Math.max(1, p.pa) / 0.07 * 100)) + '%', val: p.hr, color: 'var(--ac,#ff8a4c)' },
         { label: 'Pitcher matchup', pct: Math.min(100, Math.round(p.oppHR9 / 2 * 100)) + '%', val: p.oppHR9, color: 'var(--pos,#35d0c0)' },
-        { label: 'Park / weather', pct: Math.min(100, Math.max(0, Math.round((p.parkF - 88) / 0.4))) + '%', val: (p.parkF - 100 >= 0 ? '+' : '') + (p.parkF - 100), color: p.parkF >= 104 ? 'var(--ac,#ff8a4c)' : '#9aa3b2' },
-        { label: 'Sample size', pct: Math.min(100, Math.round(p.pa / 5)) + '%', val: p.pa, color: '#9aa3b2' },
+        { label: 'Handedness', pct: Math.min(100, Math.round((p.platoon || 1) / 1.1 * 100)) + '%', val: (p.batSide || '?') + ' v ' + (p.oppHand || '?'), color: (p.platoon || 1) >= 1.02 ? 'var(--pos,#35d0c0)' : (p.platoon || 1) <= 0.98 ? '#ff8d8d' : '#9aa3b2' },
+        { label: 'Park factor', pct: Math.min(100, Math.max(0, Math.round((p.parkF - 88) / 0.4))) + '%', val: (p.parkF - 100 >= 0 ? '+' : '') + (p.parkF - 100), color: p.parkF >= 104 ? 'var(--ac,#ff8a4c)' : '#9aa3b2' },
+        { label: 'Weather', pct: Math.min(100, Math.max(0, Math.round(((p.wx && p.wx.mult || 1) - 0.85) / 0.0033))) + '%', val: (p.wx && p.wx.label) ? p.wx.label : '—', color: (p.wx && p.wx.mult || 1) >= 1.02 ? 'var(--pos,#35d0c0)' : (p.wx && p.wx.mult || 1) <= 0.98 ? '#ff8d8d' : '#9aa3b2' },
         { label: 'Dinger Score', pct: p.score + '%', val: p.score, color: 'var(--pos,#35d0c0)' }
       ],
       reasons: [
         'Season ' + p.hr + ' HR in ' + p.pa + ' PA · .' + String(isoPts).padStart(3, '0') + ' ISO',
-        p.venue + ' — park HR factor ' + p.parkF,
-        'Faces ' + p.oppPitcher + ' (' + p.oppHR9 + ' HR/9)'
+        p.venue + ' — park HR factor ' + p.parkF + ((p.wx && p.wx.label && p.wx.roof !== 'Dome') ? ' · ' + p.wx.temp + '° · ' + p.wx.label : ''),
+        'Faces ' + p.oppPitcher + ' (' + p.oppHR9 + ' HR/9' + (p.oppHand ? ', ' + p.oppHand + 'HP' : '') + ')' + ((p.platoon || 1) >= 1.02 ? ' — platoon edge' : (p.platoon || 1) <= 0.98 ? ' — platoon down' : '')
       ],
       risks: [
         p.oddsAm != null ? null : (hasOdds ? 'No book line posted for this player yet' : 'Set your odds proxy in Tools to unlock EV & edge'),
@@ -1007,6 +1307,83 @@ class Component extends DCLogic {
       mk('s5', 'Cal Raleigh', 'SEA', 'HOU', 'F. Valdez', 94, 'T-Mobile Park', 31, 310, 0.900, 82, 15.1, 1.2),
       mk('s6', 'Bobby Witt Jr.', 'KC', 'DET', 'T. Skubal', 96, 'Kauffman Stadium', 22, 340, 0.880, 79, 13.4, 0.9)
     ];
+  }
+
+  buildUlxParlay(enriched, seed) {
+    const amDec = this.amDec.bind(this), amImp = this.amImp.bind(this), decAm = this.decAm.bind(this);
+    const cand = (enriched || []).filter(p => (p.pa || 0) >= 60 && p.modelPct >= 3).map(p => {
+      let am = p.oddsAm; const real = am != null;
+      if (am == null) { const pr = Math.min(0.55, Math.max(0.03, p.modelPct / 100)); const dec = 1 / pr; am = dec >= 2 ? Math.round((dec - 1) * 100) : -Math.round(100 / (dec - 1)); }
+      const imp = amImp(am) * 100; const edge = +(p.modelPct - imp).toFixed(1);
+      const power = Math.round(Math.min(99, Math.max(20, (p.ops - 0.55) * 120 + (p.hr / Math.max(1, p.pa)) * 450)));
+      const risk = Math.round(Math.min(95, Math.max(5, 78 - (p.pa - 100) / 9 - (p.modelPct - 8) * 2.2)));
+      const spot = power >= 82 ? 2 : power >= 70 ? 4 : power >= 55 ? 5 : power >= 45 ? 6 : 7;
+      const arche = p.ops >= 0.95 ? 'Elite Slugger' : p.ops >= 0.85 ? 'Power Bat' : p.parkF >= 107 ? 'Park Riser' : am >= 600 ? 'Dart Thrower' : 'Contact Pop';
+      return Object.assign({}, p, { ulxAm: am, ulxReal: real, ulxImp: imp, ulxEdge: edge, power, risk, spot, arche });
+    });
+    if (cand.length < 3) return null;
+    const seedN = seed || 0; const used = new Set();
+    const take = (pool, k) => { const av = pool.filter(p => !used.has(p.gameId)); if (!av.length) return null; const idx = av.length > 1 ? (seedN % Math.min(av.length, k)) : 0; const x = av[idx]; used.add(x.gameId); return x; };
+    const anchorBand = cand.filter(p => p.ulxAm >= 130 && p.ulxAm <= 330).sort((a, b) => b.modelPct - a.modelPct);
+    const anchor = take(anchorBand.length ? anchorBand : cand.slice().sort((a, b) => b.modelPct - a.modelPct), 4);
+    const valueBand = cand.filter(p => p.ulxAm >= 280 && p.ulxAm <= 520).sort((a, b) => b.ulxEdge - a.ulxEdge);
+    const value = take(valueBand.length ? valueBand : cand.slice().sort((a, b) => b.ulxEdge - a.ulxEdge), 5);
+    const longBand = cand.filter(p => p.ulxAm >= 460 && p.ulxAm <= 1100).sort((a, b) => b.modelPct - a.modelPct);
+    const longFallback = cand.filter(p => p.ulxAm >= 400).sort((a, b) => b.modelPct - a.modelPct);
+    const longshot = take(longBand.length ? longBand : (longFallback.length ? longFallback : cand.slice().sort((a, b) => b.ulxAm - a.ulxAm)), 6);
+    if (!anchor || !value || !longshot) return null;
+    const legsRaw = [anchor, value, longshot];
+    const roleMeta = [
+      { role: 'Anchor', icon: '⚓', tag: 'Highest-confidence bat', color: 'var(--ac,#ff8a4c)', accent: 'rgba(255,138,76,.22)' },
+      { role: 'Value Bat', icon: '💰', tag: 'Model beats the market', color: 'var(--pos,#35d0c0)', accent: 'rgba(53,208,192,.22)' },
+      { role: 'Longshot', icon: '☢️', tag: 'Wide-odds power swing', color: '#c4b5fd', accent: 'rgba(196,181,253,.24)' }
+    ];
+    const legs = legsRaw.map((p, i) => {
+      const m = roleMeta[i];
+      const isoPts = Math.round((p.iso || 0) * 1000);
+      return {
+        id: p.id, name: p.name, gameId: p.gameId, role: m.role, roleIcon: m.icon, roleTag: m.tag, roleColor: m.color, roleAccent: m.accent,
+        modelPct: p.modelPct, oddsAm: p.ulxReal ? p.ulxAm : null, oddsStr: (p.ulxAm > 0 ? '+' : '') + p.ulxAm,
+        oddsTag: p.ulxReal ? '' : 'model', edge: p.ulxEdge, edgeStr: (p.ulxEdge >= 0 ? '+' : '') + p.ulxEdge,
+        edgeColor: p.ulxEdge >= 0 ? 'var(--pos,#35d0c0)' : '#ff8d8d', arche: p.arche, power: p.power, risk: p.risk, spot: p.spot,
+        matchup: p.teamAbbr + ' @ ' + p.oppAbbr, batLine: (p.batSide || '?') + ' vs ' + (p.oppHand || '?') + 'HP',
+        env: (p.parkF >= 100 ? 'PF ' + p.parkF : 'PF ' + p.parkF) + ((p.wx && p.wx.label && p.wx.roof !== 'Dome') ? ' · ' + p.wx.label : (p.wx && p.wx.roof === 'Dome' ? ' · Dome' : '')),
+        iso: isoPts, hr: p.hr, pa: p.pa, parkF: p.parkF, platoon: p.platoon, wx: p.wx, ops: p.ops
+      };
+    });
+    const avgPa = Math.round(legsRaw.reduce((s, l) => s + l.pa, 0) / 3);
+    const avgRisk = Math.round(legsRaw.reduce((s, l) => s + l.risk, 0) / 3);
+    const envCount = legsRaw.filter(l => l.parkF >= 100 || (l.wx && (l.wx.mult || 1) >= 1)).length;
+    const platCount = legsRaw.filter(l => (l.platoon || 1) >= 1).length;
+    const spotCount = legsRaw.filter(l => l.spot <= 6).length;
+    const lsIso = Math.round((longshot.iso || 0) * 1000);
+    const checks = [
+      { k: 'Anchor confidence', detail: 'Model HR ' + anchor.modelPct + '% · floor 12%', pass: anchor.modelPct >= 12 },
+      { k: 'Value is +EV', detail: 'Edge ' + (value.ulxEdge >= 0 ? '+' : '') + value.ulxEdge + ' pts · floor +2', pass: value.ulxEdge >= 2 },
+      { k: 'Longshot legitimacy', detail: 'OPS .' + String(Math.round(longshot.ops * 1000)).padStart(3, '0') + ' · power ' + longshot.power, pass: longshot.ops >= 0.78 || longshot.power >= 60 },
+      { k: 'All legs model-positive', detail: legsRaw.filter(l => l.ulxEdge >= 0).length + '/3 legs model ≥ market', pass: legsRaw.every(l => l.ulxEdge >= 0) },
+      { k: 'Three distinct games', detail: new Set(legsRaw.map(l => l.gameId)).size + ' separate games', pass: new Set(legsRaw.map(l => l.gameId)).size === 3 },
+      { k: 'Park / weather', detail: envCount + '/3 legs in HR-friendly air', pass: envCount >= 2 },
+      { k: 'Platoon advantage', detail: platCount + '/3 legs neutral-or-better split', pass: platCount >= 2 },
+      { k: 'Lineup / power spot', detail: spotCount + '/3 legs top-6 or order power', pass: spotCount >= 2 },
+      { k: 'Combined risk', detail: 'Avg PA ' + avgPa + ' · risk ' + avgRisk + '/100', pass: avgPa >= 120 && avgRisk <= 70 },
+      { k: 'EV-positive overall', detail: legsRaw.filter(l => l.ulxEdge >= 1).length + ' clearly +EV leg(s)', pass: legsRaw.some(l => l.ulxEdge >= 1) }
+    ].map(c => Object.assign(c, { mark: c.pass ? '✓' : '✕', markColor: c.pass ? 'var(--pos,#35d0c0)' : '#ff6b6b', rowBg: c.pass ? 'rgba(53,208,192,.06)' : 'rgba(255,107,107,.05)' }));
+    const passes = checks.filter(c => c.pass).length;
+    const green = passes >= 7;
+    const dec = legsRaw.reduce((s, l) => s * amDec(l.ulxAm), 1);
+    const win = legsRaw.reduce((s, l) => s * (l.modelPct / 100), 1);
+    const anyReal = legsRaw.some(l => l.ulxReal);
+    return {
+      legs, checks, passes, green,
+      gateLabel: green ? '✅ GREEN LIGHT' : '⚠️ ' + passes + '/10',
+      gateBg: green ? 'rgba(53,208,192,.13)' : 'rgba(255,194,77,.12)',
+      gateBorder: green ? 'rgba(53,208,192,.5)' : 'rgba(255,194,77,.4)',
+      gateFg: green ? 'var(--pos,#35d0c0)' : '#ffc24d',
+      passesLabel: passes + '/10 checks',
+      oddsStr: decAm(dec), winStr: (win * 100).toFixed(1) + '%',
+      payout: '$' + (10 * dec).toLocaleString('en-US', { maximumFractionDigits: 0 }), anyReal, oddsMode: anyReal ? 'Live book odds' : 'Model fair odds (set proxy for live)'
+    };
   }
 
   renderVals() {
@@ -1042,13 +1419,20 @@ class Component extends DCLogic {
     const seen = {}; const parkArr = [];
     enriched.forEach(p => { if (!seen[p.venue]) { seen[p.venue] = 1; parkArr.push({ name: p.venue, parkF: p.parkF, team: p.teamAbbr }); } });
     parkArr.sort((a, b) => b.parkF - a.parkF);
-    const parkReport = parkArr.slice(0, 4).map((pk, i) => ({
-      rank: '#' + (i + 1), rankColor: i === 0 ? 'var(--ac,#ff8a4c)' : '#9aa3b2',
-      name: pk.name, boost: (pk.parkF - 100 >= 0 ? '+' : '') + (pk.parkF - 100) + '%',
-      boostColor: pk.parkF >= 104 ? 'var(--ac,#ff8a4c)' : pk.parkF >= 99 ? '#ffc24d' : '#ff6b6b',
-      border: i === 0 ? 'rgba(255,138,76,.25)' : 'rgba(255,255,255,.08)',
-      park: (pk.parkF - 100 >= 0 ? '+' : '') + (pk.parkF - 100), wind: '—', temp: '—', roof: '—'
-    }));
+    const wxByVenue = (live && this.state.data.weatherByVenue) || {};
+    const parkReport = parkArr.slice(0, 4).map((pk, i) => {
+      const wx = wxByVenue[pk.name] || {};
+      return {
+        rank: '#' + (i + 1), rankColor: i === 0 ? 'var(--ac,#ff8a4c)' : '#9aa3b2',
+        name: pk.name, boost: (pk.parkF - 100 >= 0 ? '+' : '') + (pk.parkF - 100) + '%',
+        boostColor: pk.parkF >= 104 ? 'var(--ac,#ff8a4c)' : pk.parkF >= 99 ? '#ffc24d' : '#ff6b6b',
+        border: i === 0 ? 'rgba(255,138,76,.25)' : 'rgba(255,255,255,.08)',
+        park: (pk.parkF - 100 >= 0 ? '+' : '') + (pk.parkF - 100),
+        wind: wx.label || (wx.roof === 'Dome' ? 'Dome' : '—'),
+        temp: wx.temp != null ? wx.temp + '°' : '—',
+        roof: wx.roof || '—'
+      };
+    });
 
     // Games view
     let games;
@@ -1108,9 +1492,16 @@ class Component extends DCLogic {
     }
     const combosOut = combos.length ? combos : [{ title: '3-leg · Balanced', sub: '3 games · HR market', odds: '—', evLabel: hasOdds ? 'EV: no line yet' : 'EV: set proxy in Tools', legs: starPlays.slice(0, 3).map(p => ({ name: p.name + ' — HR', odds: '—' })), win: '5.0%', avg: 88, grade: 'A' }];
 
-    // Live HRs (none until games start)
-    const liveHRs = [];
-    const liveEmpty = live ? 'Games start through the evening — homers from the live slate will stream in here, tagged on/off your model board.' : 'Connect to the live slate to stream home runs as they happen.';
+    // Live HRs from in-progress games
+    const rawLiveHRs = (live && this.state.data.liveHRs) || [];
+    const liveHRs = rawLiveHRs.map(h => ({
+      player: h.player, detail: h.detail, line: h.line,
+      border: h.onBoard ? 'rgba(255,138,76,.28)' : 'rgba(255,255,255,.07)',
+      tag: h.onBoard ? 'on board ✓' : 'off board',
+      tagBg: h.onBoard ? 'rgba(53,208,192,.14)' : 'rgba(255,255,255,.06)',
+      tagFg: h.onBoard ? 'var(--pos,#35d0c0)' : '#9aa3b2'
+    }));
+    const liveEmpty = live ? 'No homers yet on the live slate — they stream in here the moment they happen, tagged on/off your model board. Hit Refresh to re-check.' : 'Connect to the live slate to stream home runs as they happen.';
 
     // Research data
     const steam = [];
@@ -1143,8 +1534,18 @@ class Component extends DCLogic {
     const graded = tracked.filter(t => t.status !== 'pending'), wins = graded.filter(t => t.status === 'won').length;
     const hitRate = graded.length > 0 ? Math.round(wins / graded.length * 100) : null;
     const roi = graded.length > 0 ? +(graded.reduce((s, t) => { const stake = t.stake || 0; if (t.status === 'won') { const dec = t.oddsAm && t.oddsAm !== '—' ? (parseInt(String(t.oddsAm), 10) > 0 ? 1 + parseInt(String(t.oddsAm), 10) / 100 : 1 + 100 / (-parseInt(String(t.oddsAm), 10))) : 1; return s + stake * (dec - 1); } return s - stake; }, 0)).toFixed(2) : null;
+    const clvEntries = tracked.filter(t => t.avgClv != null);
+    const beatClose = clvEntries.length ? Math.round(clvEntries.filter(t => t.avgClv > 0).length / clvEntries.length * 100) : null;
+    const avgClvAll = clvEntries.length ? +(clvEntries.reduce((s, t) => s + t.avgClv, 0) / clvEntries.length).toFixed(1) : null;
+    const beatCloseLabel = beatClose != null ? beatClose + '%' : '—';
+    const avgClvLabel = avgClvAll != null ? (avgClvAll > 0 ? '+' : '') + avgClvAll : '—';
+    const hasClvData = clvEntries.length > 0;
     // Live schedule games for display
     const scheduleGames = live ? this.state.data.games.map(g => ({ title: g.teams.away.team.abbreviation + ' @ ' + g.teams.home.team.abbreviation, time: this.localTime(g.gameDate), state: g.status && g.status.abstractGameState, venue: (g.venue && g.venue.name) || '' })) : [];
+    // ULX role-based parlay
+    const ulx = this.buildUlxParlay(enriched, this.state.ulxSeed);
+    this._ulx = ulx;
+
     // Slip summary
     this._lastCombos = combosOut;
     const hasSlip = slip.length > 0;
@@ -1167,8 +1568,20 @@ class Component extends DCLogic {
       statusBg: t.status === 'won' ? 'rgba(53,208,192,.14)' : t.status === 'lost' ? 'rgba(255,107,107,.14)' : 'rgba(255,194,77,.14)',
       statusFg: t.status === 'won' ? 'var(--pos,#35d0c0)' : t.status === 'lost' ? '#ff8d8d' : '#ffc24d',
       legsPreview: t.legs ? t.legs.map(l => l.name).join(' · ').slice(0, 55) : '',
-      won: t.status === 'won', lost: t.status === 'lost', pending: t.status === 'pending'
+      won: t.status === 'won', lost: t.status === 'lost', pending: t.status === 'pending',
+      hasClv: t.avgClv != null,
+      clvLabel: t.avgClv != null ? ('CLV ' + (t.avgClv > 0 ? '+' : '') + t.avgClv) : '',
+      clvBg: t.avgClv != null ? (t.avgClv > 0 ? 'rgba(53,208,192,.13)' : t.avgClv < 0 ? 'rgba(255,107,107,.12)' : 'rgba(255,255,255,.06)') : 'transparent',
+      clvFg: t.avgClv != null ? (t.avgClv > 0 ? 'var(--pos,#35d0c0)' : t.avgClv < 0 ? '#ff8d8d' : '#9aa3b2') : '#9aa3b2'
     }));
+
+    // Search + watchlist
+    const watchSet = new Set(this.state.watch);
+    const searchTerm = (this.state.search || '').trim().toLowerCase();
+    const searchResults = searchTerm.length >= 2 ? enriched.filter(p => p.name.toLowerCase().includes(searchTerm)).slice(0, 8).map(p => ({ id: p.id, name: p.name, sub: p.teamAbbr + ' vs ' + p.oppAbbr + ' · HR ' + p.modelPct + '%', score: p.score, watched: watchSet.has(p.id) ? '★' : '' })) : [];
+    const watchlist = this.state.watch.map(id => byId[id]).filter(Boolean);
+    const drawerPlayer = this.state.player || {};
+    const drawerWatched = drawerPlayer.id ? watchSet.has(drawerPlayer.id) : false;
 
     // Nav
     const nav = [
@@ -1203,14 +1616,22 @@ class Component extends DCLogic {
       gameCount: live ? this.state.data.games.length : (st === 'loading' ? '…' : 2),
       statusText: sp.text, statusBg: sp.bg, statusBorder: sp.border, statusFg: sp.fg, statusDot: sp.dot,
       refresh: this.refresh,
+      autoPoll: this.state.autoPoll, toggleAutoPoll: this.toggleAutoPoll,
+      autoPollLabel: this.state.autoPoll ? 'Auto 60s' : 'Auto off',
+      autoPollBg: this.state.autoPoll ? 'rgba(53,208,192,.1)' : 'rgba(255,255,255,.05)',
+      autoPollBorder: this.state.autoPoll ? 'rgba(53,208,192,.28)' : 'rgba(255,255,255,.1)',
+      autoPollFg: this.state.autoPoll ? 'var(--pos,#35d0c0)' : '#7b8597',
+      autoPollDot: this.state.autoPoll ? 'var(--pos,#35d0c0)' : '#5f6878',
+      lastUpdatedLabel: this.state.lastUpdated ? ('Updated ' + new Date(this.state.lastUpdated).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })) : '',
+      hasLastUpdated: !!this.state.lastUpdated,
       dashSub: live ? 'Live MLB model — every qualified hitter ranked by Dinger Score (regressed HR rate, park & opposing-starter adjusted).' : 'Sample board shown — the live MLB model loads automatically when online.',
       kpis, starPlays, parkReport, combos: combosOut, games,
       gamesTitle: live ? (this.state.data.games.length + '-game slate · ' + kpis[0].v + ' projected HRs') : 'Sample slate',
       dataRows, dataCount: enriched.length, dataSource: live ? 'MLB API' : 'Sample', seasonYr: live ? this.state.data.season : '—',
       hasLive: liveHRs.length > 0, noLive: liveHRs.length === 0, liveHRs, liveEmpty,
-      liveStatus: live ? 'Polling · ' + this.state.data.games.length + ' games today' : 'Offline',
+      liveStatus: live ? (liveHRs.length > 0 ? liveHRs.length + ' HR' + (liveHRs.length === 1 ? '' : 's') + ' today · ' + this.state.data.games.length + ' games' : 'Watching · ' + this.state.data.games.length + ' games today') : 'Offline',
       oddsConnected: hasOdds, oddsNotConnected: !hasOdds, booksLabel: (live ? this.state.data.booksOk : 0) + ' books',
-      openDrawer: (e) => { const id = e.currentTarget.dataset.player; if (byId[id]) this.setState({ drawerOpen: true, player: byId[id] }); },
+      openDrawer: (e) => { const id = e.currentTarget.dataset.player; if (byId[id]) this.setState({ drawerOpen: true, player: byId[id], search: '' }); },
       closeDrawer: () => this.setState({ drawerOpen: false }),
       drawerOpen: this.state.drawerOpen, p: this.state.player || {},
       // Slip
@@ -1221,18 +1642,34 @@ class Component extends DCLogic {
       setResult: this.setResult, setStake: this.setStake, setStakePreset: this.setStakePreset,
       // Tracking
       trackedList, hasTracked: tracked.length > 0, noTracked: tracked.length === 0,
+      // Search + watchlist
+      search: this.state.search, setSearch: this.setSearch, clearSearch: this.clearSearch,
+      searchResults, hasSearch: searchResults.length > 0, searchActive: searchTerm.length >= 2,
+      noSearchResults: searchTerm.length >= 2 && searchResults.length === 0,
+      watchlist, hasWatch: watchlist.length > 0, watchCount: watchlist.length,
+      toggleWatch: this.toggleWatch, drawerWatched, drawerWatchStar: drawerWatched ? '★' : '☆',
+      drawerWatchBg: drawerWatched ? 'rgba(255,194,77,.14)' : '#161a24', drawerWatchFg: drawerWatched ? '#ffc24d' : '#9aa3b2',
       // Research
       steam: steam.slice(0, 8), hasSteam: steam.length > 0, noSteam: steam.length === 0,
       topValue, diffItems, hasDiff, noDiff: !hasDiff,
       // Builder chips + handlers
       bL2, bL3, bL4, bL5, bSafe, bBal, bLong, bHR, bAll, bLegs, bStyle,
       setBuilderLegs: this.setBuilderLegs, setBuilderStyle: this.setBuilderStyle, setBuilderMarket: this.setBuilderMarket,
+      // ULX parlay
+      ulx, hasUlx: !!ulx, noUlx: !ulx,
+      ulxLegs: ulx ? ulx.legs : [], ulxChecks: ulx ? ulx.checks : [],
+      ulxGreen: ulx ? ulx.green : false, ulxGateLabel: ulx ? ulx.gateLabel : '⚠️ 0/10',
+      ulxGateBg: ulx ? ulx.gateBg : 'rgba(255,194,77,.12)', ulxGateBorder: ulx ? ulx.gateBorder : 'rgba(255,194,77,.4)', ulxGateFg: ulx ? ulx.gateFg : '#ffc24d',
+      ulxPassesLabel: ulx ? ulx.passesLabel : '0/10 checks', ulxOdds: ulx ? ulx.oddsStr : '—', ulxWin: ulx ? ulx.winStr : '—',
+      ulxPayout: ulx ? ulx.payout : '—', ulxOddsMode: ulx ? ulx.oddsMode : '',
+      rerollUlx: this.rerollUlx, addUlxToSlip: this.addUlxToSlip, trackUlx: this.trackUlx,
       slipOpen: this.state.slipOpen, slipNotOpen: !this.state.slipOpen, slipOpenStr: this.state.slipOpen ? 'true' : 'false', slipColWidth: this.state.slipOpen ? '320px' : '0', toggleSlip: this.toggleSlip,
       proxyUrl: this.state.proxyUrl, setProxyUrl: this.setProxyUrl, saveProxyUrl: this.saveProxyUrl,
       oddsProxyStatus: hasOdds ? ('✓ Connected · ' + (live ? this.state.data.booksOk : 0) + ' books · ' + (live ? this.state.data.oddsCount : 0) + ' players priced') : (live ? 'Fetched but no HR props posted yet — retry closer to game time' : 'Not connected'),
       oddsProxyColor: hasOdds ? 'var(--pos,#35d0c0)' : live ? '#ffc24d' : '#ff8d8d',
       // Tracking CLV
       hitRate, roi, gradedCount: graded.length, winsCount: wins,
+      beatCloseLabel, avgClvLabel, hasClvData,
       hasGraded: graded.length > 0, noGraded: graded.length === 0, pendingCount: tracked.filter(t => t.status === 'pending').length, totalTracked: tracked.length,
       // Live schedule
       scheduleGames, hasSchedule: scheduleGames.length > 0
