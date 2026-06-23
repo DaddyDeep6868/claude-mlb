@@ -22,7 +22,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  html,body{margin:0;background:#0a0c11;color:#eef1f6;font-family:"Hanken Grotesk",ui-sans-serif,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  html,body{margin:0;background:#0a0c11;color:#eef1f6;font-family:"Hanken Grotesk",ui-sans-serif,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden;max-width:100%}
   *{box-sizing:border-box}
   ::-webkit-scrollbar{width:10px;height:10px}
   ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:20px;border:2px solid #0a0c11}
@@ -30,6 +30,11 @@
   @keyframes dlpulse{0%,100%{opacity:1}50%{opacity:.35}}
   @keyframes dlrise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   @keyframes dlspin{to{transform:rotate(360deg)}}
+  @media (max-width:1300px){
+    [data-hmd]{display:none!important}
+    header[data-hdr]{gap:12px!important}
+    header[data-hdr] [data-search]{flex:1 1 150px!important;min-width:0!important}
+  }
   @media (max-width:760px){
     [data-mhide]{display:none!important}
     header[data-hdr]{padding:11px 14px!important;gap:10px!important}
@@ -62,7 +67,7 @@
         <div style="font-size:11px;color:#7b8597;letter-spacing:.04em;margin-top:2px">MLB HR INTELLIGENCE</div>
       </div>
     </div>
-    <div style="position:relative;min-width:0;flex:0 1 260px">
+    <div data-search style="position:relative;min-width:0;flex:0 1 260px">
       <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;background:#13161e;border:1px solid rgba(255,255,255,.09)">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7b8597" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
         <input type="text" value="{{ search }}" onInput="{{ setSearch }}" placeholder="Search 350+ hitters…" style="flex:1;min-width:0;background:transparent;border:none;color:#eef1f6;font-family:'Hanken Grotesk';font-size:13px;font-weight:500;outline:none">
@@ -82,7 +87,7 @@
         <div style="position:absolute;top:46px;left:0;right:0;z-index:60;background:#13161e;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:13px;font-size:12.5px;color:#7b8597">No hitter found — try a last name.</div>
       </sc-if>
     </div>
-    <div data-mhide style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:10px;background:#13161e;border:1px solid rgba(255,255,255,.07)">
+    <div data-mhide data-hmd style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:10px;background:#13161e;border:1px solid rgba(255,255,255,.07)">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9aa3b2" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
       <span style="font-size:13px;font-weight:600">{{ dateLabel }}</span>
       <span style="font-size:12px;color:#7b8597">· {{ gameCount }} games</span>
@@ -93,7 +98,7 @@
     </div>
     <div style="flex:1"></div>
     <sc-if value="{{ hasLastUpdated }}" hint-placeholder-val="{{ false }}">
-      <span data-mhide style="font-size:11.5px;color:#7b8597;white-space:nowrap">{{ lastUpdatedLabel }}</span>
+      <span data-mhide data-hmd style="font-size:11.5px;color:#7b8597;white-space:nowrap">{{ lastUpdatedLabel }}</span>
     </sc-if>
     <button onClick="{{ toggleAutoPoll }}" title="Toggle 60s auto-refresh" style="display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:10px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:600;font-size:12.5px;background:{{ autoPollBg }};border:1px solid {{ autoPollBorder }};color:{{ autoPollFg }}">
       <span style="width:7px;height:7px;border-radius:50%;background:{{ autoPollDot }};animation:dlpulse 1.6s infinite"></span>{{ autoPollLabel }}
@@ -102,7 +107,7 @@
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0a0c11" stroke-width="2.2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>
       Refresh
     </button>
-    <div data-mhide style="display:flex;align-items:center;gap:8px;padding:7px 11px;border-radius:10px;background:#13161e;border:1px solid rgba(255,255,255,.07);font-size:12px;color:#7b8597">v6.0</div>
+    <div data-mhide data-hmd style="display:flex;align-items:center;gap:8px;padding:7px 11px;border-radius:10px;background:#13161e;border:1px solid rgba(255,255,255,.07);font-size:12px;color:#7b8597">v6.0</div>
   </header>
 
   <div data-shell style="display:grid;grid-template-columns:208px minmax(0,1fr) {{ slipColWidth }};gap:0;flex:1;min-height:0;transition:grid-template-columns .22s ease">
@@ -175,6 +180,43 @@
             </sc-for>
           </div>
         </sc-if>
+        <!-- Sort + Filter controls -->
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px">
+          <div style="display:flex;gap:5px;align-items:center">
+            <span style="font-size:11px;color:#7b8597;font-weight:600;letter-spacing:.04em">SORT</span>
+            <sc-for list="{{ sortOptions }}" as="s" hint-placeholder-count="5">
+              <button data-sort="{{ s.key }}" onClick="{{ setSort }}" style="padding:5px 11px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.fg }}">{{ s.label }}</button>
+            </sc-for>
+          </div>
+          <div style="width:1px;height:20px;background:rgba(255,255,255,.09)"></div>
+          <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
+            <span style="font-size:11px;color:#7b8597;font-weight:600;letter-spacing:.04em">TEAM</span>
+            <sc-for list="{{ teamOptions }}" as="t" hint-placeholder-count="3">
+              <button data-team="{{ t.abbr }}" onClick="{{ setTeamFilter }}" style="padding:5px 9px;border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer;border:1px solid {{ t.border }};background:{{ t.bg }};color:{{ t.fg }}">{{ t.abbr }}</button>
+            </sc-for>
+            <sc-if value="{{ hasTeamFilter }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ clearTeamFilter }}" style="padding:5px 9px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid rgba(255,107,107,.3);background:rgba(255,107,107,.1);color:#ff8d8d">✕ clear</button>
+            </sc-if>
+          </div>
+          <sc-if value="{{ hasTeamFilter }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:12px;color:#7b8597">{{ filteredCount }} players</span>
+          </sc-if>
+        </div>
+
+        <!-- Due badge section -->
+        <sc-if value="{{ hasDue }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px"><span style="font-size:16px">☢️</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:16px;font-weight:700">Due List</h2><span style="font-size:12px;color:#7b8597">High quality contact, cold stretch — market may be slow</span></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px">
+            <sc-for list="{{ dueList }}" as="d" hint-placeholder-count="2">
+              <div data-player="{{ d.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:13px;background:#13161e;border:1px solid rgba(255,194,77,.2);flex:none">
+                <div style="width:38px;height:38px;border-radius:50%;background:conic-gradient(#ffc24d {{ d.score }}%,rgba(255,255,255,.07) 0);display:grid;place-items:center;flex:none"><div style="width:29px;height:29px;border-radius:50%;background:#13161e;display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:13px">{{ d.score }}</div></div>
+                <div><div style="font-weight:700;font-size:13.5px">{{ d.dueName }}</div><div style="font-size:11.5px;color:#7b8597;margin-top:2px">{{ d.dueTeam }} · {{ d.dueBarrel }} · {{ d.dueHH }}</div><div style="font-size:11px;color:#ffc24d;margin-top:2px">☢️ due — cold stretch</div></div>
+                <div style="font-family:'Space Grotesk';font-weight:700;font-size:15px;margin-left:auto">{{ d.dueOdds }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
           <div style="display:flex;align-items:center;gap:9px"><span style="font-size:18px">⭐</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Top Star Plays</h2></div>
           <button data-tab="games" onClick="{{ setTab }}" style="background:none;border:1px solid rgba(255,255,255,.12);color:#9aa3b2;font-weight:600;font-size:12.5px;padding:7px 13px;border-radius:9px;cursor:pointer" style-hover="border-color:var(--ac,#ff8a4c);color:#eef1f6">View all games →</button>
@@ -187,7 +229,11 @@
                   <div style="width:47px;height:47px;border-radius:50%;background:#13161e;display:grid;place-items:center"><span style="font-family:'Space Grotesk';font-weight:700;font-size:19px">{{ p.score }}</span></div>
                 </div>
                 <div style="min-width:0">
-                  <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div>
+                  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                    <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div>
+                    <sc-if value="{{ p.isDue }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(255,194,77,.18);color:#ffc24d">☢️ DUE</span></sc-if>
+                    <sc-if value="{{ p.lineupConfirmed }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(53,208,192,.15);color:var(--pos,#35d0c0)">✓ IN</span></sc-if>
+                  </div>
                   <div style="font-size:12px;color:#7b8597">{{ p.matchup }}</div>
                   <div style="font-size:13px;letter-spacing:1.5px;margin-top:3px"><span style="color:#ffc24d">{{ p.starsOn }}</span><span style="color:#3a4150">{{ p.starsOff }}</span></div>
                 </div>
@@ -571,6 +617,11 @@
                     <div style="text-align:center"><div style="font-size:10px;color:#7b8597;font-weight:600">EV</div><div style="font-weight:700;color:var(--pos,#35d0c0)">{{ t.ev }}</div></div>
                   </div>
                 </div>
+                <div style="display:flex;gap:8px;margin-top:11px;align-items:center">
+                  <button data-id="{{ t.id }}" data-book="pikkit" onClick="{{ sendToBook }}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border:1px solid rgba(255,138,76,.3);border-radius:9px;cursor:pointer;font-weight:700;font-size:12.5px;color:var(--ac,#ff8a4c);background:rgba(255,138,76,.07)" style-hover="filter:brightness(1.12)">📋 Pikkit ↗</button>
+                  <button data-id="{{ t.id }}" data-book="playbook" onClick="{{ sendToBook }}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border:1px solid rgba(196,181,253,.3);border-radius:9px;cursor:pointer;font-weight:700;font-size:12.5px;color:#c4b5fd;background:rgba(196,181,253,.07)" style-hover="filter:brightness(1.12)">📋 Playbook ↗</button>
+                </div>
+
                 <sc-if value="{{ t.pending }}" hint-placeholder-val="{{ false }}">
                   <div style="display:flex;gap:8px;margin-top:11px">
                     <button data-id="{{ t.id }}" data-result="won" onClick="{{ setResult }}" style="flex:1;padding:8px;border:1px solid rgba(53,208,192,.3);border-radius:9px;cursor:pointer;font-weight:700;font-size:12.5px;color:var(--pos,#35d0c0);background:rgba(53,208,192,.08)">✓ Won</button>
@@ -870,6 +921,26 @@
           </div>
         </sc-for>
       </div>
+      <div style="background:#0c0e14;border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:14px;margin-bottom:18px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:14px">🧬</span><div style="font-family:'Space Grotesk';font-weight:700;font-size:13px">Model Frontier · factor stack</div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 11px;border-radius:9px;background:rgba(255,255,255,.04);margin-bottom:7px">
+          <span style="font-size:12px;color:#9aa3b2">Base HR rate</span>
+          <span style="font-family:'Space Grotesk';font-weight:700;font-size:13px">{{ p.frontierBase }}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <sc-for list="{{ p.frontier }}" as="f" hint-placeholder-count="5">
+            <div style="display:grid;grid-template-columns:104px 1fr 48px;align-items:center;gap:9px">
+              <span style="font-size:12px;color:#9aa3b2">{{ f.label }}</span>
+              <span style="height:7px;border-radius:7px;background:rgba(255,255,255,.06);overflow:hidden;display:block"><span style="display:block;height:100%;width:{{ f.pct }};background:{{ f.color }}"></span></span>
+              <span style="font-family:'Space Grotesk';font-weight:700;font-size:12px;text-align:right;color:{{ f.color }}">{{ f.mult }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 11px;border-radius:9px;background:rgba(255,138,76,.1);margin-top:9px;border:1px solid rgba(255,138,76,.2)">
+          <span style="font-size:12px;font-weight:700;color:var(--ac,#ff8a4c)">Model HR probability</span>
+          <span style="font-family:'Space Grotesk';font-weight:700;font-size:15px;color:var(--ac,#ff8a4c)">{{ p.frontierFinal }}</span>
+        </div>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:18px">
         <div>
           <div style="font-size:12px;font-weight:700;color:var(--pos,#35d0c0);margin-bottom:8px">WHY IT HITS</div>
@@ -902,7 +973,7 @@
   &quot;compact&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot; }
 }">
 class Component extends DCLogic {
-  state = { tab: 'dashboard', drawerOpen: false, player: null, status: 'loading', data: null, slip: [], tracked: [], stake: '25', builderLegs: 3, builderStyle: 'balanced', builderMarket: 'hr', slipOpen: true, proxyUrl: 'https://claude-mlb.onrender.com', autoPoll: true, lastUpdated: null, search: '', watch: [], ulxSeed: 0 };
+  state = { tab: 'dashboard', drawerOpen: false, player: null, status: 'loading', data: null, slip: [], tracked: [], stake: '25', builderLegs: 3, builderStyle: 'balanced', builderMarket: 'hr', slipOpen: true, proxyUrl: 'https://claude-mlb.onrender.com', autoPoll: true, lastUpdated: null, search: '', watch: [], ulxSeed: 0, copiedId: null, sortBy: 'score', teamFilter: null };
 
   componentDidMount() {
     try { const p = localStorage.getItem('dl_odds_proxy'); if (p) this.setState({ proxyUrl: p }); } catch (e) {}
@@ -957,6 +1028,9 @@ class Component extends DCLogic {
   };
   setSearch = (e) => { this.setState({ search: e.target.value }); };
   clearSearch = () => { this.setState({ search: '' }); };
+  setSort = (e) => { const k = e.currentTarget.dataset.sort; this.setState(s => ({ sortBy: s.sortBy === k ? 'score' : k })); };
+  setTeamFilter = (e) => { const t = e.currentTarget.dataset.team; this.setState(s => ({ teamFilter: s.teamFilter === t ? null : t })); };
+  clearTeamFilter = () => { this.setState({ teamFilter: null }); };
   toggleWatch = (e) => {
     const id = e.currentTarget.dataset.watchid; if (!id) return;
     this.setState(s => { const has = s.watch.includes(id); const watch = has ? s.watch.filter(x => x !== id) : [...s.watch, id]; try { localStorage.setItem('dl_watch_v1', JSON.stringify(watch)); } catch (er) {} return { watch }; });
@@ -1065,6 +1139,72 @@ class Component extends DCLogic {
     }));
     return out;
   }
+  async fetchStatcast(season) {
+    try {
+      const j = await fetch('https://baseballsavant.mlb.com/leaderboard/statcast?type=batter&year=' + season + '&position=&team=&min=q&csv=false', { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : null);
+      const out = {};
+      if (!j || !Array.isArray(j)) return out;
+      j.forEach(p => {
+        const id = String(p.player_id || p.xba_id || '');
+        if (!id) return;
+        out[id] = { barrelPct: parseFloat(p.brl_percent || p.barrel_batted_rate || 0), hardHitPct: parseFloat(p.hard_hit_percent || 0), exitVelo: parseFloat(p.avg_exit_velocity || 0) };
+      });
+      return out;
+    } catch (e) { return {}; }
+  }
+  async fetchDayNightSplits(season) {
+    try {
+      const j = await fetch('https://statsapi.mlb.com/api/v1/stats?stats=statSplits&group=hitting&season=' + season + '&sitCodes=d,n&playerPool=All&gameType=R&limit=6000').then(r => r.ok ? r.json() : null);
+      const out = {};
+      if (!j || !j.stats || !j.stats[0]) return out;
+      (j.stats[0].splits || []).forEach(s => {
+        const id = String(s.player && s.player.id || '');
+        const code = s.split && s.split.code;
+        if (!id || !code) return;
+        if (!out[id]) out[id] = {};
+        out[id][code] = { hr: s.stat.homeRuns || 0, pa: s.stat.plateAppearances || 0, avg: parseFloat(s.stat.avg || '0') };
+      });
+      return out;
+    } catch (e) { return {}; }
+  }
+  async fetchLineupStatus(games) {
+    const out = {};
+    await Promise.all(games.filter(g => g.status && g.status.abstractGameState === 'Preview').map(async g => {
+      try {
+        const j = await fetch('https://statsapi.mlb.com/api/v1/game/' + g.gamePk + '/boxscore').then(r => r.ok ? r.json() : null);
+        if (!j) return;
+        const away = (j.teams && j.teams.away && j.teams.away.battingOrder) || [];
+        const home = (j.teams && j.teams.home && j.teams.home.battingOrder) || [];
+        const confirmed = new Set([...away, ...home].map(String));
+        confirmed.forEach(id => { out[id] = true; });
+      } catch (e) {}
+    }));
+    return out;
+  }
+  async fetchPitcherForm(pids, season, todayStr) {
+    const out = {};
+    for (let i = 0; i < pids.length; i += 40) {
+      const chunk = pids.slice(i, i + 40);
+      try {
+        const r = await fetch('https://statsapi.mlb.com/api/v1/people?personIds=' + chunk.join(',') + '&hydrate=stats(group=pitching,type=gameLog,season=' + season + ')');
+        const j = await r.json();
+        (j.people || []).forEach(p => {
+          const splits = (p.stats && p.stats[0] && p.stats[0].splits) || [];
+          if (!splits.length) { out[p.id] = {}; return; }
+          const sorted = splits.slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+          const last = sorted[sorted.length - 1];
+          const recent = sorted.slice(-3);
+          let ip = 0, hrA = 0;
+          recent.forEach(s => { const st = s.stat || {}; ip += parseFloat(st.inningsPitched || 0); hrA += (st.homeRuns || 0); });
+          const recHr9 = ip > 2 ? +(hrA * 9 / ip).toFixed(2) : null;
+          let daysRest = null;
+          if (last && last.date) { const d = Math.round((Date.parse(todayStr) - Date.parse(last.date)) / 86400000); if (d >= 0 && d < 30) daysRest = d; }
+          out[p.id] = { daysRest, recHr9, lastPitches: (last && last.stat && last.stat.numberOfPitches) || null, starts: sorted.length };
+        });
+      } catch (e) {}
+    }
+    return out;
+  }
   gradeTracked(tracked, homered, statusMap, oddsMap) {
     return tracked.map(t => {
       if (t.status !== 'pending') return t;
@@ -1110,6 +1250,7 @@ class Component extends DCLogic {
 
       const pids = [...new Set(games.flatMap(g => [g.teams.away.probablePitcher && g.teams.away.probablePitcher.id, g.teams.home.probablePitcher && g.teams.home.probablePitcher.id]).filter(Boolean))];
       const pstats = await this.bulkPeople(pids, 'pitching', season);
+      const pform = await this.fetchPitcherForm(pids, season, date);
       const hr9 = id => { const s = pstats[id]; if (!s || !s.inningsPitched) return 1.2; const ip = parseFloat(s.inningsPitched); return ip > 0 ? (s.homeRuns * 9 / ip) : 1.2; };
 
       const teamIds = [...new Set(games.flatMap(g => [g.teams.away.team.id, g.teams.home.team.id]))];
@@ -1122,6 +1263,11 @@ class Component extends DCLogic {
       const hstats = await this.bulkPeople(allHitters, 'hitting', season);
       const weather = await this.fetchWeather(games);
       const weatherByVenue = {};
+      const [statcast, dayNight, lineupConfirmed] = await Promise.all([
+        this.fetchStatcast(season),
+        this.fetchDayNightSplits(season),
+        this.fetchLineupStatus(games)
+      ]);
 
       const players = [];
       const gameModel = {};
@@ -1137,6 +1283,11 @@ class Component extends DCLogic {
           const oppP = g.teams[opp].probablePitcher;
           const oppHand = (oppP && pstats[oppP.id] && pstats[oppP.id].pitchHand) || null;
           const oppHR9 = oppP ? hr9(oppP.id) : 1.2;
+          const form = (oppP && pform[oppP.id]) || {};
+          const daysRest = form.daysRest != null ? form.daysRest : null;
+          const fatigueMult = daysRest == null ? 1 : daysRest <= 2 ? 1.06 : daysRest === 3 ? 1.03 : 1.0;
+          let formMult = 1, recHr9 = form.recHr9 != null ? form.recHr9 : null;
+          if (recHr9 != null && oppHR9 > 0.4) { const blend = oppHR9 * 0.6 + recHr9 * 0.4; formMult = Math.min(1.16, Math.max(0.88, blend / oppHR9)); }
           (rosters[team.id] || []).forEach(pid => {
             const s = hstats[pid];
             if (!s || (s.plateAppearances || 0) < 40) return;
@@ -1145,11 +1296,32 @@ class Component extends DCLogic {
             const pMult = Math.min(1.25, Math.max(0.82, oppHR9 / 1.2));
             const platoon = this.platoonMult(s.batSide, oppHand);
             const wxMult = wx.mult || 1;
-            const rate = adj * (parkF / 100) * pMult * platoon * wxMult;
+            const ffMult = fatigueMult * formMult;
+            const basePct = +(( 1 - Math.pow(1 - adj, 4.1)) * 100).toFixed(1);
+            // Statcast quality-of-contact multiplier
+            const sc = statcast[String(pid)] || {};
+            const barrelPct = sc.barrelPct || 0, hardHitPct = sc.hardHitPct || 0;
+            const scMult = barrelPct > 0 ? Math.min(1.14, Math.max(0.90, 1 + (barrelPct - 8) * 0.012 + (hardHitPct - 38) * 0.004)) : 1;
+            // Day/night split multiplier
+            const dn = dayNight[String(pid)] || {};
+            const isNight = g.gameDate && parseInt(g.gameDate.split('T')[1]) >= 18;
+            const dnCode = isNight ? 'n' : 'd';
+            const dnSplit = dn[dnCode], dnOther = dn[isNight ? 'd' : 'n'];
+            let dnMult = 1;
+            if (dnSplit && dnOther && dnSplit.pa >= 30 && dnOther.pa >= 30) {
+              const dnHrRate = (dnSplit.hr + 0.5) / (dnSplit.pa + 15);
+              const dnOtherRate = (dnOther.hr + 0.5) / (dnOther.pa + 15);
+              dnMult = Math.min(1.12, Math.max(0.9, dnHrRate / dnOtherRate));
+            }
+            const rate = adj * (parkF / 100) * pMult * platoon * wxMult * ffMult * scMult * dnMult;
             const hrProb = 1 - Math.pow(1 - rate, 4.1);
             const score = Math.max(40, Math.min(99, Math.round(34 + hrProb * 195 + (ops - 0.72) * 22)));
             gameModel[g.gamePk] += hrProb;
-            players.push({ id: String(pid), raw: s, name: s.name, teamAbbr: team.abbreviation, oppAbbr: oppTeam.abbreviation, venue, parkF, gameId: g.gamePk, time, oppPitcher: (oppP && oppP.fullName) || 'TBD', hr, pa, ops, iso: ((parseFloat(s.slg || '0') - parseFloat(s.avg || '0')) || 0), modelPct: +(hrProb * 100).toFixed(1), score, oppHR9: +oppHR9.toFixed(2), batSide: s.batSide || null, oppHand, platoon: +platoon.toFixed(2), wx });
+            // Due badge: high barrel% but cold recent form
+            const isDue = barrelPct >= 9 && hardHitPct >= 42 && (recHr9 != null ? recHr9 < 0.8 : false);
+            // Lineup confirmation
+            const lineupConfirmedFlag = !!lineupConfirmed[String(pid)];
+            players.push({ id: String(pid), raw: s, name: s.name, teamAbbr: team.abbreviation, oppAbbr: oppTeam.abbreviation, venue, parkF, gameId: g.gamePk, time, oppPitcher: (oppP && oppP.fullName) || 'TBD', hr, pa, ops, iso: ((parseFloat(s.slg || '0') - parseFloat(s.avg || '0')) || 0), modelPct: +(hrProb * 100).toFixed(1), score, oppHR9: +oppHR9.toFixed(2), batSide: s.batSide || null, oppHand, platoon: +platoon.toFixed(2), wx, daysRest, recHr9, fatigueMult: +fatigueMult.toFixed(2), formMult: +formMult.toFixed(2), basePct, pMult: +pMult.toFixed(2), wxMult: +wxMult.toFixed(2), barrelPct, hardHitPct, scMult: +scMult.toFixed(2), dnMult: +dnMult.toFixed(2), isDue, lineupConfirmed: lineupConfirmedFlag });
           });
         });
       });
@@ -1230,6 +1402,29 @@ class Component extends DCLogic {
     try { localStorage.setItem('dl_tracked_v1', JSON.stringify(tracked.slice(0, 50))); } catch (e) {}
     this.setState({ tracked });
   };
+  sendToBook = (e) => {
+    const id = e.currentTarget.dataset.id, book = e.currentTarget.dataset.book;
+    const url = book === 'pikkit' ? 'https://quickpick.pikkit.com/' : 'https://playbookbot.com/';
+    const t = this.state.tracked.find(x => x.id === id);
+    if (!t || !t.legs || !t.legs.length) return;
+    const text = t.legs.map(l => l.name + ' over 0.5 HR').join(', ');
+    // Sync copy — must happen before window.open, inside the user-gesture tick
+    let copied = false;
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      copied = document.execCommand('copy');
+      document.body.removeChild(ta);
+    } catch (er) {}
+    // Also try async as backup
+    if (!copied && navigator.clipboard) { try { navigator.clipboard.writeText(text); copied = true; } catch(er){} }
+    if (this._copyTimer) clearTimeout(this._copyTimer);
+    this.setState({ copiedId: id, clipText: text, clipBook: book, clipUrl: url, clipCopied: copied });
+    this._copyTimer = setTimeout(() => this.setState({ copiedId: null }), 8000);
+    // Open after copy
+    try { window.open(url, '_blank', 'noopener'); } catch (er) {}
+  };
   setResult = (e) => {
     const { id, result } = e.currentTarget.dataset;
     const tracked = this.state.tracked.map(t => t.id === id ? Object.assign({}, t, { status: result }) : t);
@@ -1270,8 +1465,11 @@ class Component extends DCLogic {
       ring: 'conic-gradient(var(--ac,#ff8a4c) ' + p.score + '%, rgba(255,255,255,.08) 0)',
       starsOn: '★'.repeat(n), starsOff: '★'.repeat(5 - n),
       matchup: p.teamAbbr + ' vs ' + p.oppAbbr,
+      isDue: !!p.isDue, lineupConfirmed: !!p.lineupConfirmed,
+      barrelPct: p.barrelPct ? p.barrelPct.toFixed(1) + '%' : '—',
+      hardHitPct: p.hardHitPct ? p.hardHitPct.toFixed(0) + '%' : '—',
       sub: p.teamAbbr + ' vs ' + p.oppAbbr + ' · vs ' + p.oppPitcher,
-      best: best, ev: ev, evColor: evColor, edge: edge,
+      best: best, ev: ev, evColor: evColor, edge: edge, evNum: p.oddsAm != null ? +( (p.modelPct / 100 * this.amDec(p.oddsAm) - 1) * 100 ).toFixed(1) : null, edgeNum: edge,
       probBar: Math.min(100, Math.round(p.modelPct / 0.30)) + '%',
       badges: this.badgesFor(p),
       markets: [{ label: 'HR · ' + p.modelPct + '% model', bg: 'rgba(255,138,76,.14)', fg: 'var(--ac,#ff8a4c)' }, oddsMarket],
@@ -1282,8 +1480,24 @@ class Component extends DCLogic {
         { label: 'Handedness', pct: Math.min(100, Math.round((p.platoon || 1) / 1.1 * 100)) + '%', val: (p.batSide || '?') + ' v ' + (p.oppHand || '?'), color: (p.platoon || 1) >= 1.02 ? 'var(--pos,#35d0c0)' : (p.platoon || 1) <= 0.98 ? '#ff8d8d' : '#9aa3b2' },
         { label: 'Park factor', pct: Math.min(100, Math.max(0, Math.round((p.parkF - 88) / 0.4))) + '%', val: (p.parkF - 100 >= 0 ? '+' : '') + (p.parkF - 100), color: p.parkF >= 104 ? 'var(--ac,#ff8a4c)' : '#9aa3b2' },
         { label: 'Weather', pct: Math.min(100, Math.max(0, Math.round(((p.wx && p.wx.mult || 1) - 0.85) / 0.0033))) + '%', val: (p.wx && p.wx.label) ? p.wx.label : '—', color: (p.wx && p.wx.mult || 1) >= 1.02 ? 'var(--pos,#35d0c0)' : (p.wx && p.wx.mult || 1) <= 0.98 ? '#ff8d8d' : '#9aa3b2' },
+        { label: 'Pitcher rest', pct: Math.min(100, Math.max(8, Math.round(((p.fatigueMult || 1) - 0.95) / 0.0015))) + '%', val: p.daysRest != null ? (p.daysRest + 'd rest') : 'n/a', color: (p.fatigueMult || 1) >= 1.02 ? 'var(--pos,#35d0c0)' : '#9aa3b2' },
+        { label: 'Pitcher form', pct: Math.min(100, Math.max(8, Math.round(((p.formMult || 1) - 0.85) / 0.0033))) + '%', val: p.recHr9 != null ? (p.recHr9 + ' HR/9 L3') : 'n/a', color: (p.formMult || 1) >= 1.03 ? 'var(--pos,#35d0c0)' : (p.formMult || 1) <= 0.97 ? '#ff8d8d' : '#9aa3b2' },
         { label: 'Dinger Score', pct: p.score + '%', val: p.score, color: 'var(--pos,#35d0c0)' }
       ],
+      frontier: (function () {
+        const mk = (label, mult) => { const up = mult >= 1.012, dn = mult <= 0.988; return { label, mult: '×' + mult.toFixed(2), pct: Math.min(100, Math.max(6, Math.round((mult - 0.8) / 0.005))) + '%', color: up ? 'var(--pos,#35d0c0)' : dn ? '#ff8d8d' : '#9aa3b2', tone: up ? '▲' : dn ? '▼' : '·' }; };
+        return [
+          mk('Park factor', (p.parkF || 100) / 100),
+          mk('Pitcher (season)', p.pMult || 1),
+          mk('Form + rest', (p.fatigueMult || 1) * (p.formMult || 1)),
+          mk('Platoon', p.platoon || 1),
+          mk('Weather', p.wxMult || 1),
+          mk('Barrel / HH%', p.scMult || 1),
+          mk('Day/night split', p.dnMult || 1)
+        ];
+      })(),
+      frontierBase: (p.basePct != null ? p.basePct : p.modelPct) + '%',
+      frontierFinal: p.modelPct + '%',
       reasons: [
         'Season ' + p.hr + ' HR in ' + p.pa + ' PA · .' + String(isoPts).padStart(3, '0') + ' ISO',
         p.venue + ' — park HR factor ' + p.parkF + ((p.wx && p.wx.label && p.wx.roof !== 'Dome') ? ' · ' + p.wx.temp + '° · ' + p.wx.label : ''),
@@ -1396,6 +1610,13 @@ class Component extends DCLogic {
     const enriched = players.map(p => this.enrich(p, hasOdds));
     const byId = {}; enriched.forEach(p => byId[p.id] = p);
 
+    // Sort + filter — must come before starPlays and any filtered board usage
+    const sortBy = this.state.sortBy || 'score';
+    const teamFilter = this.state.teamFilter;
+    const sortFns = { score: (a,b) => b.score - a.score, ev: (a,b) => (b.evNum != null ? b.evNum : -999) - (a.evNum != null ? a.evNum : -999), edge: (a,b) => (b.edgeNum != null ? b.edgeNum : -999) - (a.edgeNum != null ? a.edgeNum : -999), odds: (a,b) => (a.oddsAm != null ? a.oddsAm : 9999) - (b.oddsAm != null ? b.oddsAm : 9999), park: (a,b) => b.parkF - a.parkF };
+    const sortedEnriched = [...enriched].sort(sortFns[sortBy] || sortFns.score);
+    const filteredEnriched = teamFilter ? sortedEnriched.filter(p => p.teamAbbr === teamFilter || p.oppAbbr === teamFilter) : sortedEnriched;
+
     // KPIs
     const slateHR = live ? Math.round(players.reduce((s, p) => s + p.modelPct / 100, 0)) : 24;
     const topScore = enriched.length ? enriched[0].score : '—';
@@ -1412,8 +1633,8 @@ class Component extends DCLogic {
       { k: 'HOT PARK', v: (hotPark - 100 >= 0 ? '+' : '') + (hotPark - 100) + '%', s: hotName || '—', color: 'var(--ac,#ff8a4c)' }
     ];
 
-    const qualStar = enriched.filter(p => (p.pa || 0) >= 90);
-    const starPlays = (qualStar.length >= 6 ? qualStar : enriched).slice(0, 8);
+    const qualStar = filteredEnriched.filter(p => (p.pa || 0) >= 90);
+    const starPlays = (qualStar.length >= 6 ? qualStar : filteredEnriched).slice(0, 8);
 
     // Park report
     const seen = {}; const parkArr = [];
@@ -1568,12 +1789,20 @@ class Component extends DCLogic {
       statusBg: t.status === 'won' ? 'rgba(53,208,192,.14)' : t.status === 'lost' ? 'rgba(255,107,107,.14)' : 'rgba(255,194,77,.14)',
       statusFg: t.status === 'won' ? 'var(--pos,#35d0c0)' : t.status === 'lost' ? '#ff8d8d' : '#ffc24d',
       legsPreview: t.legs ? t.legs.map(l => l.name).join(' · ').slice(0, 55) : '',
-      won: t.status === 'won', lost: t.status === 'lost', pending: t.status === 'pending',
+      won: t.status === 'won', lost: t.status === 'lost', pending: t.status === 'pending', justCopied: t.id === this.state.copiedId,
       hasClv: t.avgClv != null,
       clvLabel: t.avgClv != null ? ('CLV ' + (t.avgClv > 0 ? '+' : '') + t.avgClv) : '',
       clvBg: t.avgClv != null ? (t.avgClv > 0 ? 'rgba(53,208,192,.13)' : t.avgClv < 0 ? 'rgba(255,107,107,.12)' : 'rgba(255,255,255,.06)') : 'transparent',
       clvFg: t.avgClv != null ? (t.avgClv > 0 ? 'var(--pos,#35d0c0)' : t.avgClv < 0 ? '#ff8d8d' : '#9aa3b2') : '#9aa3b2'
     }));
+
+    // Sort + filter
+    const teamOptions = [...new Set(enriched.flatMap(p => [p.teamAbbr, p.oppAbbr]))].filter(Boolean).sort().map(t => ({ abbr: t, active: t === teamFilter, bg: t === teamFilter ? 'var(--ac,#ff8a4c)' : '#13161e', fg: t === teamFilter ? '#0a0c11' : '#9aa3b2', border: t === teamFilter ? 'transparent' : 'rgba(255,255,255,.09)' }));
+    const sortOptions = ['score','ev','edge','odds','park'].map(s => ({ key: s, label: s === 'score' ? 'Score' : s === 'ev' ? 'EV' : s === 'edge' ? 'Edge' : s === 'odds' ? 'Odds' : 'Park', active: s === sortBy, bg: s === sortBy ? 'var(--ac,#ff8a4c)' : 'transparent', fg: s === sortBy ? '#0a0c11' : '#9aa3b2', border: s === sortBy ? 'transparent' : 'rgba(255,255,255,.09)' }));
+    // Filtered stars
+    const filteredStars = filteredEnriched.filter(p => p.score >= 70).slice(0, 12);
+    const hasDue = filteredEnriched.some(p => p.isDue);
+    const dueList = filteredEnriched.filter(p => p.isDue).slice(0, 6);
 
     // Search + watchlist
     const watchSet = new Set(this.state.watch);
@@ -1639,9 +1868,20 @@ class Component extends DCLogic {
       parlayOdds, parlayWin, parlayEv, parlayPayout, stake,
       addToSlip: this.addToSlip, removeFromSlip: this.removeFromSlip, clearSlip: this.clearSlip,
       saveTrack: this.saveTrack, addComboLegs: this.addComboLegs, trackCombo: this.trackCombo,
-      setResult: this.setResult, setStake: this.setStake, setStakePreset: this.setStakePreset,
+      setResult: this.setResult, setStake: this.setStake, setStakePreset: this.setStakePreset, sendToBook: this.sendToBook,
+      clipText: this.state.clipText || '', clipBook: this.state.clipBook || '', clipUrl: this.state.clipUrl || '',
+      clipCopied: !!this.state.clipCopied, showClipModal: !!this.state.copiedId,
+      closeClipModal: () => this.setState({ copiedId: null, clipText: '', clipBook: '', clipUrl: '' }),
       // Tracking
       trackedList, hasTracked: tracked.length > 0, noTracked: tracked.length === 0,
+      // Sort + filter + discovery
+      sortBy, sortOptions, teamOptions, teamFilter, setSort: this.setSort, setTeamFilter: this.setTeamFilter, clearTeamFilter: this.clearTeamFilter,
+      hasTeamFilter: !!teamFilter, filteredCount: filteredEnriched.length,
+      hasDue, dueList: dueList.map(p => Object.assign({}, byId[p.id] || {}, {
+        isDue: true, dueName: p.name, dueTeam: p.teamAbbr, dueScore: p.score,
+        dueBarrel: p.barrelPct ? p.barrelPct.toFixed(1) + '% brl' : '', dueHH: p.hardHitPct ? p.hardHitPct.toFixed(0) + '% HH' : '',
+        dueOdds: p.oddsAm != null ? (p.oddsAm > 0 ? '+' : '') + p.oddsAm : '—'
+      })),
       // Search + watchlist
       search: this.state.search, setSearch: this.setSearch, clearSearch: this.clearSearch,
       searchResults, hasSearch: searchResults.length > 0, searchActive: searchTerm.length >= 2,
