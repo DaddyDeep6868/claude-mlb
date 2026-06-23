@@ -218,7 +218,11 @@
         </sc-if>
 
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <div style="display:flex;align-items:center;gap:9px"><span style="font-size:18px">⭐</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Top Star Plays</h2></div>
+          <div style="display:flex;align-items:center;gap:9px"><span style="font-size:18px">⭐</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Top Star Plays</h2>
+            <sc-if value="{{ compareAId }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:11px;padding:4px 9px;border-radius:20px;background:rgba(255,138,76,.15);color:var(--ac,#ff8a4c);font-weight:700">⚖️ A set — pick B</span>
+            </sc-if>
+          </div>
           <button data-tab="games" onClick="{{ setTab }}" style="background:none;border:1px solid rgba(255,255,255,.12);color:#9aa3b2;font-weight:600;font-size:12.5px;padding:7px 13px;border-radius:9px;cursor:pointer" style-hover="border-color:var(--ac,#ff8a4c);color:#eef1f6">View all games →</button>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:12px;margin-bottom:30px">
@@ -243,10 +247,11 @@
                 <div style="text-align:center"><div style="font-size:10.5px;color:#7b8597;font-weight:600">best</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:16px">{{ p.best }}</div></div>
                 <div style="text-align:right"><div style="font-size:10.5px;color:#7b8597;font-weight:600">EV</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:16px;color:{{ p.evColor }}">{{ p.ev }}</div></div>
               </div>
-              <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
                 <sc-for list="{{ p.badges }}" as="b" hint-placeholder-count="2">
                   <span style="font-size:10.5px;font-weight:700;padding:4px 8px;border-radius:7px;background:{{ b.bg }};color:{{ b.fg }}">{{ b.label }}</span>
                 </sc-for>
+                <button data-compare="{{ p.id }}" onClick="{{ addCompare }}" title="Compare" style="margin-left:auto;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:transparent;cursor:pointer;font-size:11px;font-weight:700;color:#9aa3b2" style-hover="color:#ffc24d;border-color:rgba(255,194,77,.35)">⚖️ Compare</button>
               </div>
             </div>
           </sc-for>
@@ -436,6 +441,110 @@
       <!-- BUILDER / TRACKING / RESEARCH / TOOLS (static design screens) -->
       <sc-if value="{{ isBuilder }}" hint-placeholder-val="{{ false }}">
       <div style="animation:dlrise .35s ease both">
+
+        <!-- WIN RATE OPTIMIZER -->
+        <div style="margin-bottom:32px">
+          <div style="font-size:11px;letter-spacing:.14em;color:var(--pos,#35d0c0);font-weight:700;margin-bottom:6px">WIN RATE OPTIMIZER</div>
+          <h1 style="margin:0 0 4px;font-family:'Space Grotesk';font-size:26px;font-weight:700;letter-spacing:-.02em">Best parlay for your leg count</h1>
+          <p style="margin:0 0 18px;color:#8b94a6;font-size:13.5px;max-width:600px">True win probability = product of each leg's model probability. Fewer legs of stronger players beats more legs at longer odds — every time.</p>
+
+          <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-bottom:20px">
+            <div>
+              <div style="font-size:11px;color:#7b8597;font-weight:700;letter-spacing:.04em;margin-bottom:7px">LEGS</div>
+              <div style="display:flex;gap:5px">
+                <button data-legs="2" onClick="{{ wroSetLegs }}" style="width:38px;height:38px;display:grid;place-items:center;border-radius:9px;font-family:'Space Grotesk';font-weight:700;font-size:15px;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:{{ wroLegs === 2 ? 'var(--pos,#35d0c0)' : '#0c0e14' }};color:{{ wroLegs === 2 ? '#0a0c11' : '#9aa3b2' }}">2</button>
+                <button data-legs="3" onClick="{{ wroSetLegs }}" style="width:38px;height:38px;display:grid;place-items:center;border-radius:9px;font-family:'Space Grotesk';font-weight:700;font-size:15px;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:{{ wroLegs === 3 ? 'var(--pos,#35d0c0)' : '#0c0e14' }};color:{{ wroLegs === 3 ? '#0a0c11' : '#9aa3b2' }}">3</button>
+                <button data-legs="4" onClick="{{ wroSetLegs }}" style="width:38px;height:38px;display:grid;place-items:center;border-radius:9px;font-family:'Space Grotesk';font-weight:700;font-size:15px;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:{{ wroLegs === 4 ? 'var(--pos,#35d0c0)' : '#0c0e14' }};color:{{ wroLegs === 4 ? '#0a0c11' : '#9aa3b2' }}">4</button>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:#7b8597;font-weight:700;letter-spacing:.04em;margin-bottom:7px">OPTIMIZE FOR</div>
+              <div style="display:flex;gap:5px">
+                <button data-mode="winrate" onClick="{{ wroSetMode }}" style="padding:9px 13px;border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:{{ wroMode === 'winrate' ? 'var(--pos,#35d0c0)' : '#0c0e14' }};color:{{ wroMode === 'winrate' ? '#0a0c11' : '#9aa3b2' }}">🎯 Win Rate</button>
+                <button data-mode="ev" onClick="{{ wroSetMode }}" style="padding:9px 13px;border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:{{ wroMode === 'ev' ? 'var(--pos,#35d0c0)' : '#0c0e14' }};color:{{ wroMode === 'ev' ? '#0a0c11' : '#9aa3b2' }}">💰 Best EV</button>
+                <button data-mode="balanced" onClick="{{ wroSetMode }}" style="padding:9px 13px;border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:{{ wroMode === 'balanced' ? 'var(--pos,#35d0c0)' : '#0c0e14' }};color:{{ wroMode === 'balanced' ? '#0a0c11' : '#9aa3b2' }}">⚖️ Balanced</button>
+              </div>
+            </div>
+          </div>
+
+          <sc-if value="{{ wro }}" hint-placeholder-val="{{ true }}">
+            <!-- Result card -->
+            <div style="background:#13161e;border:1px solid rgba(53,208,192,.22);border-radius:18px;overflow:hidden">
+              <!-- Stats bar -->
+              <div style="display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid rgba(255,255,255,.07)">
+                <div style="flex:1;min-width:100px;padding:14px 18px;border-right:1px solid rgba(255,255,255,.06)">
+                  <div style="font-size:10.5px;color:#7b8597;font-weight:700;letter-spacing:.04em">TRUE WIN%</div>
+                  <div style="font-family:'Space Grotesk';font-size:24px;font-weight:700;margin-top:4px;color:var(--pos,#35d0c0)">{{ wro.winPct }}%</div>
+                  <div style="font-size:11px;color:#7b8597;margin-top:2px">our model</div>
+                </div>
+                <div style="flex:1;min-width:100px;padding:14px 18px;border-right:1px solid rgba(255,255,255,.06)">
+                  <div style="font-size:10.5px;color:#7b8597;font-weight:700;letter-spacing:.04em">MARKET WIN%</div>
+                  <div style="font-family:'Space Grotesk';font-size:24px;font-weight:700;margin-top:4px">{{ wro.hasOdds ? wro.marketImpPct + '%' : '—' }}</div>
+                  <div style="font-size:11px;color:#7b8597;margin-top:2px">implied by odds</div>
+                </div>
+                <div style="flex:1;min-width:100px;padding:14px 18px;border-right:1px solid rgba(255,255,255,.06)">
+                  <div style="font-size:10.5px;color:#7b8597;font-weight:700;letter-spacing:.04em">PARLAY EV</div>
+                  <div style="font-family:'Space Grotesk';font-size:24px;font-weight:700;margin-top:4px;color:{{ wro.hasOdds ? (wro.parleyEv >= 0 ? 'var(--pos,#35d0c0)' : '#ff8d8d') : '#9aa3b2' }}">{{ wro.hasOdds ? (wro.parleyEv >= 0 ? '+' : '') + wro.parleyEv + '%' : '—' }}</div>
+                  <div style="font-size:11px;color:#7b8597;margin-top:2px">expected return</div>
+                </div>
+                <div style="flex:1;min-width:100px;padding:14px 18px;border-right:1px solid rgba(255,255,255,.06)">
+                  <div style="font-size:10.5px;color:#7b8597;font-weight:700;letter-spacing:.04em">COMBINED ODDS</div>
+                  <div style="font-family:'Space Grotesk';font-size:24px;font-weight:700;margin-top:4px;color:var(--ac,#ff8a4c)">{{ wro.comboAm }}</div>
+                  <div style="font-size:11px;color:#7b8597;margin-top:2px">to win on $10</div>
+                </div>
+                <div style="flex:none;padding:14px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:70px">
+                  <div style="font-size:10.5px;color:#7b8597;font-weight:700;letter-spacing:.04em;margin-bottom:4px">GRADE</div>
+                  <div style="font-family:'Space Grotesk';font-size:28px;font-weight:700;color:{{ wro.gradeColor }}">{{ wro.grade }}</div>
+                </div>
+              </div>
+
+              <!-- Warnings -->
+              <sc-if value="{{ wro.warnLow }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:10px 18px;background:rgba(255,194,77,.08);border-bottom:1px solid rgba(255,194,77,.15);font-size:12.5px;color:#ffc24d">⚠️ True win probability below 1% — consider dropping to fewer legs or targeting higher-probability plays.</div>
+              </sc-if>
+              <sc-if value="{{ wro.warnEv }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:10px 18px;background:rgba(255,107,107,.08);border-bottom:1px solid rgba(255,107,107,.15);font-size:12.5px;color:#ff8d8d">⚠️ Negative expected value — the book has edge here. Switching to Best EV mode may find better-priced legs.</div>
+              </sc-if>
+
+              <!-- Legs -->
+              <div style="padding:16px 18px 10px;display:flex;flex-direction:column;gap:10px">
+                <sc-for list="{{ wro.legs }}" as="l" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:13px;background:#0c0e14;border:1px solid {{ l.isLocked ? 'rgba(255,194,77,.28)' : 'rgba(255,255,255,.07)' }}">
+                    <div data-player="{{ l.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;width:44px;height:44px;flex:none;border-radius:50%;background:{{ l.ring }};display:grid;place-items:center">
+                      <div style="width:34px;height:34px;border-radius:50%;background:#0c0e14;display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:14px">{{ l.score }}</div>
+                    </div>
+                    <div style="flex:1;min-width:0">
+                      <div style="font-weight:700;font-size:14px">{{ l.name }}</div>
+                      <div style="font-size:12px;color:#7b8597;margin-top:2px">{{ l.team }} vs {{ l.opp }} · {{ l.why }}</div>
+                    </div>
+                    <div style="text-align:center;min-width:50px"><div style="font-size:10px;color:#7b8597;font-weight:600">HR%</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:14px">{{ l.modelPct }}%</div></div>
+                    <div style="text-align:center;min-width:46px"><div style="font-size:10px;color:#7b8597;font-weight:600">ODDS</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:14px;color:var(--ac,#ff8a4c)">{{ l.odds }}</div></div>
+                    <div style="text-align:center;min-width:44px"><div style="font-size:10px;color:#7b8597;font-weight:600">EV</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:14px;color:{{ l.evColor }}">{{ l.ev }}</div></div>
+                    <button data-lockid="{{ l.id }}" onClick="{{ wroToggleLock }}" title="{{ l.isLocked ? 'Unlock' : 'Lock this leg' }}" style="width:32px;height:32px;flex:none;border-radius:8px;border:1px solid {{ l.lockBg }};background:{{ l.lockBg }};cursor:pointer;font-size:14px;color:{{ l.lockColor }}">{{ l.isLocked ? '🔒' : '🔓' }}</button>
+                  </div>
+                </sc-for>
+              </div>
+
+              <!-- Next / Reset row -->
+              <div style="display:flex;gap:8px;padding:10px 18px;border-top:1px solid rgba(255,255,255,.05)">
+                <button onClick="{{ wroNext }}" style="flex:1;padding:9px;border:1px solid rgba(255,255,255,.12);border-radius:10px;cursor:pointer;font-weight:700;font-size:13px;color:#eef1f6;background:transparent">⟳ Next combo</button>
+                <button onClick="{{ wroReset }}" style="padding:9px 14px;border:1px solid rgba(255,255,255,.08);border-radius:10px;cursor:pointer;font-weight:600;font-size:12.5px;color:#7b8597;background:transparent">↩ Best</button>
+                <span style="display:flex;align-items:center;font-size:11.5px;color:#5f6878;padding:0 6px">combo #{{ wroSeed }}</span>
+              </div>
+
+              <!-- Win probability education -->
+              <div style="padding:12px 18px 16px;border-top:1px solid rgba(255,255,255,.05)">
+                <div style="font-size:11.5px;color:#7b8597;line-height:1.6">True win probability = <span style="color:#eef1f6">{{ wro.winFormula }}</span>. Assumes full independence (cross-game legs only). <span style="color:#ffc24d">Add all to slip →</span></div>
+                <div style="display:flex;gap:8px;margin-top:12px">
+                  <button onClick="{{ addWroToSlip }}" style="flex:1;padding:11px;border:none;border-radius:11px;cursor:pointer;font-weight:800;font-size:14px;color:#0a0c11;background:var(--pos,#35d0c0)">+ Add all legs to slip</button>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="border-top:1px solid rgba(255,255,255,.07);margin-bottom:28px"></div>
+
         <div style="margin-bottom:18px">
           <div style="font-size:11px;letter-spacing:.14em;color:var(--ac,#ff8a4c);font-weight:700;margin-bottom:6px">CROSS PLAY BUILDER</div>
           <h1 style="margin:0;font-family:'Space Grotesk';font-size:28px;font-weight:700;letter-spacing:-.02em">Build cross-game slips</h1>
@@ -868,6 +977,67 @@
     </button>
   </sc-if>
 
+  <!-- Compare panel -->
+  <sc-if value="{{ showCompare }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);overflow-y:auto;padding:24px 16px 40px">
+      <div style="max-width:860px;margin:0 auto;background:#13161e;border:1px solid rgba(255,255,255,.1);border-radius:20px;overflow:hidden;animation:dlrise .22s ease both">
+
+        <!-- Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.07);background:#0c0e14">
+          <div style="display:flex;align-items:center;gap:10px"><span style="font-size:20px">⚖️</span><span style="font-family:'Space Grotesk';font-weight:700;font-size:18px">Head-to-Head Compare</span></div>
+          <button onClick="{{ closeCompare }}" style="width:34px;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#161a24;color:#9aa3b2;cursor:pointer;font-size:17px" style-hover="color:#fff">✕</button>
+        </div>
+
+        <!-- Player headers -->
+        <div style="display:grid;grid-template-columns:1fr 80px 1fr;gap:0;border-bottom:1px solid rgba(255,255,255,.07)">
+          <div style="padding:18px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px">
+            <div style="width:64px;height:64px;border-radius:50%;background:{{ comparePanel.pa.ring }};display:grid;place-items:center">
+              <div style="width:50px;height:50px;border-radius:50%;background:#13161e;display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:20px">{{ comparePanel.pa.score }}</div>
+            </div>
+            <div style="font-weight:700;font-size:16px">{{ comparePanel.pa.name }}</div>
+            <div style="font-size:12px;color:#7b8597">{{ comparePanel.pa.matchup }}</div>
+            <div style="font-size:11px;color:#7b8597">vs {{ comparePanel.aOpp }}</div>
+            <sc-if value="{{ comparePanel.aVerdict }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:rgba(255,138,76,.18);color:var(--ac,#ff8a4c)">{{ comparePanel.aWins }}/{{ comparePanel.pa.score }} edge wins</span>
+            </sc-if>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:center;border-left:1px solid rgba(255,255,255,.07);border-right:1px solid rgba(255,255,255,.07)">
+            <span style="font-family:'Space Grotesk';font-weight:700;font-size:13px;color:#5f6878">vs</span>
+          </div>
+          <div style="padding:18px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px">
+            <div style="width:64px;height:64px;border-radius:50%;background:{{ comparePanel.pb.ring }};display:grid;place-items:center">
+              <div style="width:50px;height:50px;border-radius:50%;background:#13161e;display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:20px">{{ comparePanel.pb.score }}</div>
+            </div>
+            <div style="font-weight:700;font-size:16px">{{ comparePanel.pb.name }}</div>
+            <div style="font-size:12px;color:#7b8597">{{ comparePanel.pb.matchup }}</div>
+            <div style="font-size:11px;color:#7b8597">vs {{ comparePanel.bOpp }}</div>
+            <sc-if value="{{ comparePanel.bVerdict }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:rgba(255,138,76,.18);color:var(--ac,#ff8a4c)">{{ comparePanel.bWins }}/{{ comparePanel.pb.score }} edge wins</span>
+            </sc-if>
+          </div>
+        </div>
+
+        <!-- Stat rows -->
+        <div style="padding:6px 0">
+          <sc-for list="{{ comparePanel.rows }}" as="r" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:1fr 120px 1fr;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+              <div style="padding:0 20px;text-align:right;font-family:'Space Grotesk';font-weight:{{ r.aBold }};font-size:14px;color:{{ r.aColor }}">{{ r.va }}</div>
+              <div style="text-align:center;font-size:11px;color:#7b8597;font-weight:600;padding:0 8px">{{ r.label }}</div>
+              <div style="padding:0 20px;font-family:'Space Grotesk';font-weight:{{ r.bBold }};font-size:14px;color:{{ r.bColor }}">{{ r.vb }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- Footer actions -->
+        <div style="display:flex;gap:10px;padding:16px 20px;border-top:1px solid rgba(255,255,255,.07);background:#0c0e14">
+          <button data-player="{{ comparePanel.pa.id }}" onClick="{{ openDrawer }}" style="flex:1;padding:11px;border:1px solid rgba(255,255,255,.12);border-radius:11px;cursor:pointer;font-weight:700;font-size:13px;color:#eef1f6;background:#13161e">Open {{ comparePanel.pa.name }} report</button>
+          <button data-player="{{ comparePanel.pb.id }}" onClick="{{ openDrawer }}" style="flex:1;padding:11px;border:1px solid rgba(255,255,255,.12);border-radius:11px;cursor:pointer;font-weight:700;font-size:13px;color:#eef1f6;background:#13161e">Open {{ comparePanel.pb.name }} report</button>
+          <button onClick="{{ closeCompare }}" style="padding:11px 16px;border:none;border-radius:11px;cursor:pointer;font-weight:700;font-size:13px;color:#0a0c11;background:var(--ac,#ff8a4c)">Done</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
   <!-- Mobile bottom nav -->
   <nav data-bottomnav style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:60;background:rgba(13,15,21,.96);backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.09);padding:7px 6px calc(7px + env(safe-area-inset-bottom));overflow-x:auto;gap:2px;justify-content:space-between">
     <sc-for list="{{ nav }}" as="n" hint-placeholder-count="8">
@@ -973,7 +1143,7 @@
   &quot;compact&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot; }
 }">
 class Component extends DCLogic {
-  state = { tab: 'dashboard', drawerOpen: false, player: null, status: 'loading', data: null, slip: [], tracked: [], stake: '25', builderLegs: 3, builderStyle: 'balanced', builderMarket: 'hr', slipOpen: true, proxyUrl: 'https://claude-mlb.onrender.com', autoPoll: true, lastUpdated: null, search: '', watch: [], ulxSeed: 0, copiedId: null, sortBy: 'score', teamFilter: null };
+  state = { tab: 'dashboard', drawerOpen: false, player: null, status: 'loading', data: null, slip: [], tracked: [], stake: '25', builderLegs: 3, builderStyle: 'balanced', builderMarket: 'hr', slipOpen: true, proxyUrl: 'https://claude-mlb.onrender.com', autoPoll: true, lastUpdated: null, search: '', watch: [], ulxSeed: 0, copiedId: null, sortBy: 'score', teamFilter: null, compareA: null, compareB: null, wroLegs: 3, wroMode: 'winrate', wroSeed: 0, wroLocked: {} };
 
   componentDidMount() {
     try { const p = localStorage.getItem('dl_odds_proxy'); if (p) this.setState({ proxyUrl: p }); } catch (e) {}
@@ -1029,6 +1199,30 @@ class Component extends DCLogic {
   setSearch = (e) => { this.setState({ search: e.target.value }); };
   clearSearch = () => { this.setState({ search: '' }); };
   setSort = (e) => { const k = e.currentTarget.dataset.sort; this.setState(s => ({ sortBy: s.sortBy === k ? 'score' : k })); };
+  wroNext = () => { this.setState(s => ({ wroSeed: s.wroSeed + 1 })); };
+  wroReset = () => { this.setState({ wroSeed: 0, wroLocked: {} }); };
+  wroToggleLock = (e) => { const id = e.currentTarget.dataset.lockid; this.setState(s => { const l = Object.assign({}, s.wroLocked); l[id] ? delete l[id] : (l[id] = true); return { wroLocked: l }; }); };
+  addWroToSlip = () => {
+    const wro = this._lastWro;
+    if (!wro || !wro.legs) return;
+    const byId = {}; ((this.state.data && this.state.data.players) || []).forEach(p => { byId[String(p.id)] = p; });
+    const newLegs = wro.legs.map(l => { const pl = byId[l.id]; return { id: l.id, name: l.name, team: l.team, market: 'HR', oddsAm: l.oddsAm, odds: l.odds, modelPct: l.modelPct, time: pl ? pl.time : '' }; });
+    const existing = this.state.slip.map(s => s.id);
+    const toAdd = newLegs.filter(l => !existing.includes(l.id));
+    this.setState(s => ({ slip: [...s.slip, ...toAdd] }));
+  };
+  addCompare = (e) => {
+    e.stopPropagation();
+    const id = e.currentTarget.dataset.compare;
+    this.setState(s => {
+      if (s.compareA && s.compareA.id === id) return { compareA: null };
+      if (s.compareB && s.compareB.id === id) return { compareB: null };
+      if (!s.compareA) return { compareA: { id } };
+      if (!s.compareB) return { compareB: { id } };
+      return { compareA: { id }, compareB: null };
+    });
+  };
+  closeCompare = () => { this.setState({ compareA: null, compareB: null }); };
   setTeamFilter = (e) => { const t = e.currentTarget.dataset.team; this.setState(s => ({ teamFilter: s.teamFilter === t ? null : t })); };
   clearTeamFilter = () => { this.setState({ teamFilter: null }); };
   toggleWatch = (e) => {
@@ -1836,6 +2030,63 @@ class Component extends DCLogic {
     return {
       accent: this.props.accent ?? '#ff8a4c', positive: this.props.positive ?? '#35d0c0', pad: (this.props.compact ? '12px' : '18px'),
       nav, setTab: (e) => this.setState({ tab: e.currentTarget.dataset.tab }),
+      // Win Rate Optimizer
+      wroLegs: this.state.wroLegs || 3, wroMode: this.state.wroMode || 'winrate',
+      wroSeed: this.state.wroSeed || 0,
+      wroSetLegs: (e) => this.setState({ wroLegs: parseInt(e.currentTarget.dataset.legs), wroSeed: 0, wroLocked: {} }),
+      wroSetMode: (e) => this.setState({ wroMode: e.currentTarget.dataset.mode, wroSeed: 0, wroLocked: {} }),
+      addWroToSlip: this.addWroToSlip, wroNext: this.wroNext, wroReset: this.wroReset, wroToggleLock: this.wroToggleLock,
+      wro: (()=>{
+        const nLegs = this.state.wroLegs || 3, mode = this.state.wroMode || 'winrate';
+        const seed = this.state.wroSeed || 0;
+        const locked = this.state.wroLocked || {};
+        const lockedIds = Object.keys(locked);
+        const pool = enriched.filter(p => p.modelPct >= 8 && (p.pa || 0) >= 60);
+        if (pool.length < nLegs) return null;
+        const score = p => mode === 'winrate' ? p.modelPct : mode === 'ev' ? (p.edgeNum != null ? p.edgeNum : 0) : (p.modelPct * (1 + Math.max(0, p.edgeNum || 0) / 100));
+        // Locked legs first
+        const lockedPlayers = lockedIds.map(id => byId[id]).filter(Boolean);
+        const lockedGames = new Set(lockedPlayers.map(p => p.gameId));
+        // Sort pool, skip first `seed` eligible players per game for unlocked slots
+        const sorted = [...pool].filter(p => !lockedIds.includes(p.id)).sort((a, b) => score(b) - score(a));
+        const nUnlocked = nLegs - lockedPlayers.length;
+        const picked = [...lockedPlayers];
+        const usedGames = new Set(lockedGames);
+        // Skip `seed` best options to find alternative combos
+        let skipped = 0;
+        for (const p of sorted) {
+          if (picked.length >= nLegs) break;
+          if (!usedGames.has(p.gameId)) {
+            if (skipped < seed && !lockedIds.includes(p.id)) { skipped++; continue; }
+            picked.push(p); usedGames.add(p.gameId);
+          }
+        }
+        // Fallback: fill ignoring game uniqueness
+        if (picked.length < nLegs) { for (const p of sorted) { if (picked.length >= nLegs) break; if (!picked.find(x => x.id === p.id)) picked.push(p); } }
+        if (picked.length < nLegs) return null;
+        const trueWin = picked.reduce((s, p) => s * (p.modelPct / 100), 1);
+        const hasOddsAll = picked.every(p => p.oddsAm != null);
+        const comboDec = hasOddsAll ? picked.reduce((s, p) => s * this.amDec(p.oddsAm), 1) : null;
+        const marketImp = comboDec ? 1 / comboDec : null;
+        const parleyEv = comboDec ? (trueWin * comboDec - 1) * 100 : null;
+        const comboAm = comboDec ? this.decAm(comboDec) : '—';
+        const ourEdge = marketImp ? +((trueWin - marketImp) * 100).toFixed(1) : null;
+        const winPct = +(trueWin * 100).toFixed(2);
+        const grade = parleyEv != null ? (parleyEv >= 15 ? 'A' : parleyEv >= 8 ? 'B+' : parleyEv >= 3 ? 'B' : parleyEv >= 0 ? 'C' : 'D') : (winPct >= 3 ? 'B' : winPct >= 1 ? 'C' : 'D');
+        const gradeColor = grade === 'A' ? 'var(--ac,#ff8a4c)' : grade.startsWith('B') ? 'var(--pos,#35d0c0)' : grade === 'C' ? '#ffc24d' : '#ff8d8d';
+        const warnLow = winPct < 1.0, warnEv = parleyEv != null && parleyEv < 0;
+        const legs = picked.map(p => ({
+          id: p.id, name: p.name, team: p.teamAbbr, opp: p.oppAbbr, odds: p.best || '—', oddsAm: p.oddsAm,
+          modelPct: p.modelPct, ev: p.ev || '—', evColor: p.evColor || '#9aa3b2',
+          edge: p.edgeNum != null ? (p.edgeNum >= 0 ? '+' : '') + p.edgeNum : '—',
+          ring: p.ring, score: p.score, why: mode === 'winrate' ? 'Highest model probability' : mode === 'ev' ? 'Best EV edge' : 'Balanced win% + EV',
+          isLocked: !!locked[p.id], lockBg: locked[p.id] ? 'rgba(255,194,77,.18)' : 'rgba(255,255,255,.07)', lockColor: locked[p.id] ? '#ffc24d' : '#5f6878'
+        }));
+        const winFormula = legs.map(l => l.modelPct + '%').join(' × ') + ' = ' + winPct + '%';
+        const result = { legs, nLegs, winPct, marketImpPct: marketImp ? +(marketImp * 100).toFixed(2) : null, parleyEv: parleyEv != null ? +parleyEv.toFixed(1) : null, comboAm, ourEdge, grade, gradeColor, warnLow, warnEv, hasOdds: hasOddsAll, mode, winFormula };
+        this._lastWro = result;
+        return result;
+      })(),
       isDash: tab === 'dashboard', isGames: tab === 'games', isBuilder: tab === 'builder',
       isData: tab === 'data', isTrack: tab === 'track', isLive: tab === 'live',
       isResearch: tab === 'research', isTools: tab === 'tools', isMisc: false,
@@ -1874,6 +2125,44 @@ class Component extends DCLogic {
       closeClipModal: () => this.setState({ copiedId: null, clipText: '', clipBook: '', clipUrl: '' }),
       // Tracking
       trackedList, hasTracked: tracked.length > 0, noTracked: tracked.length === 0,
+      // Compare
+      addCompare: this.addCompare, closeCompare: this.closeCompare,
+      compareAId: this.state.compareA ? this.state.compareA.id : null,
+      compareBId: this.state.compareB ? this.state.compareB.id : null,
+      showCompare: !!(this.state.compareA && this.state.compareB),
+      comparePanel: (()=>{
+        if (!this.state.compareA || !this.state.compareB) return null;
+        const pa = byId[this.state.compareA.id], pb = byId[this.state.compareB.id];
+        if (!pa || !pb) return null;
+        const mk = (label, va, vb, higherBetter=true) => {
+          const na = parseFloat(String(va).replace(/[^0-9.\-]/g,'')), nb = parseFloat(String(vb).replace(/[^0-9.\-]/g,''));
+          const aWins = !isNaN(na) && !isNaN(nb) && (higherBetter ? na > nb : na < nb);
+          const bWins = !isNaN(na) && !isNaN(nb) && (higherBetter ? nb > na : nb < na);
+          return { label, va: String(va), vb: String(vb), aWins, bWins, aColor: aWins ? 'var(--ac,#ff8a4c)' : '#eef1f6', bColor: bWins ? 'var(--ac,#ff8a4c)' : '#eef1f6', aBold: aWins ? '700' : '500', bBold: bWins ? '700' : '500' };
+        };
+        const rows = [
+          mk('Dinger Score', pa.score, pb.score),
+          mk('Model HR%', pa.modelPct+'%', pb.modelPct+'%'),
+          mk('Best odds', pa.best||'—', pb.best||'—', false),
+          mk('EV', pa.ev||'—', pb.ev||'—'),
+          mk('Edge (prob pts)', pa.edgeNum!=null?pa.edgeNum:'—', pb.edgeNum!=null?pb.edgeNum:'—'),
+          mk('Park factor', pa.parkF, pb.parkF),
+          mk('Platoon mult', pa.platoon!=null?pa.platoon:1, pb.platoon!=null?pb.platoon:1),
+          mk('Barrel%', pa.barrelPct||'—', pb.barrelPct||'—'),
+          mk('Hard-hit%', pa.hardHitPct||'—', pb.hardHitPct||'—'),
+          mk('Opp HR/9 (season)', pa.oppHR9||'—', pb.oppHR9||'—'),
+          mk('Pitcher form (L3 HR/9)', pa.recHr9!=null?pa.recHr9:'n/a', pb.recHr9!=null?pb.recHr9:'n/a'),
+          mk('Day/night mult', pa.dnMult||1, pb.dnMult||1),
+          mk('Weather mult', (pa.wx&&pa.wx.mult)||1, (pb.wx&&pb.wx.mult)||1),
+        ];
+        return { pa, pb, rows,
+          aPark: pa.venue, bPark: pb.venue,
+          aOpp: pa.oppPitcher, bOpp: pb.oppPitcher,
+          aWins: rows.filter(r=>r.aWins).length, bWins: rows.filter(r=>r.bWins).length,
+          aVerdict: rows.filter(r=>r.aWins).length > rows.filter(r=>r.bWins).length ? 'Edge' : rows.filter(r=>r.bWins).length > rows.filter(r=>r.aWins).length ? '' : 'Even',
+          bVerdict: rows.filter(r=>r.bWins).length > rows.filter(r=>r.aWins).length ? 'Edge' : rows.filter(r=>r.aWins).length > rows.filter(r=>r.bWins).length ? '' : 'Even'
+        };
+      })(),
       // Sort + filter + discovery
       sortBy, sortOptions, teamOptions, teamFilter, setSort: this.setSort, setTeamFilter: this.setTeamFilter, clearTeamFilter: this.clearTeamFilter,
       hasTeamFilter: !!teamFilter, filteredCount: filteredEnriched.length,
