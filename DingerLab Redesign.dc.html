@@ -442,6 +442,87 @@
       <sc-if value="{{ isBuilder }}" hint-placeholder-val="{{ false }}">
       <div style="animation:dlrise .35s ease both">
 
+        <!-- PARETO FRONTIER PICKER -->
+        <sc-if value="{{ hasFrontier }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-bottom:34px">
+          <div style="font-size:11px;letter-spacing:.14em;color:var(--ac,#ff8a4c);font-weight:700;margin-bottom:6px">RISK / REWARD FRONTIER</div>
+          <h1 style="margin:0 0 4px;font-family:'Space Grotesk';font-size:26px;font-weight:700;letter-spacing:-.02em">Pick your spot on the curve</h1>
+          <p style="margin:0 0 16px;color:#8b94a6;font-size:13.5px;max-width:620px">Every cross-game parlay plotted by win probability vs payout. The bright curve is the <b style="color:#c3cad6">efficient frontier</b> — slips where you can't win more without lowering your odds of winning. Drag to choose how much risk you want.</p>
+
+          <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:18px 18px 20px">
+            <!-- Scatter plot -->
+            <div style="position:relative;width:100%">
+              <svg viewBox="{{ frontierViewBox }}" preserveAspectRatio="none" style="width:100%;height:300px;display:block">
+                <!-- axis labels -->
+                <text x="6" y="34" fill="#5f6878" font-size="20" font-family="Space Grotesk">{{ frAxisYTop }}</text>
+                <text x="6" y="362" fill="#5f6878" font-size="20" font-family="Space Grotesk">{{ frAxisYBot }}</text>
+                <text x="96" y="412" fill="#5f6878" font-size="20" font-family="Space Grotesk">{{ frAxisXLeft }} win</text>
+                <text x="800" y="412" fill="#5f6878" font-size="20" font-family="Space Grotesk">{{ frAxisXRight }} win</text>
+                <!-- all combos (faint) -->
+                <sc-for list="{{ frontierAllPts }}" as="pt" hint-placeholder-count="40">
+                  <circle cx="{{ pt.cx }}" cy="{{ pt.cy }}" r="{{ pt.r }}" fill="{{ pt.fill }}"></circle>
+                </sc-for>
+                <!-- frontier line -->
+                <polyline points="{{ frontierLine }}" fill="none" stroke="rgba(53,208,192,.5)" stroke-width="2.5" stroke-dasharray="2 6" stroke-linecap="round"></polyline>
+                <!-- frontier points -->
+                <sc-for list="{{ frontierPts }}" as="pt" hint-placeholder-count="6">
+                  <circle cx="{{ pt.cx }}" cy="{{ pt.cy }}" r="{{ pt.r }}" fill="{{ pt.fill }}" stroke="{{ pt.stroke }}" stroke-width="2.5"></circle>
+                </sc-for>
+              </svg>
+            </div>
+
+            <!-- Risk slider -->
+            <div style="display:flex;align-items:center;gap:14px;margin-top:8px;padding:0 2px">
+              <span style="font-size:11px;font-weight:700;color:var(--pos,#35d0c0);letter-spacing:.04em;flex:none">◀ SAFE</span>
+              <input type="range" min="0" max="{{ frontierMax }}" value="{{ frontierIdx }}" onInput="{{ setFrontierIdx }}" style="flex:1;accent-color:#ff8a4c;height:6px;cursor:pointer" />
+              <span style="font-size:11px;font-weight:700;color:var(--ac,#ff8a4c);letter-spacing:.04em;flex:none">MAX PAYOUT ▶</span>
+            </div>
+
+            <!-- Selected parlay -->
+            <div style="margin-top:18px;border-top:1px solid rgba(255,255,255,.07);padding-top:16px">
+              <div style="display:flex;flex-wrap:wrap;gap:0;border:1px solid rgba(255,255,255,.07);border-radius:13px;overflow:hidden;margin-bottom:14px">
+                <div style="flex:1;min-width:88px;padding:12px 14px;border-right:1px solid rgba(255,255,255,.06)">
+                  <div style="font-size:10px;color:#7b8597;font-weight:700;letter-spacing:.04em">PROFILE</div>
+                  <div style="font-family:'Space Grotesk';font-size:17px;font-weight:700;margin-top:3px;color:{{ frRiskColor }}">{{ frRiskLabel }}</div>
+                  <div style="font-size:11px;color:#7b8597;margin-top:1px">{{ frSelLegCount }} legs</div>
+                </div>
+                <div style="flex:1;min-width:88px;padding:12px 14px;border-right:1px solid rgba(255,255,255,.06)">
+                  <div style="font-size:10px;color:#7b8597;font-weight:700;letter-spacing:.04em">WIN%</div>
+                  <div style="font-family:'Space Grotesk';font-size:20px;font-weight:700;margin-top:3px;color:var(--pos,#35d0c0)">{{ frSelWin }}%</div>
+                </div>
+                <div style="flex:1;min-width:88px;padding:12px 14px;border-right:1px solid rgba(255,255,255,.06)">
+                  <div style="font-size:10px;color:#7b8597;font-weight:700;letter-spacing:.04em">$10 PAYS</div>
+                  <div style="font-family:'Space Grotesk';font-size:20px;font-weight:700;margin-top:3px;color:var(--ac,#ff8a4c)">{{ frSelPayout }}</div>
+                </div>
+                <div style="flex:1;min-width:88px;padding:12px 14px;border-right:1px solid rgba(255,255,255,.06)">
+                  <div style="font-size:10px;color:#7b8597;font-weight:700;letter-spacing:.04em">EV</div>
+                  <div style="font-family:'Space Grotesk';font-size:20px;font-weight:700;margin-top:3px;color:{{ frSelEvColor }}">{{ frSelEv }}</div>
+                </div>
+                <div style="flex:none;padding:12px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                  <div style="font-size:10px;color:#7b8597;font-weight:700;letter-spacing:.04em;margin-bottom:2px">GRADE</div>
+                  <div style="font-family:'Space Grotesk';font-size:24px;font-weight:700;color:{{ frSelGradeColor }}">{{ frSelGrade }}</div>
+                </div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+                <sc-for list="{{ frSelLegs }}" as="l" hint-placeholder-count="3">
+                  <div data-player="{{ l.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;display:flex;align-items:center;gap:12px;padding:10px 13px;border-radius:11px;background:#0c0e14;border:1px solid rgba(255,255,255,.06)">
+                    <div style="width:38px;height:38px;flex:none;border-radius:50%;background:{{ l.ring }};display:grid;place-items:center"><div style="width:29px;height:29px;border-radius:50%;background:#0c0e14;display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:13px">{{ l.score }}</div></div>
+                    <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px">{{ l.name }}</div><div style="font-size:11.5px;color:#7b8597;margin-top:1px">{{ l.team }} vs {{ l.opp }}</div></div>
+                    <div style="text-align:right"><div style="font-size:10px;color:#7b8597;font-weight:600">HR%</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:14px">{{ l.modelPct }}%</div></div>
+                    <div style="text-align:right;min-width:48px"><div style="font-size:10px;color:#7b8597;font-weight:600">ODDS</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:14px;color:var(--ac,#ff8a4c)">{{ l.odds }}</div></div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <button onClick="{{ addFrontierToSlip }}" style="width:100%;padding:12px;border:none;border-radius:11px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:800;font-size:14px;color:#0a0c11;background:var(--ac,#ff8a4c)" style-hover="filter:brightness(1.08)">+ Add this slip to bet slip</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid rgba(255,255,255,.07);margin-bottom:30px"></div>
+        </sc-if>
+
         <!-- WIN RATE OPTIMIZER -->
         <div style="margin-bottom:32px">
           <div style="font-size:11px;letter-spacing:.14em;color:var(--pos,#35d0c0);font-weight:700;margin-bottom:6px">WIN RATE OPTIMIZER</div>
@@ -762,7 +843,8 @@
             <!-- TOP VALUE PLAYS -->
             <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="font-size:17px">🎯</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:17px;font-weight:700">Top value plays</h2><span style="font-size:11px;color:#7b8597;margin-left:2px">{{ valueRankLabel }}</span></div>
             <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;margin-bottom:18px">
-              <table style="width:100%;border-collapse:collapse;font-size:13px">
+              <div style="overflow-x:auto">
+              <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:340px">
                 <thead><tr style="background:#0c0e14;color:#7b8597">
                   <th style="padding:10px 14px;font-weight:600;font-size:11px;text-align:left">PLAYER</th>
                   <th style="padding:10px 10px;font-weight:600;font-size:11px;text-align:right">MODEL%</th>
@@ -773,7 +855,7 @@
                 <tbody>
                   <sc-for list="{{ topValue }}" as="p" hint-placeholder-count="8">
                     <tr style="border-top:1px solid rgba(255,255,255,.05);cursor:pointer" data-player="{{ p.id }}" onClick="{{ openDrawer }}">
-                      <td style="padding:10px 14px;font-weight:600">{{ p.name }}<span style="color:#7b8597;font-size:11px;margin-left:7px">{{ p.teamAbbr }}</span></td>
+                      <td style="padding:10px 14px;font-weight:600;white-space:nowrap">{{ p.name }}<span style="color:#7b8597;font-size:11px;margin-left:7px">{{ p.teamAbbr }}</span></td>
                       <td style="padding:10px 10px;font-family:'Space Grotesk';text-align:right">{{ p.modelPct }}%</td>
                       <td style="padding:10px 10px;font-family:'Space Grotesk';font-weight:700;text-align:right">{{ p.best }}</td>
                       <td style="padding:10px 10px;font-family:'Space Grotesk';font-weight:700;text-align:right;color:var(--pos,#35d0c0)">{{ p.ev }}</td>
@@ -782,6 +864,7 @@
                   </sc-for>
                 </tbody>
               </table>
+              </div>
             </div>
 
             <!-- WHAT CHANGED -->
@@ -1147,7 +1230,7 @@
   &quot;compact&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot; }
 }">
 class Component extends DCLogic {
-  state = { tab: 'dashboard', drawerOpen: false, player: null, status: 'loading', data: null, slip: [], tracked: [], stake: '25', builderLegs: 3, builderStyle: 'balanced', builderMarket: 'hr', ulxSel: null, slipOpen: (typeof window !== 'undefined' && window.innerWidth <= 820) ? false : true, proxyUrl: 'https://claude-mlb.onrender.com', autoPoll: true, lastUpdated: null, search: '', watch: [], ulxSeed: 0, copiedId: null, sortBy: 'score', teamFilter: null, compareA: null, compareB: null, wroLegs: 3, wroMode: 'winrate', wroSeed: 0, wroLocked: {} };
+  state = { tab: 'dashboard', drawerOpen: false, player: null, status: 'loading', data: null, slip: [], tracked: [], stake: '25', builderLegs: 3, builderStyle: 'balanced', builderMarket: 'hr', ulxSel: null, frontierIdx: null, slipOpen: (typeof window !== 'undefined' && window.innerWidth <= 820) ? false : true, proxyUrl: 'https://claude-mlb.onrender.com', autoPoll: true, lastUpdated: null, search: '', watch: [], ulxSeed: 0, copiedId: null, sortBy: 'score', teamFilter: null, compareA: null, compareB: null, wroLegs: 3, wroMode: 'winrate', wroSeed: 0, wroLocked: {} };
 
   componentDidMount() {
     try { const p = localStorage.getItem('dl_odds_proxy'); if (p) this.setState({ proxyUrl: p }); } catch (e) {}
@@ -1196,6 +1279,14 @@ class Component extends DCLogic {
     const nextId = pool[(idx + 1) % pool.length];
     const sel = u.legIds.slice(); sel[i] = nextId;
     this.setState({ ulxSel: sel });
+  };
+  setFrontierIdx = (e) => { this.setState({ frontierIdx: parseInt(e.target.value) }); };
+  addFrontierToSlip = () => {
+    const f = this._frontierSel; if (!f) return;
+    const legs = f.players.map(p => ({ id: p.id, name: p.name, team: p.teamAbbr, market: 'HR', oddsAm: p.oddsAm, odds: p.best || ((p.oddsAm > 0 ? '+' : '') + p.oddsAm), modelPct: p.modelPct, time: p.time }));
+    const existing = this.state.slip.map(s => s.id);
+    const toAdd = legs.filter(l => !existing.includes(l.id));
+    this.setState(s => ({ slip: [...s.slip, ...toAdd], slipOpen: true }));
   };
   addUlxToSlip = () => {
     const u = this._ulx; if (!u || !u.legs || u.legs.length < 3) return;
@@ -1731,6 +1822,45 @@ class Component extends DCLogic {
     ];
   }
 
+  buildFrontier(enriched) {
+    const amDec = this.amDec.bind(this), decAm = this.decAm.bind(this);
+    const pool = (enriched || []).filter(p => p.modelPct >= 6 && (p.pa || 0) >= 80).slice().sort((a, b) => b.score - a.score).slice(0, 12);
+    if (pool.length < 2) return null;
+    const decOf = p => p.oddsAm != null ? amDec(p.oddsAm) : (1 / (p.modelPct / 100)) * 0.92;
+    const combos = [];
+    const n = pool.length;
+    const push = (arr) => {
+      const games = new Set(arr.map(p => p.gameId));
+      if (games.size !== arr.length) return;
+      let win = 1, dec = 1;
+      arr.forEach(p => { win *= p.modelPct / 100; dec *= decOf(p); });
+      combos.push({ players: arr, k: arr.length, winPct: win * 100, payout: 10 * dec, dec: dec });
+    };
+    for (let a = 0; a < n; a++) for (let b = a + 1; b < n; b++) {
+      push([pool[a], pool[b]]);
+      for (let c = b + 1; c < n; c++) {
+        push([pool[a], pool[b], pool[c]]);
+        for (let d = c + 1; d < n; d++) push([pool[a], pool[b], pool[c], pool[d]]);
+      }
+    }
+    if (combos.length < 2) return null;
+    // Pareto frontier: walk from highest win% keeping strictly increasing payout (upper envelope)
+    const sorted = combos.slice().sort((x, y) => y.winPct - x.winPct || y.payout - x.payout);
+    const frontier = []; let bestPay = -Infinity;
+    for (const c of sorted) { if (c.payout > bestPay + 1e-9) { frontier.push(c); bestPay = c.payout; } }
+    // frontier is ordered high-win→low-win (i.e. safe→aggressive)
+    // Scatter coordinates (log payout axis)
+    const W = 1000, H = 430, padT = 30, padB = 70, padL = 96, padR = 34;
+    const wins = combos.map(c => c.winPct), lpays = combos.map(c => Math.log10(c.payout));
+    const minW = Math.min(...wins), maxW = Math.max(...wins);
+    const minLP = Math.min(...lpays), maxLP = Math.max(...lpays);
+    const sx = w => padL + (W - padL - padR) * ((w - minW) / (maxW - minW || 1));
+    const sy = p => (H - padB) - (H - padB - padT) * ((Math.log10(p) - minLP) / (maxLP - minLP || 1));
+    const frontierSet = new Set(frontier);
+    const allPts = combos.map(c => ({ cx: +sx(c.winPct).toFixed(1), cy: +sy(c.payout).toFixed(1), onFront: frontierSet.has(c), r: frontierSet.has(c) ? 0 : 4, fill: frontierSet.has(c) ? 'transparent' : 'rgba(255,255,255,.13)' }));
+    return { combos, frontier, allPts, sx, sy, W, H, padL, padB, padR, padT, minW, maxW };
+  }
+
   buildUlxParlay(enriched, seed, sel) {
     const amDec = this.amDec.bind(this), amImp = this.amImp.bind(this), decAm = this.decAm.bind(this);
     const cand = (enriched || []).filter(p => (p.pa || 0) >= 60 && p.modelPct >= 3).map(p => {
@@ -2013,6 +2143,56 @@ class Component extends DCLogic {
     const ulx = this.buildUlxParlay(enriched, this.state.ulxSeed, this.state.ulxSel);
     this._ulx = ulx;
 
+    // Pareto frontier (only on builder tab — combinatorial)
+    let frontierVals = { hasFrontier: false };
+    if (tab === 'builder') {
+      const fr = this.buildFrontier(enriched);
+      if (fr && fr.frontier.length >= 2) {
+        const fLen = fr.frontier.length;
+        const rawIdx = this.state.frontierIdx == null ? Math.floor((fLen - 1) / 2) : this.state.frontierIdx;
+        const selIdx = Math.max(0, Math.min(fLen - 1, rawIdx));
+        const sel = fr.frontier[selIdx];
+        this._frontierSel = sel;
+        const allReal = sel.players.every(p => p.oddsAm != null);
+        const evv = allReal ? (sel.winPct / 100 * sel.dec - 1) * 100 : null;
+        const grade = evv != null ? (evv >= 15 ? 'A' : evv >= 8 ? 'B+' : evv >= 3 ? 'B' : evv >= 0 ? 'C' : 'D') : (sel.winPct >= 8 ? 'A' : sel.winPct >= 3 ? 'B' : sel.winPct >= 1 ? 'C' : 'D');
+        const gradeColor = grade === 'A' ? 'var(--ac,#ff8a4c)' : grade.startsWith('B') ? 'var(--pos,#35d0c0)' : grade === 'C' ? '#ffc24d' : '#ff8d8d';
+        // frontier points with selection styling
+        const frontPts = fr.frontier.map((c, i) => ({ cx: +fr.sx(c.winPct).toFixed(1), cy: +fr.sy(c.payout).toFixed(1), sel: i === selIdx, r: i === selIdx ? 11 : 6, fill: i === selIdx ? 'var(--ac,#ff8a4c)' : 'rgba(53,208,192,.85)', stroke: i === selIdx ? '#fff' : 'transparent' }));
+        const lineStr = fr.frontier.slice().sort((a, b) => fr.sx(a.winPct) - fr.sx(b.winPct)).map(c => fr.sx(c.winPct).toFixed(1) + ',' + fr.sy(c.payout).toFixed(1)).join(' ');
+        // risk label
+        const frac = fLen > 1 ? selIdx / (fLen - 1) : 0;
+        const riskLabel = frac <= 0.2 ? 'Safe' : frac <= 0.45 ? 'Balanced-safe' : frac <= 0.65 ? 'Balanced' : frac <= 0.85 ? 'Aggressive' : 'Max payout';
+        const riskColor = frac <= 0.45 ? 'var(--pos,#35d0c0)' : frac <= 0.65 ? '#ffc24d' : 'var(--ac,#ff8a4c)';
+        // axis ticks
+        const payMax = Math.max(...fr.combos.map(c => c.payout)), payMin = Math.min(...fr.combos.map(c => c.payout));
+        frontierVals = {
+          hasFrontier: true,
+          frontierAllPts: fr.allPts,
+          frontierPts: frontPts,
+          frontierLine: lineStr,
+          frontierIdx: selIdx,
+          frontierMax: fLen - 1,
+          frontierW: fr.W, frontierH: fr.H,
+          frontierViewBox: '0 0 ' + fr.W + ' ' + fr.H,
+          frontierComboCount: fr.combos.length,
+          frSelLegs: sel.players.map(p => ({ id: p.id, name: p.name, team: p.teamAbbr, opp: p.oppAbbr, odds: p.best || ((p.oddsAm > 0 ? '+' : '') + p.oddsAm), modelPct: p.modelPct, ring: p.ring, score: p.score })),
+          frSelWin: +sel.winPct.toFixed(2),
+          frSelPayout: '$' + sel.payout.toLocaleString('en-US', { maximumFractionDigits: 0 }),
+          frSelOdds: this.decAm(sel.dec),
+          frSelLegCount: sel.k,
+          frSelEv: evv != null ? (evv >= 0 ? '+' : '') + evv.toFixed(1) + '%' : '—',
+          frSelEvColor: evv == null ? '#9aa3b2' : evv >= 0 ? 'var(--pos,#35d0c0)' : '#ff8d8d',
+          frSelGrade: grade, frSelGradeColor: gradeColor,
+          frRiskLabel: riskLabel, frRiskColor: riskColor,
+          frAxisYTop: '$' + payMax.toLocaleString('en-US', { maximumFractionDigits: 0 }),
+          frAxisYBot: '$' + payMin.toLocaleString('en-US', { maximumFractionDigits: 0 }),
+          frAxisXLeft: fr.minW.toFixed(1) + '%', frAxisXRight: fr.maxW.toFixed(1) + '%',
+          setFrontierIdx: this.setFrontierIdx, addFrontierToSlip: this.addFrontierToSlip
+        };
+      }
+    }
+
     // Slip summary
     this._lastCombos = combosOut;
     const hasSlip = slip.length > 0;
@@ -2259,6 +2439,7 @@ class Component extends DCLogic {
       ulxPassesLabel: ulx ? ulx.passesLabel : '0/10 checks', ulxOdds: ulx ? ulx.oddsStr : '—', ulxWin: ulx ? ulx.winStr : '—',
       ulxPayout: ulx ? ulx.payout : '—', ulxOddsMode: ulx ? ulx.oddsMode : '',
       rerollUlx: this.rerollUlx, addUlxToSlip: this.addUlxToSlip, trackUlx: this.trackUlx, swapUlxLeg: this.swapUlxLeg,
+      ...frontierVals,
       slipOpen: this.state.slipOpen, slipNotOpen: !this.state.slipOpen, slipOpenStr: this.state.slipOpen ? 'true' : 'false', slipColWidth: this.state.slipOpen ? '320px' : '0', toggleSlip: this.toggleSlip,
       proxyUrl: this.state.proxyUrl, setProxyUrl: this.setProxyUrl, saveProxyUrl: this.saveProxyUrl,
       oddsProxyStatus: hasOdds ? ('✓ Connected · ' + (live ? this.state.data.booksOk : 0) + ' books · ' + (live ? this.state.data.oddsCount : 0) + ' players priced') : (live ? 'Fetched but no HR props posted yet — retry closer to game time' : 'Not connected'),
