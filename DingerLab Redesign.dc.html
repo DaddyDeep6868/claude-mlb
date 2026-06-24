@@ -363,10 +363,10 @@
         </div>
 
         <sc-if value="{{ radarHasData }}" hint-placeholder-val="{{ false }}">
-        <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px;align-items:start">
 
           <!-- MAP -->
-          <div style="position:relative;background:radial-gradient(ellipse at 50% 40%,#11202e,#0b0f16 75%);border:1px solid rgba(255,255,255,.08);border-radius:18px;overflow:hidden;aspect-ratio:1.62/1;min-height:300px">
+          <div style="position:relative;background:radial-gradient(ellipse at 50% 40%,#11202e,#0b0f16 75%);border:1px solid rgba(255,255,255,.08);border-radius:18px;overflow:hidden;aspect-ratio:1.62/1;min-height:260px;min-width:0">
             <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:7% 9%"></div>
             <div style="position:absolute;left:14px;top:12px;font-family:'Space Grotesk';font-size:11px;letter-spacing:.1em;color:#5f6878;font-weight:700">USA · LIVE CONDITIONS</div>
             <sc-for list="{{ radarParks }}" as="r" hint-placeholder-count="6">
