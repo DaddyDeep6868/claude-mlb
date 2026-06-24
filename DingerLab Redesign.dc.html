@@ -163,7 +163,7 @@
               <div style="background:#13161e;border:1px solid rgba(255,194,77,.22);border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:13px">
                 <div style="display:flex;align-items:center;gap:12px">
                   <div data-player="{{ p.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;position:relative;width:54px;height:54px;flex:none;border-radius:50%;background:{{ p.ring }};display:grid;place-items:center">
-                    <div style="width:42px;height:42px;border-radius:50%;background:#13161e;display:grid;place-items:center"><span style="font-family:'Space Grotesk';font-weight:700;font-size:17px">{{ p.score }}</span></div>
+                    <div style="position:relative;width:44px;height:44px;border-radius:50%;background:#13161e;overflow:hidden;display:grid;place-items:center"><img src="{{ p.headshot }}" alt="" referrerpolicy="no-referrer" style="width:44px;height:44px;object-fit:cover;object-position:top center" onerror="this.remove()"/><span style="position:absolute;bottom:-2px;right:-2px;min-width:19px;height:19px;padding:0 4px;border-radius:10px;background:var(--ac,#ff8a4c);color:#0a0c11;font-family:'Space Grotesk';font-weight:700;font-size:10.5px;display:grid;place-items:center;border:2px solid #13161e">{{ p.score }}</span></div>
                   </div>
                   <div data-player="{{ p.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;min-width:0;flex:1">
                     <div style="font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div>
@@ -209,7 +209,12 @@
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px">
             <sc-for list="{{ dueList }}" as="d" hint-placeholder-count="2">
               <div data-player="{{ d.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:13px;background:#13161e;border:1px solid rgba(255,194,77,.2);flex:none">
-                <div style="width:38px;height:38px;border-radius:50%;background:conic-gradient(#ffc24d {{ d.score }}%,rgba(255,255,255,.07) 0);display:grid;place-items:center;flex:none"><div style="width:29px;height:29px;border-radius:50%;background:#13161e;display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:13px">{{ d.score }}</div></div>
+                <div style="width:40px;height:40px;border-radius:50%;background:conic-gradient(#ffc24d {{ d.score }}%,rgba(255,255,255,.07) 0);display:grid;place-items:center;flex:none">
+                  <div style="position:relative;width:32px;height:32px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center">
+                    <img src="{{ d.headshot }}" alt="" referrerpolicy="no-referrer" style="width:32px;height:32px;object-fit:cover;object-position:top center" onerror="this.remove()"/>
+                    <span style="position:absolute;bottom:-1px;right:-1px;min-width:17px;height:17px;padding:0 3px;border-radius:9px;background:#ffc24d;color:#0a0c11;font-family:'Space Grotesk';font-weight:700;font-size:9.5px;display:grid;place-items:center;border:1.5px solid #13161e">{{ d.score }}</span>
+                  </div>
+                </div>
                 <div><div style="font-weight:700;font-size:13.5px">{{ d.dueName }}</div><div style="font-size:11.5px;color:#7b8597;margin-top:2px">{{ d.dueTeam }} · {{ d.dueBarrel }} · {{ d.dueHH }}</div><div style="font-size:11px;color:#ffc24d;margin-top:2px">☢️ due — cold stretch</div></div>
                 <div style="font-family:'Space Grotesk';font-weight:700;font-size:15px;margin-left:auto">{{ d.dueOdds }}</div>
               </div>
@@ -230,7 +235,10 @@
             <div data-player="{{ p.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:13px;transition:transform .15s,border-color .15s" style-hover="border-color:rgba(255,138,76,.55);transform:translateY(-3px)">
               <div style="display:flex;align-items:center;gap:12px">
                 <div style="position:relative;width:60px;height:60px;flex:none;border-radius:50%;background:{{ p.ring }};display:grid;place-items:center">
-                  <div style="width:47px;height:47px;border-radius:50%;background:#13161e;display:grid;place-items:center"><span style="font-family:'Space Grotesk';font-weight:700;font-size:19px">{{ p.score }}</span></div>
+                  <div style="position:relative;width:50px;height:50px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center">
+                    <img src="{{ p.headshot }}" alt="" referrerpolicy="no-referrer" style="width:50px;height:50px;object-fit:cover;object-position:top center" onerror="this.remove()"/>
+                    <span style="position:absolute;bottom:-2px;right:-2px;min-width:20px;height:20px;padding:0 4px;border-radius:10px;background:var(--ac,#ff8a4c);color:#0a0c11;font-family:'Space Grotesk';font-weight:700;font-size:11px;display:grid;place-items:center;border:2px solid #13161e">{{ p.score }}</span>
+                  </div>
                 </div>
                 <div style="min-width:0">
                   <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
@@ -238,7 +246,7 @@
                     <sc-if value="{{ p.isDue }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(255,194,77,.18);color:#ffc24d">☢️ DUE</span></sc-if>
                     <sc-if value="{{ p.lineupConfirmed }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(53,208,192,.15);color:var(--pos,#35d0c0)">✓ IN</span></sc-if>
                   </div>
-                  <div style="font-size:12px;color:#7b8597">{{ p.matchup }}</div>
+                  <div style="font-size:12px;color:#7b8597;margin-top:2px">{{ p.matchup }}</div>
                   <div style="font-size:13px;letter-spacing:1.5px;margin-top:3px"><span style="color:#ffc24d">{{ p.starsOn }}</span><span style="color:#3a4150">{{ p.starsOff }}</span></div>
                 </div>
               </div>
@@ -333,7 +341,7 @@
               <div data-mcol1 style="padding:14px 17px;display:grid;grid-template-columns:1fr 1fr;gap:11px">
                 <sc-for list="{{ g.players }}" as="p" hint-placeholder-count="2">
                   <div data-player="{{ p.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;display:flex;align-items:center;gap:11px;padding:11px;border-radius:12px;background:#0c0e14;border:1px solid rgba(255,255,255,.06)" style-hover="border-color:rgba(255,138,76,.45)">
-                    <div style="width:40px;height:40px;border-radius:50%;flex:none;background:{{ p.ring }};display:grid;place-items:center"><div style="width:31px;height:31px;border-radius:50%;background:#0c0e14;display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:13px">{{ p.score }}</div></div>
+                    <div style="width:40px;height:40px;border-radius:50%;flex:none;background:{{ p.ring }};display:grid;place-items:center"><div style="position:relative;width:32px;height:32px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center"><img src="{{ p.headshot }}" alt="" referrerpolicy="no-referrer" style="width:32px;height:32px;object-fit:cover;object-position:top center" onerror="this.remove()"/><span style="position:absolute;bottom:-1px;right:-1px;min-width:16px;height:16px;padding:0 3px;border-radius:8px;background:var(--ac,#ff8a4c);color:#0a0c11;font-family:'Space Grotesk';font-weight:700;font-size:9px;display:grid;place-items:center;border:1.5px solid #0c0e14">{{ p.score }}</span></div></div>
                     <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div><div style="font-size:11px;letter-spacing:1px"><span style="color:#ffc24d">{{ p.starsOn }}</span><span style="color:#3a4150">{{ p.starsOff }}</span> <span style="color:#7b8597;letter-spacing:0">HR {{ p.modelPct }}%</span></div></div>
                     <div style="text-align:right"><div style="font-family:'Space Grotesk';font-weight:700;font-size:14px">{{ p.best }}</div><div style="font-size:11px;color:{{ p.evColor }};font-weight:600">{{ p.ev }}</div></div>
                   </div>
@@ -592,7 +600,10 @@
                 <sc-for list="{{ wro.legs }}" as="l" hint-placeholder-count="3">
                   <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:13px;background:#0c0e14;border:{{ l.cardBorder }}">
                     <div data-player="{{ l.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;width:44px;height:44px;flex:none;border-radius:50%;background:{{ l.ring }};display:grid;place-items:center">
-                      <div style="width:34px;height:34px;border-radius:50%;background:#0c0e14;display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:14px">{{ l.score }}</div>
+                      <div style="position:relative;width:36px;height:36px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center">
+                        <img src="{{ l.headshot }}" alt="" referrerpolicy="no-referrer" style="width:36px;height:36px;object-fit:cover;object-position:top center" onerror="this.remove()"/>
+                        <span style="position:absolute;bottom:-1px;right:-1px;min-width:16px;height:16px;padding:0 3px;border-radius:8px;background:var(--ac,#ff8a4c);color:#0a0c11;font-family:'Space Grotesk';font-weight:700;font-size:9px;display:grid;place-items:center;border:1.5px solid #0c0e14">{{ l.score }}</span>
+                      </div>
                     </div>
                     <div style="flex:1;min-width:0">
                       <div style="font-weight:700;font-size:14px">{{ l.name }}</div>
@@ -1141,10 +1152,18 @@
   <div style="position:fixed;top:0;right:0;bottom:0;z-index:91;width:min(460px,94vw);background:#0d0f15;border-left:1px solid rgba(255,255,255,.1);box-shadow:-30px 0 80px rgba(0,0,0,.5);overflow:auto;animation:dlrise .26s cubic-bezier(.2,.8,.2,1) both">
     <div style="position:sticky;top:0;z-index:2;background:rgba(13,15,21,.92);backdrop-filter:blur(10px);padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.08)">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
-        <div>
-          <div style="font-size:11px;letter-spacing:.12em;color:var(--ac,#ff8a4c);font-weight:700">INTELLIGENCE REPORT</div>
-          <h2 style="margin:5px 0 2px;font-family:'Space Grotesk';font-size:23px;font-weight:700">{{ p.name }}</h2>
-          <div style="font-size:13px;color:#8b94a6">{{ p.sub }}</div>
+        <div style="display:flex;align-items:center;gap:14px;min-width:0">
+          <div style="position:relative;width:64px;height:64px;flex:none;border-radius:50%;background:{{ p.ring }};display:grid;place-items:center">
+            <div style="position:relative;width:54px;height:54px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center">
+              <img src="{{ p.headshot }}" alt="" referrerpolicy="no-referrer" style="width:54px;height:54px;object-fit:cover;object-position:top center" onerror="this.remove()"/>
+              <span style="position:absolute;bottom:-2px;right:-2px;min-width:22px;height:22px;padding:0 5px;border-radius:11px;background:var(--ac,#ff8a4c);color:#0a0c11;font-family:'Space Grotesk';font-weight:700;font-size:12px;display:grid;place-items:center;border:2px solid #13161e">{{ p.score }}</span>
+            </div>
+          </div>
+          <div style="min-width:0">
+            <div style="font-size:11px;letter-spacing:.12em;color:var(--ac,#ff8a4c);font-weight:700">INTELLIGENCE REPORT</div>
+            <h2 style="margin:5px 0 2px;font-family:'Space Grotesk';font-size:23px;font-weight:700">{{ p.name }}</h2>
+            <div style="font-size:13px;color:#8b94a6">{{ p.sub }}</div>
+          </div>
         </div>
         <div style="display:flex;gap:8px;flex:none;align-items:flex-start">
           <button data-watchid="{{ p.id }}" onClick="{{ toggleWatch }}" title="Watchlist" style="width:34px;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:{{ drawerWatchBg }};color:{{ drawerWatchFg }};cursor:pointer;font-size:17px">{{ drawerWatchStar }}</button>
@@ -1773,6 +1792,7 @@ class Component extends DCLogic {
           : { label: 'Odds — set proxy in Tools', bg: 'rgba(255,255,255,.05)', fg: '#7b8597' });
     return Object.assign({}, p, {
       ring: 'conic-gradient(var(--ac,#ff8a4c) ' + p.score + '%, rgba(255,255,255,.08) 0)',
+      headshot: p.id ? 'https://midfield.mlbstatic.com/v1/people/' + p.id + '/spots/120' : '',
       starsOn: '★'.repeat(n), starsOff: '★'.repeat(5 - n),
       matchup: p.teamAbbr + ' vs ' + p.oppAbbr,
       isDue: !!p.isDue, lineupConfirmed: !!p.lineupConfirmed,
@@ -2353,6 +2373,7 @@ class Component extends DCLogic {
           modelPct: p.modelPct, ev: p.ev || '—', evColor: p.evColor || '#9aa3b2',
           edge: p.edgeNum != null ? (p.edgeNum >= 0 ? '+' : '') + p.edgeNum : '—',
           ring: p.ring, score: p.score, why: mode === 'winrate' ? 'Highest model probability' : mode === 'ev' ? 'Best EV edge' : 'Balanced win% + EV',
+      headshot: p.id ? 'https://midfield.mlbstatic.com/v1/people/' + p.id + '/spots/120' : '',
           isLocked: !!locked[p.id],
           lockBg: locked[p.id] ? 'rgba(255,194,77,.18)' : 'rgba(255,255,255,.07)',
           lockColor: locked[p.id] ? '#ffc24d' : '#5f6878',
