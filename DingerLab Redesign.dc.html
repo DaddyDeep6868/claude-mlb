@@ -590,6 +590,10 @@
                   <span style="padding:3px 7px;border-radius:6px;background:rgba(255,255,255,.05)">{{ l.batLine }}</span>
                 </div>
                 <div style="font-size:10.5px;color:#7b8597">{{ l.env }}</div>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:2px;padding-top:10px;border-top:1px solid rgba(255,255,255,.06)">
+                  <span style="font-size:10.5px;font-weight:600;color:{{ l.swapCountColor }}">{{ l.swapCountLabel }}</span>
+                  <button data-legidx="{{ l.legIdx }}" onClick="{{ swapUlxLeg }}" title="Swap this leg to the next option" style="display:flex;align-items:center;gap:5px;padding:6px 10px;border:1px solid rgba(255,255,255,.14);border-radius:9px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:600;font-size:11.5px;color:#c3cad6;background:transparent;opacity:{{ l.swapBtnOpacity }}" style-hover="border-color:{{ l.roleColor }};color:#eef1f6">⇄ Swap</button>
+                </div>
               </div>
             </sc-for>
           </div>
@@ -899,7 +903,6 @@
     <sc-if value="{{ slipOpen }}" hint-placeholder-val="{{ true }}">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
         <div style="display:flex;align-items:center;gap:9px"><span style="font-size:17px">🎟️</span><h3 style="margin:0;font-family:'Space Grotesk';font-size:16px;font-weight:700">Bet Slip</h3></div>
-        <button onClick="{{ toggleSlip }}" style="width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:#161a24;color:#9aa3b2;cursor:pointer;font-size:14px;display:grid;place-items:center" style-hover="color:#eef1f6" title="Hide slip">✕</button>
         <div style="display:flex;align-items:center;gap:7px">
           <sc-if value="{{ hasSlip }}" hint-placeholder-val="{{ false }}">
             <span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:var(--ac,#ff8a4c);color:#0a0c11">{{ slipCountLabel }}</span>
@@ -908,6 +911,7 @@
           <sc-if value="{{ hasNoSlip }}" hint-placeholder-val="{{ true }}">
             <span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.07);color:#7b8597">empty</span>
           </sc-if>
+          <button onClick="{{ toggleSlip }}" style="padding:4px 11px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:#161a24;color:#9aa3b2;cursor:pointer;font-size:11.5px;font-weight:600" style-hover="color:#eef1f6" title="Hide slip">Close</button>
         </div>
       </div>
 
@@ -1143,7 +1147,7 @@
   &quot;compact&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot; }
 }">
 class Component extends DCLogic {
-  state = { tab: 'dashboard', drawerOpen: false, player: null, status: 'loading', data: null, slip: [], tracked: [], stake: '25', builderLegs: 3, builderStyle: 'balanced', builderMarket: 'hr', slipOpen: true, proxyUrl: 'https://claude-mlb.onrender.com', autoPoll: true, lastUpdated: null, search: '', watch: [], ulxSeed: 0, copiedId: null, sortBy: 'score', teamFilter: null, compareA: null, compareB: null, wroLegs: 3, wroMode: 'winrate', wroSeed: 0, wroLocked: {} };
+  state = { tab: 'dashboard', drawerOpen: false, player: null, status: 'loading', data: null, slip: [], tracked: [], stake: '25', builderLegs: 3, builderStyle: 'balanced', builderMarket: 'hr', ulxSel: null, slipOpen: (typeof window !== 'undefined' && window.innerWidth <= 820) ? false : true, proxyUrl: 'https://claude-mlb.onrender.com', autoPoll: true, lastUpdated: null, search: '', watch: [], ulxSeed: 0, copiedId: null, sortBy: 'score', teamFilter: null, compareA: null, compareB: null, wroLegs: 3, wroMode: 'winrate', wroSeed: 0, wroLocked: {} };
 
   componentDidMount() {
     try { const p = localStorage.getItem('dl_odds_proxy'); if (p) this.setState({ proxyUrl: p }); } catch (e) {}
@@ -1182,7 +1186,17 @@ class Component extends DCLogic {
     this._refreshing = false;
   }
   toggleAutoPoll = () => { this.setState(s => ({ autoPoll: !s.autoPoll })); };
-  rerollUlx = () => { this.setState(s => ({ ulxSeed: s.ulxSeed + 1 })); };
+  rerollUlx = () => { this.setState(s => ({ ulxSeed: s.ulxSeed + 1, ulxSel: null })); };
+  swapUlxLeg = (e) => {
+    const i = parseInt(e.currentTarget.dataset.legidx);
+    const u = this._ulx; if (!u || !u.swapPools || !u.legIds) return;
+    const pool = u.swapPools[i]; if (!pool || pool.length <= 1) return;
+    const curId = u.legIds[i];
+    const idx = pool.indexOf(curId);
+    const nextId = pool[(idx + 1) % pool.length];
+    const sel = u.legIds.slice(); sel[i] = nextId;
+    this.setState({ ulxSel: sel });
+  };
   addUlxToSlip = () => {
     const u = this._ulx; if (!u || !u.legs || u.legs.length < 3) return;
     const legs = u.legs.map(l => ({ id: l.id, name: l.name, market: 'HR', oddsAm: l.oddsAm, odds: l.oddsStr, modelPct: l.modelPct }));
@@ -1717,7 +1731,7 @@ class Component extends DCLogic {
     ];
   }
 
-  buildUlxParlay(enriched, seed) {
+  buildUlxParlay(enriched, seed, sel) {
     const amDec = this.amDec.bind(this), amImp = this.amImp.bind(this), decAm = this.decAm.bind(this);
     const cand = (enriched || []).filter(p => (p.pa || 0) >= 60 && p.modelPct >= 3).map(p => {
       let am = p.oddsAm; const real = am != null;
@@ -1730,16 +1744,43 @@ class Component extends DCLogic {
       return Object.assign({}, p, { ulxAm: am, ulxReal: real, ulxImp: imp, ulxEdge: edge, power, risk, spot, arche });
     });
     if (cand.length < 3) return null;
-    const seedN = seed || 0; const used = new Set();
-    const take = (pool, k) => { const av = pool.filter(p => !used.has(p.gameId)); if (!av.length) return null; const idx = av.length > 1 ? (seedN % Math.min(av.length, k)) : 0; const x = av[idx]; used.add(x.gameId); return x; };
+    const seedN = seed || 0;
+    const byId = {}; cand.forEach(p => { byId[p.id] = p; });
+    const candByModel = cand.slice().sort((a, b) => b.modelPct - a.modelPct);
+    const candByEdge = cand.slice().sort((a, b) => b.ulxEdge - a.ulxEdge);
+    const candByOdds = cand.slice().sort((a, b) => b.ulxAm - a.ulxAm);
     const anchorBand = cand.filter(p => p.ulxAm >= 130 && p.ulxAm <= 330).sort((a, b) => b.modelPct - a.modelPct);
-    const anchor = take(anchorBand.length ? anchorBand : cand.slice().sort((a, b) => b.modelPct - a.modelPct), 4);
     const valueBand = cand.filter(p => p.ulxAm >= 280 && p.ulxAm <= 520).sort((a, b) => b.ulxEdge - a.ulxEdge);
-    const value = take(valueBand.length ? valueBand : cand.slice().sort((a, b) => b.ulxEdge - a.ulxEdge), 5);
     const longBand = cand.filter(p => p.ulxAm >= 460 && p.ulxAm <= 1100).sort((a, b) => b.modelPct - a.modelPct);
     const longFallback = cand.filter(p => p.ulxAm >= 400).sort((a, b) => b.modelPct - a.modelPct);
-    const longshot = take(longBand.length ? longBand : (longFallback.length ? longFallback : cand.slice().sort((a, b) => b.ulxAm - a.ulxAm)), 6);
+    const rolePools = { 0: [anchorBand, candByModel], 1: [valueBand, candByEdge], 2: [longBand, longFallback, candByOdds] };
+    // Resolve the best available pool for a role excluding a set of games; stretch=true if we had to relax past the strict band
+    const resolvePool = (roleIdx, excludeGames) => {
+      const pools = rolePools[roleIdx];
+      for (let pi = 0; pi < pools.length; pi++) { const av = pools[pi].filter(p => !excludeGames.has(p.gameId)); if (av.length) return { pool: av, stretch: pi > 0 }; }
+      return { pool: [], stretch: true };
+    };
+    // Try to honor a concrete selection of 3 player ids (per-leg swap keeps the other legs fixed)
+    let anchor = null, value = null, longshot = null;
+    const selValid = Array.isArray(sel) && sel.length === 3 && sel.every(id => byId[id]);
+    if (selValid) { anchor = byId[sel[0]]; value = byId[sel[1]]; longshot = byId[sel[2]]; }
+    if (!anchor || !value || !longshot) {
+      // Fresh natural build, role order with distinct games
+      const used = new Set();
+      const pick = (roleIdx) => { const { pool } = resolvePool(roleIdx, used); if (!pool.length) return null; const x = pool[seedN % pool.length]; used.add(x.gameId); return x; };
+      anchor = pick(0); value = pick(1); longshot = pick(2);
+    }
     if (!anchor || !value || !longshot) return null;
+    const picks = [anchor, value, longshot];
+    // Per-role: option pool excluding the OTHER two legs' games (these are the swap alternatives), plus stretch flag
+    const roleRes = [0, 1, 2].map(i => {
+      const other = new Set(picks.filter((_, j) => j !== i).map(l => l.gameId));
+      const { pool, stretch } = resolvePool(i, other);
+      const ids = pool.map(p => p.id);
+      const strictBands = { 0: anchorBand, 1: valueBand, 2: longBand };
+      const inStrict = strictBands[i].some(p => p.id === picks[i].id);
+      return { count: pool.length, stretch: stretch || !inStrict, ids };
+    });
     const legsRaw = [anchor, value, longshot];
     const roleMeta = [
       { role: 'Anchor', icon: '⚓', tag: 'Highest-confidence bat', color: 'var(--ac,#ff8a4c)', accent: 'rgba(255,138,76,.22)' },
@@ -1749,8 +1790,17 @@ class Component extends DCLogic {
     const legs = legsRaw.map((p, i) => {
       const m = roleMeta[i];
       const isoPts = Math.round((p.iso || 0) * 1000);
+      const rr = roleRes[i];
+      const cnt = rr.count;
       return {
         id: p.id, name: p.name, gameId: p.gameId, role: m.role, roleIcon: m.icon, roleTag: m.tag, roleColor: m.color, roleAccent: m.accent,
+        legIdx: i,
+        optionCount: cnt,
+        isStretch: rr.stretch,
+        swapDisabled: cnt <= 1,
+        swapCountLabel: rr.stretch ? ('stretch · ' + cnt + ' picks') : (cnt <= 1 ? 'only option in band' : cnt + ' in band'),
+        swapCountColor: rr.stretch ? '#ffc24d' : (cnt <= 1 ? '#7b8597' : '#9aa3b2'),
+        swapBtnOpacity: cnt <= 1 ? '0.4' : '1',
         modelPct: p.modelPct, oddsAm: p.ulxReal ? p.ulxAm : null, oddsStr: (p.ulxAm > 0 ? '+' : '') + p.ulxAm,
         oddsTag: p.ulxReal ? '' : 'model', edge: p.ulxEdge, edgeStr: (p.ulxEdge >= 0 ? '+' : '') + p.ulxEdge,
         edgeColor: p.ulxEdge >= 0 ? 'var(--pos,#35d0c0)' : '#ff8d8d', arche: p.arche, power: p.power, risk: p.risk, spot: p.spot,
@@ -1784,6 +1834,8 @@ class Component extends DCLogic {
     const anyReal = legsRaw.some(l => l.ulxReal);
     return {
       legs, checks, passes, green,
+      legIds: [anchor.id, value.id, longshot.id],
+      swapPools: roleRes.map(r => r.ids),
       gateLabel: green ? '✅ GREEN LIGHT' : '⚠️ ' + passes + '/10',
       gateBg: green ? 'rgba(53,208,192,.13)' : 'rgba(255,194,77,.12)',
       gateBorder: green ? 'rgba(53,208,192,.5)' : 'rgba(255,194,77,.4)',
@@ -1958,7 +2010,7 @@ class Component extends DCLogic {
     // Live schedule games for display
     const scheduleGames = live ? this.state.data.games.map(g => ({ title: g.teams.away.team.abbreviation + ' @ ' + g.teams.home.team.abbreviation, time: this.localTime(g.gameDate), state: g.status && g.status.abstractGameState, venue: (g.venue && g.venue.name) || '' })) : [];
     // ULX role-based parlay
-    const ulx = this.buildUlxParlay(enriched, this.state.ulxSeed);
+    const ulx = this.buildUlxParlay(enriched, this.state.ulxSeed, this.state.ulxSel);
     this._ulx = ulx;
 
     // Slip summary
@@ -2206,7 +2258,7 @@ class Component extends DCLogic {
       ulxGateBg: ulx ? ulx.gateBg : 'rgba(255,194,77,.12)', ulxGateBorder: ulx ? ulx.gateBorder : 'rgba(255,194,77,.4)', ulxGateFg: ulx ? ulx.gateFg : '#ffc24d',
       ulxPassesLabel: ulx ? ulx.passesLabel : '0/10 checks', ulxOdds: ulx ? ulx.oddsStr : '—', ulxWin: ulx ? ulx.winStr : '—',
       ulxPayout: ulx ? ulx.payout : '—', ulxOddsMode: ulx ? ulx.oddsMode : '',
-      rerollUlx: this.rerollUlx, addUlxToSlip: this.addUlxToSlip, trackUlx: this.trackUlx,
+      rerollUlx: this.rerollUlx, addUlxToSlip: this.addUlxToSlip, trackUlx: this.trackUlx, swapUlxLeg: this.swapUlxLeg,
       slipOpen: this.state.slipOpen, slipNotOpen: !this.state.slipOpen, slipOpenStr: this.state.slipOpen ? 'true' : 'false', slipColWidth: this.state.slipOpen ? '320px' : '0', toggleSlip: this.toggleSlip,
       proxyUrl: this.state.proxyUrl, setProxyUrl: this.setProxyUrl, saveProxyUrl: this.saveProxyUrl,
       oddsProxyStatus: hasOdds ? ('✓ Connected · ' + (live ? this.state.data.booksOk : 0) + ' books · ' + (live ? this.state.data.oddsCount : 0) + ' players priced') : (live ? 'Fetched but no HR props posted yet — retry closer to game time' : 'Not connected'),
