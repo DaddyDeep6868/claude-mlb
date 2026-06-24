@@ -452,17 +452,17 @@
             <div>
               <div style="font-size:11px;color:#7b8597;font-weight:700;letter-spacing:.04em;margin-bottom:7px">LEGS</div>
               <div style="display:flex;gap:5px">
-                <button data-legs="2" onClick="{{ wroSetLegs }}" style="width:38px;height:38px;display:grid;place-items:center;border-radius:9px;font-family:'Space Grotesk';font-weight:700;font-size:15px;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:{{ wroLegs === 2 ? 'var(--pos,#35d0c0)' : '#0c0e14' }};color:{{ wroLegs === 2 ? '#0a0c11' : '#9aa3b2' }}">2</button>
-                <button data-legs="3" onClick="{{ wroSetLegs }}" style="width:38px;height:38px;display:grid;place-items:center;border-radius:9px;font-family:'Space Grotesk';font-weight:700;font-size:15px;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:{{ wroLegs === 3 ? 'var(--pos,#35d0c0)' : '#0c0e14' }};color:{{ wroLegs === 3 ? '#0a0c11' : '#9aa3b2' }}">3</button>
-                <button data-legs="4" onClick="{{ wroSetLegs }}" style="width:38px;height:38px;display:grid;place-items:center;border-radius:9px;font-family:'Space Grotesk';font-weight:700;font-size:15px;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:{{ wroLegs === 4 ? 'var(--pos,#35d0c0)' : '#0c0e14' }};color:{{ wroLegs === 4 ? '#0a0c11' : '#9aa3b2' }}">4</button>
+                <sc-for list="{{ wroLegBtns }}" as="b" hint-placeholder-count="3">
+                  <button data-legs="{{ b.n }}" onClick="{{ wroSetLegs }}" style="width:38px;height:38px;display:grid;place-items:center;border-radius:9px;font-family:'Space Grotesk';font-weight:700;font-size:15px;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:{{ b.bg }};color:{{ b.fg }}">{{ b.n }}</button>
+                </sc-for>
               </div>
             </div>
             <div>
               <div style="font-size:11px;color:#7b8597;font-weight:700;letter-spacing:.04em;margin-bottom:7px">OPTIMIZE FOR</div>
               <div style="display:flex;gap:5px">
-                <button data-mode="winrate" onClick="{{ wroSetMode }}" style="padding:9px 13px;border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:{{ wroMode === 'winrate' ? 'var(--pos,#35d0c0)' : '#0c0e14' }};color:{{ wroMode === 'winrate' ? '#0a0c11' : '#9aa3b2' }}">🎯 Win Rate</button>
-                <button data-mode="ev" onClick="{{ wroSetMode }}" style="padding:9px 13px;border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:{{ wroMode === 'ev' ? 'var(--pos,#35d0c0)' : '#0c0e14' }};color:{{ wroMode === 'ev' ? '#0a0c11' : '#9aa3b2' }}">💰 Best EV</button>
-                <button data-mode="balanced" onClick="{{ wroSetMode }}" style="padding:9px 13px;border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:{{ wroMode === 'balanced' ? 'var(--pos,#35d0c0)' : '#0c0e14' }};color:{{ wroMode === 'balanced' ? '#0a0c11' : '#9aa3b2' }}">⚖️ Balanced</button>
+                <sc-for list="{{ wroModeBtns }}" as="b" hint-placeholder-count="3">
+                  <button data-mode="{{ b.m }}" onClick="{{ wroSetMode }}" style="padding:9px 13px;border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:{{ b.bg }};color:{{ b.fg }}">{{ b.label }}</button>
+                </sc-for>
               </div>
             </div>
           </div>
@@ -479,12 +479,12 @@
                 </div>
                 <div style="flex:1;min-width:100px;padding:14px 18px;border-right:1px solid rgba(255,255,255,.06)">
                   <div style="font-size:10.5px;color:#7b8597;font-weight:700;letter-spacing:.04em">MARKET WIN%</div>
-                  <div style="font-family:'Space Grotesk';font-size:24px;font-weight:700;margin-top:4px">{{ wro.hasOdds ? wro.marketImpPct + '%' : '—' }}</div>
+                  <div style="font-family:'Space Grotesk';font-size:24px;font-weight:700;margin-top:4px">{{ wro.marketWinDisplay }}</div>
                   <div style="font-size:11px;color:#7b8597;margin-top:2px">implied by odds</div>
                 </div>
                 <div style="flex:1;min-width:100px;padding:14px 18px;border-right:1px solid rgba(255,255,255,.06)">
                   <div style="font-size:10.5px;color:#7b8597;font-weight:700;letter-spacing:.04em">PARLAY EV</div>
-                  <div style="font-family:'Space Grotesk';font-size:24px;font-weight:700;margin-top:4px;color:{{ wro.hasOdds ? (wro.parleyEv >= 0 ? 'var(--pos,#35d0c0)' : '#ff8d8d') : '#9aa3b2' }}">{{ wro.hasOdds ? (wro.parleyEv >= 0 ? '+' : '') + wro.parleyEv + '%' : '—' }}</div>
+                  <div style="font-family:'Space Grotesk';font-size:24px;font-weight:700;margin-top:4px;color:{{ wro.parleyEvColor }}">{{ wro.parleyEvDisplay }}</div>
                   <div style="font-size:11px;color:#7b8597;margin-top:2px">expected return</div>
                 </div>
                 <div style="flex:1;min-width:100px;padding:14px 18px;border-right:1px solid rgba(255,255,255,.06)">
@@ -509,7 +509,7 @@
               <!-- Legs -->
               <div style="padding:16px 18px 10px;display:flex;flex-direction:column;gap:10px">
                 <sc-for list="{{ wro.legs }}" as="l" hint-placeholder-count="3">
-                  <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:13px;background:#0c0e14;border:1px solid {{ l.isLocked ? 'rgba(255,194,77,.28)' : 'rgba(255,255,255,.07)' }}">
+                  <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:13px;background:#0c0e14;border:{{ l.cardBorder }}">
                     <div data-player="{{ l.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;width:44px;height:44px;flex:none;border-radius:50%;background:{{ l.ring }};display:grid;place-items:center">
                       <div style="width:34px;height:34px;border-radius:50%;background:#0c0e14;display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:14px">{{ l.score }}</div>
                     </div>
@@ -520,7 +520,7 @@
                     <div style="text-align:center;min-width:50px"><div style="font-size:10px;color:#7b8597;font-weight:600">HR%</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:14px">{{ l.modelPct }}%</div></div>
                     <div style="text-align:center;min-width:46px"><div style="font-size:10px;color:#7b8597;font-weight:600">ODDS</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:14px;color:var(--ac,#ff8a4c)">{{ l.odds }}</div></div>
                     <div style="text-align:center;min-width:44px"><div style="font-size:10px;color:#7b8597;font-weight:600">EV</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:14px;color:{{ l.evColor }}">{{ l.ev }}</div></div>
-                    <button data-lockid="{{ l.id }}" onClick="{{ wroToggleLock }}" title="{{ l.isLocked ? 'Unlock' : 'Lock this leg' }}" style="width:32px;height:32px;flex:none;border-radius:8px;border:1px solid {{ l.lockBg }};background:{{ l.lockBg }};cursor:pointer;font-size:14px;color:{{ l.lockColor }}">{{ l.isLocked ? '🔒' : '🔓' }}</button>
+                    <button data-lockid="{{ l.id }}" onClick="{{ wroToggleLock }}" style="width:32px;height:32px;flex:none;border-radius:8px;border:1px solid {{ l.lockBg }};background:{{ l.lockBg }};cursor:pointer;font-size:14px;color:{{ l.lockColor }}">{{ l.lockIcon }}</button>
                   </div>
                 </sc-for>
               </div>
@@ -756,7 +756,7 @@
         <div data-mcol1 style="display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:18px;align-items:start">
           <div>
             <!-- TOP VALUE PLAYS -->
-            <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="font-size:17px">🎯</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:17px;font-weight:700">Top value plays</h2><span style="font-size:11px;color:#7b8597;margin-left:2px">{{ hasOdds ? 'ranked by edge' : 'ranked by model' }}</span></div>
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="font-size:17px">🎯</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:17px;font-weight:700">Top value plays</h2><span style="font-size:11px;color:#7b8597;margin-left:2px">{{ valueRankLabel }}</span></div>
             <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;margin-bottom:18px">
               <table style="width:100%;border-collapse:collapse;font-size:13px">
                 <thead><tr style="background:#0c0e14;color:#7b8597">
@@ -786,9 +786,9 @@
               <div style="display:flex;flex-direction:column;gap:8px">
                 <sc-for list="{{ diffItems }}" as="d" hint-placeholder-count="4">
                   <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:13px;background:#13161e;border:1px solid rgba(255,255,255,.07)">
-                    <span style="font-size:16px">{{ d.move.startsWith('▲') ? '📈' : '📉' }}</span>
+                    <span style="font-size:16px">{{ d.moveIcon }}</span>
                     <div style="flex:1"><div style="font-weight:700;font-size:13.5px">{{ d.name }}</div><div style="font-size:12px;color:#8b94a6;margin-top:2px">{{ d.prev }} → <b style="color:#eef1f6">{{ d.cur }}</b> <span style="color:{{ d.moveColor }}">{{ d.move }}</span></div></div>
-                    <span style="font-size:11px;font-weight:700;padding:4px 9px;border-radius:7px;background:{{ d.moveColor === 'var(--pos,#35d0c0)' ? 'rgba(53,208,192,.12)' : 'rgba(255,141,141,.10)' }};color:{{ d.moveColor }}">{{ d.dir }}</span>
+                    <span style="font-size:11px;font-weight:700;padding:4px 9px;border-radius:7px;background:{{ d.chipBg }};color:{{ d.moveColor }}">{{ d.dir }}</span>
                   </div>
                 </sc-for>
               </div>
@@ -1938,7 +1938,7 @@ class Component extends DCLogic {
     const topValue = hasOdds ? enriched.filter(p => p.oddsAm != null && p.pa >= 100 && p.edge != null && p.edge > 0).sort((a, b) => b.edge - a.edge).slice(0, 12) : enriched.slice(0, 12);
     const priceDiff = (live && this.state.data.priceDiff) || [];
     const hasDiff = priceDiff.length > 0;
-    const diffItems = priceDiff.slice(0, 10).map(d => ({ name: d.name, prev: (d.prev > 0 ? '+' : '') + d.prev, cur: (d.cur > 0 ? '+' : '') + d.cur, move: (d.move > 0 ? '▲ ' : '▼ ') + Math.abs(d.move) + ' pts', moveColor: d.move > 0 ? '#ff8d8d' : 'var(--pos,#35d0c0)', dir: d.move > 0 ? 'longer' : 'shorter' }));
+    const diffItems = priceDiff.slice(0, 10).map(d => ({ name: d.name, prev: (d.prev > 0 ? '+' : '') + d.prev, cur: (d.cur > 0 ? '+' : '') + d.cur, move: (d.move > 0 ? '▲ ' : '▼ ') + Math.abs(d.move) + ' pts', moveColor: d.move > 0 ? '#ff8d8d' : 'var(--pos,#35d0c0)', dir: d.move > 0 ? 'longer' : 'shorter', moveIcon: d.move > 0 ? '📈' : '📉', chipBg: d.move > 0 ? 'rgba(255,141,141,.10)' : 'rgba(53,208,192,.12)' }));
 
     // Builder chip styles
     const cSt = (on) => on ? 'background:var(--ac,#ff8a4c);color:#0a0c11;border:1px solid transparent' : 'background:#0c0e14;border:1px solid rgba(255,255,255,.1);color:#9aa3b2';
@@ -2033,10 +2033,13 @@ class Component extends DCLogic {
       // Win Rate Optimizer
       wroLegs: this.state.wroLegs || 3, wroMode: this.state.wroMode || 'winrate',
       wroSeed: this.state.wroSeed || 0,
+      wroLegBtns: [2,3,4].map(n => ({ n: n, bg: (this.state.wroLegs || 3) === n ? 'var(--pos,#35d0c0)' : '#0c0e14', fg: (this.state.wroLegs || 3) === n ? '#0a0c11' : '#9aa3b2' })),
+      wroModeBtns: [{m:'winrate',label:'🎯 Win Rate'},{m:'ev',label:'💰 Best EV'},{m:'balanced',label:'⚖️ Balanced'}].map(o => ({ m: o.m, label: o.label, bg: (this.state.wroMode || 'winrate') === o.m ? 'var(--pos,#35d0c0)' : '#0c0e14', fg: (this.state.wroMode || 'winrate') === o.m ? '#0a0c11' : '#9aa3b2' })),
       wroSetLegs: (e) => this.setState({ wroLegs: parseInt(e.currentTarget.dataset.legs), wroSeed: 0, wroLocked: {} }),
       wroSetMode: (e) => this.setState({ wroMode: e.currentTarget.dataset.mode, wroSeed: 0, wroLocked: {} }),
       addWroToSlip: this.addWroToSlip, wroNext: this.wroNext, wroReset: this.wroReset, wroToggleLock: this.wroToggleLock,
       wro: (()=>{
+        try {
         const nLegs = this.state.wroLegs || 3, mode = this.state.wroMode || 'winrate';
         const seed = this.state.wroSeed || 0;
         const locked = this.state.wroLocked || {};
@@ -2080,12 +2083,23 @@ class Component extends DCLogic {
           modelPct: p.modelPct, ev: p.ev || '—', evColor: p.evColor || '#9aa3b2',
           edge: p.edgeNum != null ? (p.edgeNum >= 0 ? '+' : '') + p.edgeNum : '—',
           ring: p.ring, score: p.score, why: mode === 'winrate' ? 'Highest model probability' : mode === 'ev' ? 'Best EV edge' : 'Balanced win% + EV',
-          isLocked: !!locked[p.id], lockBg: locked[p.id] ? 'rgba(255,194,77,.18)' : 'rgba(255,255,255,.07)', lockColor: locked[p.id] ? '#ffc24d' : '#5f6878'
+          isLocked: !!locked[p.id],
+          lockBg: locked[p.id] ? 'rgba(255,194,77,.18)' : 'rgba(255,255,255,.07)',
+          lockColor: locked[p.id] ? '#ffc24d' : '#5f6878',
+          lockIcon: locked[p.id] ? '🔒' : '🔓',
+          cardBorder: locked[p.id] ? '1px solid rgba(255,194,77,.28)' : '1px solid rgba(255,255,255,.07)'
         }));
         const winFormula = legs.map(l => l.modelPct + '%').join(' × ') + ' = ' + winPct + '%';
-        const result = { legs, nLegs, winPct, marketImpPct: marketImp ? +(marketImp * 100).toFixed(2) : null, parleyEv: parleyEv != null ? +parleyEv.toFixed(1) : null, comboAm, ourEdge, grade, gradeColor, warnLow, warnEv, hasOdds: hasOddsAll, mode, winFormula };
+        const parleyEvR = parleyEv != null ? +parleyEv.toFixed(1) : null;
+        const marketImpPctR = marketImp ? +(marketImp * 100).toFixed(2) : null;
+        const result = { legs, nLegs, winPct, marketImpPct: marketImpPctR, parleyEv: parleyEvR, comboAm, ourEdge, grade, gradeColor, warnLow, warnEv, hasOdds: hasOddsAll, mode, winFormula,
+          marketWinDisplay: hasOddsAll ? marketImpPctR + '%' : '—',
+          parleyEvDisplay: hasOddsAll ? ((parleyEvR >= 0 ? '+' : '') + parleyEvR + '%') : '—',
+          parleyEvColor: hasOddsAll ? (parleyEvR >= 0 ? 'var(--pos,#35d0c0)' : '#ff8d8d') : '#9aa3b2'
+        };
         this._lastWro = result;
         return result;
+        } catch (e) { return null; }
       })(),
       isDash: tab === 'dashboard', isGames: tab === 'games', isBuilder: tab === 'builder',
       isData: tab === 'data', isTrack: tab === 'track', isLive: tab === 'live',
@@ -2111,6 +2125,7 @@ class Component extends DCLogic {
       hasLive: liveHRs.length > 0, noLive: liveHRs.length === 0, liveHRs, liveEmpty,
       liveStatus: live ? (liveHRs.length > 0 ? liveHRs.length + ' HR' + (liveHRs.length === 1 ? '' : 's') + ' today · ' + this.state.data.games.length + ' games' : 'Watching · ' + this.state.data.games.length + ' games today') : 'Offline',
       oddsConnected: hasOdds, oddsNotConnected: !hasOdds, booksLabel: (live ? this.state.data.booksOk : 0) + ' books',
+      valueRankLabel: hasOdds ? 'ranked by edge' : 'ranked by model',
       openDrawer: (e) => { const id = e.currentTarget.dataset.player; if (byId[id]) this.setState({ drawerOpen: true, player: byId[id], search: '' }); },
       closeDrawer: () => this.setState({ drawerOpen: false }),
       drawerOpen: this.state.drawerOpen, p: this.state.player || {},
