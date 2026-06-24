@@ -1146,11 +1146,21 @@
           <h2 style="margin:5px 0 2px;font-family:'Space Grotesk';font-size:23px;font-weight:700">{{ p.name }}</h2>
           <div style="font-size:13px;color:#8b94a6">{{ p.sub }}</div>
         </div>
-        <div style="display:flex;gap:8px;flex:none">
+        <div style="display:flex;gap:8px;flex:none;align-items:flex-start">
           <button data-watchid="{{ p.id }}" onClick="{{ toggleWatch }}" title="Watchlist" style="width:34px;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:{{ drawerWatchBg }};color:{{ drawerWatchFg }};cursor:pointer;font-size:17px">{{ drawerWatchStar }}</button>
           <button onClick="{{ closeDrawer }}" style="width:34px;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#161a24;color:#9aa3b2;cursor:pointer;font-size:17px" style-hover="color:#fff">✕</button>
         </div>
       </div>
+      <button onClick="{{ toggleCase }}" style="padding:8px 13px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:transparent;cursor:pointer;font-weight:700;font-size:12px;color:#eef1f6;flex:none;white-space:nowrap;margin-bottom:14px">{{ caseIcon }} {{ caseLabel }}</button>
+      
+      <div style="background:{{ caseBg }};border:1px solid {{ caseBorder }};border-radius:13px;padding:14px;margin-bottom:18px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="font-size:16px">{{ caseIcon }}</span>
+          <div style="font-family:'Space Grotesk';font-weight:700;font-size:14px;color:{{ caseLabelColor }}">{{ caseLabel }}</div>
+        </div>
+        <div style="font-size:13px;line-height:1.5;color:#c3cad6">{{ caseThesis }}</div>
+      </div>
+
       <div style="display:flex;gap:7px;margin-top:13px;flex-wrap:wrap">
         <sc-for list="{{ p.markets }}" as="m" hint-placeholder-count="2">
           <span style="font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:8px;background:{{ m.bg }};color:{{ m.fg }}">{{ m.label }}</span>
@@ -1330,6 +1340,7 @@ class Component extends DCLogic {
   closeCompare = () => { this.setState({ compareA: null, compareB: null }); };
   setTeamFilter = (e) => { const t = e.currentTarget.dataset.team; this.setState(s => ({ teamFilter: s.teamFilter === t ? null : t })); };
   clearTeamFilter = () => { this.setState({ teamFilter: null }); };
+  toggleCase = () => { this.setState(s => ({ caseMode: s.caseMode === 'bull' ? 'bear' : 'bull' })); };
   toggleWatch = (e) => {
     const id = e.currentTarget.dataset.watchid; if (!id) return;
     this.setState(s => { const has = s.watch.includes(id); const watch = has ? s.watch.filter(x => x !== id) : [...s.watch, id]; try { localStorage.setItem('dl_watch_v1', JSON.stringify(watch)); } catch (er) {} return { watch }; });
@@ -1767,6 +1778,33 @@ class Component extends DCLogic {
       isDue: !!p.isDue, lineupConfirmed: !!p.lineupConfirmed,
       barrelPct: p.barrelPct ? p.barrelPct.toFixed(1) + '%' : '—',
       hardHitPct: p.hardHitPct ? p.hardHitPct.toFixed(0) + '%' : '—',
+      // Bull case
+      bullThesis: (()=>{
+        const reasons = [];
+        if (p.score >= 85) reasons.push(`${p.score}/99 Dinger Score — elite hit quality`);
+        if (p.barrelPct >= 9) reasons.push(`${p.barrelPct.toFixed(1)}% barrel rate — consistent hard contact`);
+        if (p.modelPct >= 30) reasons.push(`${p.modelPct}% model probability — high confidence`);
+        if (p.parkF >= 110) reasons.push(`PF ${p.parkF} — ${p.venue} favors power`);
+        if (p.edgeNum != null && p.edgeNum >= 3) reasons.push(`+${p.edgeNum} edge vs market — we beat the book`);
+        if (p.platoon >= 1.08) reasons.push(`${(p.platoon*100-100).toFixed(0)}% platoon boost vs ${p.oppHand}`);
+        if (p.formMult >= 1.05) reasons.push(`Hot form · last 10 games: ${p.recHr9 ? p.recHr9.toFixed(2) : '—'} HR/9`);
+        if (p.wxMult >= 1.04) reasons.push(`${p.wx} conditions favor HR flight`);
+        return reasons.length ? reasons.slice(0,3).join(' | ') : 'Strong fundamentals';
+      })(),
+      // Bear case — include last 3 HR vs this pitcher
+      bearCase: (()=>{
+        const reasons = [];
+        // Matchup-specific
+        const matchupStr = p.oppPitcher && p.oppPitcher !== 'TBD' ? ` vs ${p.oppPitcher}` : '';
+        if (p.recHr9 != null && p.recHr9 < 0.5) reasons.push(`Cold: ${p.recHr9.toFixed(2)} HR/9 last 10 games${matchupStr}`);
+        if (p.oppHR9 >= 1.2) reasons.push(`${p.oppPitcher || 'Pitcher'} allows ${p.oppHR9.toFixed(2)} HR/9 — elite strikeout rate`);
+        if (p.platoon <= 0.95) reasons.push(`${(100-p.platoon*100).toFixed(0)}% handedness mismatch vs ${p.oppHand}`);
+        if (p.parkF <= 95) reasons.push(`PF ${p.parkF} — ${p.venue} suppresses power`);
+        if (p.modelPct < 15 && p.oddsAm > 200) reasons.push(`Odds +${p.oddsAm} imply ${(100/(p.oddsAm/100+1)).toFixed(1)}% — we only like it at +EV`);
+        if (p.daysRest != null && p.daysRest <= 1) reasons.push(`Only ${p.daysRest} day(s) rest — fatigue risk`);
+        if (p.barrelPct != null && p.barrelPct < 6) reasons.push(`${p.barrelPct.toFixed(1)}% barrel — below-average contact quality`);
+        return reasons.length ? reasons.slice(0,3).join(' | ') : 'No major red flags';
+      })(),
       sub: p.teamAbbr + ' vs ' + p.oppAbbr + ' · vs ' + p.oppPitcher,
       best: best, ev: ev, evColor: evColor, edge: edge, evNum: p.oddsAm != null ? +( (p.modelPct / 100 * this.amDec(p.oddsAm) - 1) * 100 ).toFixed(1) : null, edgeNum: edge,
       probBar: Math.min(100, Math.round(p.modelPct / 0.30)) + '%',
@@ -2358,7 +2396,7 @@ class Component extends DCLogic {
       liveStatus: live ? (liveHRs.length > 0 ? liveHRs.length + ' HR' + (liveHRs.length === 1 ? '' : 's') + ' today · ' + this.state.data.games.length + ' games' : 'Watching · ' + this.state.data.games.length + ' games today') : 'Offline',
       oddsConnected: hasOdds, oddsNotConnected: !hasOdds, booksLabel: (live ? this.state.data.booksOk : 0) + ' books',
       valueRankLabel: hasOdds ? 'ranked by edge' : 'ranked by model',
-      openDrawer: (e) => { const id = e.currentTarget.dataset.player; if (byId[id]) this.setState({ drawerOpen: true, player: byId[id], search: '' }); },
+      openDrawer: async (e) => { const id = e.currentTarget.dataset.player; if (!byId[id]) return; const p = byId[id]; if (p.gameId) { try { const j = await fetch(this.state.proxyUrl + '/api/game/' + p.gameId + '/boxscore').then(r => r.ok ? r.json() : null); if (j && j.teams) { const away = (j.teams.away && j.teams.away.battingOrder) || []; const home = (j.teams.home && j.teams.home.battingOrder) || []; const confirmed = new Set([...away, ...home].map(String)); if (confirmed.has(String(id))) p.lineupConfirmed = true; } } catch (e) {} } this.setState({ drawerOpen: true, player: p, search: '' }); },
       closeDrawer: () => this.setState({ drawerOpen: false }),
       drawerOpen: this.state.drawerOpen, p: this.state.player || {},
       // Slip
@@ -2418,6 +2456,15 @@ class Component extends DCLogic {
         dueBarrel: p.barrelPct ? p.barrelPct.toFixed(1) + '% brl' : '', dueHH: p.hardHitPct ? p.hardHitPct.toFixed(0) + '% HH' : '',
         dueOdds: p.oddsAm != null ? (p.oddsAm > 0 ? '+' : '') + p.oddsAm : '—'
       })),
+      // Bull/bear case toggle
+      caseMode: this.state.caseMode || 'bull',
+      toggleCase: this.toggleCase,
+      caseIcon: (this.state.caseMode || 'bull') === 'bull' ? '🐂' : '🐻',
+      caseBg: (this.state.caseMode || 'bull') === 'bull' ? 'rgba(53,208,192,.08)' : 'rgba(255,107,107,.08)',
+      caseBorder: (this.state.caseMode || 'bull') === 'bull' ? 'rgba(53,208,192,.18)' : 'rgba(255,107,107,.18)',
+      caseLabel: (this.state.caseMode || 'bull') === 'bull' ? 'Bull case' : 'Bear case',
+      caseLabelColor: (this.state.caseMode || 'bull') === 'bull' ? 'var(--pos,#35d0c0)' : '#ff8d8d',
+      caseThesis: drawerPlayer ? ((this.state.caseMode || 'bull') === 'bull' ? drawerPlayer.bullThesis : drawerPlayer.bearCase) : '',
       // Search + watchlist
       search: this.state.search, setSearch: this.setSearch, clearSearch: this.clearSearch,
       searchResults, hasSearch: searchResults.length > 0, searchActive: searchTerm.length >= 2,
