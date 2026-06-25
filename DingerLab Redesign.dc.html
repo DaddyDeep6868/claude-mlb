@@ -353,6 +353,305 @@
       </div>
       </sc-if>
 
+      <!-- RADAR -->
+      <sc-if value="{{ isRadar }}" hint-placeholder-val="{{ false }}">
+      <div style="animation:dlrise .35s ease both">
+        <div style="margin-bottom:16px">
+          <div style="font-size:11px;letter-spacing:.14em;color:var(--ac,#ff8a4c);font-weight:700;margin-bottom:6px">WEATHER RADAR</div>
+          <h1 style="margin:0;font-family:'Space Grotesk';font-size:28px;font-weight:700;letter-spacing:-.02em">Where the dingers fly tonight</h1>
+          <p style="margin:6px 0 0;color:#8b94a6;font-size:14px;max-width:620px">Every park live, sized and colored by its ball-carry index — wind direction off center field, speed, and temperature folded into one number. Hot parks glow red. Tap one for its hitters.</p>
+        </div>
+
+        <sc-if value="{{ radarHasData }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px;align-items:start">
+
+          <!-- MAP -->
+          <div style="position:relative;background:radial-gradient(ellipse at 50% 40%,#11202e,#0b0f16 75%);border:1px solid rgba(255,255,255,.08);border-radius:18px;overflow:hidden;aspect-ratio:1.62/1;min-height:260px;min-width:0">
+            <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:7% 9%"></div>
+            <div style="position:absolute;left:14px;top:12px;font-family:'Space Grotesk';font-size:11px;letter-spacing:.1em;color:#5f6878;font-weight:700">USA · LIVE CONDITIONS</div>
+            <sc-for list="{{ radarParks }}" as="r" hint-placeholder-count="6">
+              <button data-game="{{ r.gameId }}" onClick="{{ setRadarSel }}" title="{{ r.venue }}" style="position:absolute;left:{{ r.x }}%;top:{{ r.y }}%;transform:translate(-50%,-50%);width:{{ r.size }}px;height:{{ r.size }}px;border-radius:50%;border:1.5px solid rgba(255,255,255,.5);background:{{ r.dotColor }};box-shadow:0 0 18px rgba(255,93,93,{{ r.glow }});cursor:pointer;padding:0;transition:transform .15s" style-hover="transform:translate(-50%,-50%) scale(1.35);z-index:5"></button>
+            </sc-for>
+            <!-- legend -->
+            <div style="position:absolute;right:14px;bottom:12px;display:flex;align-items:center;gap:7px;background:rgba(8,11,17,.7);padding:6px 10px;border-radius:9px;backdrop-filter:blur(8px)">
+              <span style="font-size:10px;color:#8b94a6;font-weight:600">DEAD</span>
+              <span style="width:54px;height:7px;border-radius:4px;background:linear-gradient(90deg,#5b8fc9,#ffc24d,#ff5d5d)"></span>
+              <span style="font-size:10px;color:#8b94a6;font-weight:600">FLYING</span>
+            </div>
+          </div>
+
+          <!-- SELECTED PARK -->
+          <sc-if value="{{ radarSel }}" hint-placeholder-val="{{ true }}">
+          <div style="background:#13161e;border:1px solid rgba(255,255,255,.09);border-radius:18px;overflow:hidden">
+            <div style="padding:16px 17px;border-bottom:1px solid rgba(255,255,255,.07);background:linear-gradient(135deg,rgba(255,138,76,.08),transparent)">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                <div style="min-width:0">
+                  <div style="font-family:'Space Grotesk';font-weight:700;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ radarSel.matchup }}</div>
+                  <div style="font-size:12px;color:#7b8597;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ radarSel.venue }}</div>
+                </div>
+                <div style="text-align:right;flex:none">
+                  <div style="font-family:'Space Grotesk';font-weight:700;font-size:30px;line-height:1;color:{{ radarSel.dotColor }}">{{ radarSel.carry }}</div>
+                  <div style="font-size:10px;color:#7b8597;font-weight:600;letter-spacing:.04em">CARRY INDEX</div>
+                </div>
+              </div>
+              <div style="margin-top:11px;font-size:12.5px;font-weight:600;color:{{ radarSel.dotColor }}">{{ radarSel.condText }}</div>
+            </div>
+            <div style="display:flex;border-bottom:1px solid rgba(255,255,255,.07)">
+              <div style="flex:1;padding:12px 14px;border-right:1px solid rgba(255,255,255,.06)"><div style="font-size:10px;color:#7b8597;font-weight:700;letter-spacing:.04em">TEMP</div><div style="font-family:'Space Grotesk';font-size:18px;font-weight:700;margin-top:3px">{{ radarSel.temp }}</div></div>
+              <div style="flex:1;padding:12px 14px;border-right:1px solid rgba(255,255,255,.06)"><div style="font-size:10px;color:#7b8597;font-weight:700;letter-spacing:.04em">WIND</div><div style="font-family:'Space Grotesk';font-size:18px;font-weight:700;margin-top:3px">{{ radarSel.wind }}</div></div>
+              <div style="flex:1;padding:12px 14px"><div style="font-size:10px;color:#7b8597;font-weight:700;letter-spacing:.04em">HR EFFECT</div><div style="font-family:'Space Grotesk';font-size:18px;font-weight:700;margin-top:3px;color:{{ radarSel.multColor }}">{{ radarSel.multLabel }}</div></div>
+            </div>
+            <div style="padding:14px 16px">
+              <div style="font-size:11px;color:#7b8597;font-weight:700;letter-spacing:.04em;margin-bottom:10px">TOP BATS HERE</div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ radarSel.topHitters }}" as="h" hint-placeholder-count="3">
+                  <div data-player="{{ h.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:11px;background:#0c0e14;border:1px solid rgba(255,255,255,.06)">
+                    <div style="width:38px;height:38px;flex:none;border-radius:50%;background:{{ h.ring }};display:grid;place-items:center"><div style="position:relative;width:30px;height:30px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center"><img src="{{ h.headshot }}" alt="" referrerpolicy="no-referrer" style="width:30px;height:30px;object-fit:cover;object-position:top center" onerror="this.remove()"/><span style="position:absolute;bottom:-1px;right:-1px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:var(--ac,#ff8a4c);color:#0a0c11;font-family:'Space Grotesk';font-weight:700;font-size:8.5px;display:grid;place-items:center;border:1.5px solid #0c0e14">{{ h.score }}</span></div></div>
+                    <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ h.name }}</div><div style="font-size:11.5px;color:#7b8597">HR {{ h.modelPct }}%</div></div>
+                    <div style="font-family:'Space Grotesk';font-weight:700;font-size:14px;color:var(--ac,#ff8a4c)">{{ h.best }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+          </sc-if>
+        </div>
+
+        <!-- PARK RANKING STRIP -->
+        <div style="display:flex;align-items:center;gap:9px;margin:24px 0 13px"><span style="font-size:17px">🌡️</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Tonight's parks by carry</h2><span style="font-size:12px;color:#7b8597">{{ radarHot }} parks playing hot</span></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">
+          <sc-for list="{{ radarParks }}" as="r" hint-placeholder-count="6">
+            <button data-game="{{ r.gameId }}" onClick="{{ setRadarSel }}" style="text-align:left;cursor:pointer;background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:13px;padding:13px 14px;display:flex;align-items:center;gap:12px" style-hover="border-color:rgba(255,138,76,.4)">
+              <div style="width:44px;height:44px;flex:none;border-radius:11px;background:{{ r.dotColor }};display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:17px;color:#0a0c11;box-shadow:0 0 14px rgba(255,93,93,{{ r.glow }})">{{ r.carry }}</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.matchup }}</div>
+                <div style="font-size:11.5px;color:#7b8597;margin-top:2px">{{ r.temp }} · {{ r.wind }}</div>
+              </div>
+              <div style="font-family:'Space Grotesk';font-weight:700;font-size:13px;color:{{ r.multColor }};flex:none">{{ r.multLabel }}</div>
+            </button>
+          </sc-for>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ radarHasData }}" hint-placeholder-val="{{ true }}">
+        <div style="display:none"></div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <!-- SOLVER -->
+      <sc-if value="{{ isSolver }}" hint-placeholder-val="{{ false }}">
+      <div style="animation:dlrise .35s ease both">
+        <div style="margin-bottom:18px">
+          <div style="font-size:11px;letter-spacing:.14em;color:var(--pos,#35d0c0);font-weight:700;margin-bottom:6px">SLATE SOLVER</div>
+          <h1 style="margin:0;font-family:'Space Grotesk';font-size:28px;font-weight:700;letter-spacing:-.02em">Tonight's optimal card</h1>
+          <p style="margin:6px 0 0;color:#8b94a6;font-size:14px;max-width:640px">Set your bankroll and the solver scans every +EV play, then sizes each bet by <strong style="color:#c3cad6">fractional Kelly</strong> — the math that maximizes long-run growth without over-betting. This is portfolio construction, not a single pick.</p>
+        </div>
+
+        <!-- Controls -->
+        <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px;display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end;margin-bottom:22px">
+          <div>
+            <div style="font-size:11px;color:#7b8597;font-weight:700;letter-spacing:.04em;margin-bottom:7px">BANKROLL</div>
+            <div style="display:flex;align-items:center;padding:9px 13px;border-radius:11px;background:#0c0e14;border:2px solid rgba(53,208,192,.35)">
+              <span style="font-size:16px;font-weight:700;color:#9aa3b2;margin-right:4px">$</span>
+              <input type="text" inputMode="decimal" value="{{ bankroll }}" onChange="{{ setBankroll }}" placeholder="1000" style="width:90px;background:transparent;border:none;color:#eef1f6;font-family:'Space Grotesk';font-weight:700;font-size:18px;outline:none"/>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#7b8597;font-weight:700;letter-spacing:.04em;margin-bottom:7px">STAKING (KELLY FRACTION)</div>
+            <div style="display:flex;gap:5px">
+              <sc-for list="{{ kfOpts }}" as="k" hint-placeholder-count="3">
+                <button data-frac="{{ k.f }}" onClick="{{ setKellyFrac }}" style="padding:8px 12px;border-radius:9px;cursor:pointer;border:1px solid {{ k.border }};background:{{ k.bg }};color:{{ k.fg }};text-align:center">
+                  <div style="font-weight:700;font-size:12.5px">{{ k.label }}</div>
+                  <div style="font-size:10px;opacity:.7;margin-top:1px">{{ k.sub }}</div>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#7b8597;font-weight:700;letter-spacing:.04em;margin-bottom:7px">RISK PROFILE</div>
+            <div style="display:flex;gap:5px">
+              <sc-for list="{{ riskOpts }}" as="r" hint-placeholder-count="3">
+                <button data-risk="{{ r.r }}" onClick="{{ setSolverRisk }}" style="padding:9px 13px;border-radius:9px;cursor:pointer;font-weight:700;font-size:12.5px;border:1px solid {{ r.border }};background:{{ r.bg }};color:{{ r.fg }}">{{ r.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <sc-if value="{{ solver.needsOdds }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:40px 20px;text-align:center">
+            <div style="font-size:34px;opacity:.5;margin-bottom:12px">🎯</div>
+            <div style="font-family:'Space Grotesk';font-size:18px;font-weight:700;color:#c3cad6">Connect odds to solve the slate</div>
+            <p style="margin:8px auto 0;font-size:13.5px;color:#7b8597;max-width:380px">Kelly sizing needs live prices. The solver activates once your OddsBlaze feed posts props.</p>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ solver.hasBets }}" hint-placeholder-val="{{ false }}">
+          <!-- Summary bar -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:14px">
+            <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 16px"><div style="font-size:11px;color:#7b8597;font-weight:600">PLAYS</div><div style="font-family:'Space Grotesk';font-size:26px;font-weight:700;margin-top:4px">{{ solver.betCount }}</div></div>
+            <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 16px"><div style="font-size:11px;color:#7b8597;font-weight:600">TOTAL RISK</div><div style="font-family:'Space Grotesk';font-size:26px;font-weight:700;margin-top:4px">{{ solver.totalStaked }}</div></div>
+            <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 16px"><div style="font-size:11px;color:#7b8597;font-weight:600">EXP. PROFIT</div><div style="font-family:'Space Grotesk';font-size:26px;font-weight:700;margin-top:4px;color:{{ solver.expProfitColor }}">{{ solver.expProfit }}</div></div>
+            <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 16px"><div style="font-size:11px;color:#7b8597;font-weight:600">EXP. ROI</div><div style="font-family:'Space Grotesk';font-size:26px;font-weight:700;margin-top:4px;color:{{ solver.expProfitColor }}">{{ solver.expROI }}</div></div>
+          </div>
+
+          <!-- Exposure bar -->
+          <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:13px 16px;margin-bottom:22px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:12px;color:#9aa3b2;font-weight:600">Bankroll exposure tonight</span><span style="font-family:'Space Grotesk';font-weight:700;font-size:14px;color:{{ solver.exposureColor }}">{{ solver.exposurePct }}</span></div>
+            <div style="height:8px;border-radius:6px;background:rgba(255,255,255,.07);overflow:hidden"><div style="width:{{ solver.exposureWidth }};height:100%;background:{{ solver.exposureColor }}"></div></div>
+          </div>
+
+          <!-- Straight bets -->
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="font-size:17px">💵</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Recommended straight bets</h2></div>
+          <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;margin-bottom:24px">
+            <sc-for list="{{ solver.bets }}" as="b" hint-placeholder-count="4">
+              <div data-player="{{ b.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;display:flex;align-items:center;gap:13px;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.05)" style-hover="background:#161a24">
+                <div style="width:42px;height:42px;flex:none;border-radius:50%;background:{{ b.ring }};display:grid;place-items:center"><div style="position:relative;width:34px;height:34px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center"><img src="{{ b.headshot }}" alt="" referrerpolicy="no-referrer" style="width:34px;height:34px;object-fit:cover;object-position:top center" onerror="this.remove()"/><span style="position:absolute;bottom:-1px;right:-1px;min-width:16px;height:16px;padding:0 3px;border-radius:8px;background:var(--ac,#ff8a4c);color:#0a0c11;font-family:'Space Grotesk';font-weight:700;font-size:9px;display:grid;place-items:center;border:1.5px solid #0c0e14">{{ b.score }}</span></div></div>
+                <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ b.name }} <span style="font-size:11.5px;color:#7b8597;font-weight:500">{{ b.team }} · HR</span></div><div style="font-size:11.5px;color:#7b8597;margin-top:2px">HR {{ b.modelPct }}% · Kelly {{ b.kellyPct }} of bankroll</div></div>
+                <div style="text-align:center;min-width:50px"><div style="font-size:10px;color:#7b8597;font-weight:600">ODDS</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:14px;color:var(--ac,#ff8a4c)">{{ b.odds }}</div></div>
+                <div style="text-align:center;min-width:48px"><div style="font-size:10px;color:#7b8597;font-weight:600">EV</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:14px;color:{{ b.evColor }}">{{ b.ev }}</div></div>
+                <div style="text-align:right;min-width:80px"><div style="font-size:10px;color:#7b8597;font-weight:600">STAKE → WIN</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:14px">{{ b.stake }} <span style="color:var(--pos,#35d0c0)">→ {{ b.toWin }}</span></div></div>
+              </div>
+            </sc-for>
+          </div>
+
+          <!-- Anchor parlay -->
+          <sc-if value="{{ solver.anchor }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="font-size:17px">🚀</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Anchor parlay <span style="font-size:12px;color:#7b8597;font-weight:500">— 1u upside flyer</span></h2></div>
+            <div style="background:#13161e;border:1px solid rgba(255,138,76,.22);border-radius:16px;padding:16px">
+              <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:14px">
+                <div><div style="font-size:10.5px;color:#7b8597;font-weight:600">ODDS</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:20px;color:var(--ac,#ff8a4c)">{{ solver.anchor.odds }}</div></div>
+                <div><div style="font-size:10.5px;color:#7b8597;font-weight:600">WIN%</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:20px">{{ solver.anchor.winPct }}</div></div>
+                <div><div style="font-size:10.5px;color:#7b8597;font-weight:600">EV</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:20px;color:var(--pos,#35d0c0)">{{ solver.anchor.ev }}</div></div>
+                <div><div style="font-size:10.5px;color:#7b8597;font-weight:600">STAKE → WIN</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:20px">{{ solver.anchor.stake }} <span style="color:var(--pos,#35d0c0)">→ {{ solver.anchor.toWin }}</span></div></div>
+                <div style="flex:1"></div>
+                <button onClick="{{ addSolverToSlip }}" style="padding:11px 17px;border:none;border-radius:11px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:800;font-size:13.5px;color:#0a0c11;background:var(--ac,#ff8a4c)">+ Add to slip</button>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <sc-for list="{{ solver.anchor.legs }}" as="l" hint-placeholder-count="3">
+                  <div data-player="{{ l.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:11px;background:#0c0e14">
+                    <div style="width:34px;height:34px;flex:none;border-radius:50%;background:{{ l.ring }};display:grid;place-items:center"><div style="position:relative;width:27px;height:27px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center"><img src="{{ l.headshot }}" alt="" referrerpolicy="no-referrer" style="width:27px;height:27px;object-fit:cover;object-position:top center" onerror="this.remove()"/></div></div>
+                    <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13px">{{ l.name }} <span style="font-size:11px;color:#7b8597;font-weight:500">{{ l.team }}</span></div></div>
+                    <div style="font-size:11.5px;color:#7b8597">HR {{ l.modelPct }}%</div>
+                    <div style="font-family:'Space Grotesk';font-weight:700;font-size:13px;color:var(--ac,#ff8a4c)">{{ l.odds }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="margin-top:18px;padding:12px 15px;border-radius:11px;background:rgba(53,208,192,.05);border:1px solid rgba(53,208,192,.16);font-size:12px;color:#8b94a6;line-height:1.55">⚖️ Kelly sizing assumes your model probabilities are accurate. Fractional Kelly (¼) hedges against model error — the safer choice. Never stake more than you can lose; the solver caps total exposure but variance is real.</div>
+        </sc-if>
+
+        <sc-if value="{{ solver.hasBets }}" hint-placeholder-val="{{ true }}">
+          <div style="display:none"></div>
+        </sc-if>
+
+        <sc-if value="{{ solver.noBets }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:40px 20px;text-align:center">
+            <div style="font-size:34px;opacity:.5;margin-bottom:12px">🧮</div>
+            <div style="font-family:'Space Grotesk';font-size:18px;font-weight:700;color:#c3cad6">No +EV plays clear the bar tonight</div>
+            <p style="margin:8px auto 0;font-size:13.5px;color:#7b8597;max-width:400px">At this risk profile the model finds no bets with positive Kelly value. Loosening to "Aggressive" widens the band — or there's simply no edge on tonight's prices. Discipline is a position too.</p>
+          </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <!-- REPORT CARD -->
+      <sc-if value="{{ isReport }}" hint-placeholder-val="{{ false }}">
+      <div style="animation:dlrise .35s ease both">
+        <div style="margin-bottom:18px">
+          <div style="font-size:11px;letter-spacing:.14em;color:var(--ac,#ff8a4c);font-weight:700;margin-bottom:6px">MODEL REPORT CARD</div>
+          <h1 style="margin:0;font-family:'Space Grotesk';font-size:28px;font-weight:700;letter-spacing:-.02em">Does the model actually work?</h1>
+          <p style="margin:6px 0 0;color:#8b94a6;font-size:14px;max-width:640px">Every prediction is logged and graded against real box scores — no cherry-picking. When the model says 20%, do players actually homer 20% of the time? Here's the honest answer.</p>
+        </div>
+
+        <!-- Not enough data yet -->
+        <sc-if value="{{ report.notEnough }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:34px 22px;text-align:center">
+          <div style="font-size:34px;margin-bottom:14px">🎓</div>
+          <div style="font-family:'Space Grotesk';font-size:19px;font-weight:700;color:#c3cad6">Building your track record</div>
+          <p style="margin:10px auto 18px;font-size:13.5px;color:#7b8597;max-width:440px;line-height:1.6">The report card grades real predictions as games finalize — it can't be faked with a backtest you didn't run. <strong style="color:#9aa3b2">{{ report.locked }} predictions locked today</strong>; calibration populates as tonight's bats finish and accumulates each day you check in.</p>
+          <div style="display:inline-flex;gap:22px;padding:14px 22px;border-radius:13px;background:#0c0e14;border:1px solid rgba(255,255,255,.07)">
+            <div><div style="font-family:'Space Grotesk';font-size:22px;font-weight:700">{{ report.locked }}</div><div style="font-size:11px;color:#7b8597">locked today</div></div>
+            <div style="width:1px;background:rgba(255,255,255,.08)"></div>
+            <div><div style="font-family:'Space Grotesk';font-size:22px;font-weight:700">{{ report.sample }}</div><div style="font-size:11px;color:#7b8597">graded so far</div></div>
+            <div style="width:1px;background:rgba(255,255,255,.08)"></div>
+            <div><div style="font-family:'Space Grotesk';font-size:22px;font-weight:700">{{ report.daysWithData }}</div><div style="font-size:11px;color:#7b8597">days tracked</div></div>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- Full report -->
+        <sc-if value="{{ report.enough }}" hint-placeholder-val="{{ false }}">
+          <!-- Verdict hero -->
+          <div style="background:linear-gradient(135deg,rgba(53,208,192,.07),transparent);border:1px solid rgba(255,255,255,.09);border-radius:18px;padding:20px 22px;margin-bottom:16px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+            <div style="flex:1;min-width:220px">
+              <div style="font-size:11px;color:#7b8597;font-weight:700;letter-spacing:.06em;margin-bottom:6px">VERDICT</div>
+              <div style="font-family:'Space Grotesk';font-size:26px;font-weight:700;color:{{ report.verdict.col }}">{{ report.verdict.txt }}</div>
+              <div style="font-size:13px;color:#8b94a6;margin-top:5px">{{ report.verdict.sub }}</div>
+            </div>
+            <div style="display:flex;gap:22px">
+              <div style="text-align:center"><div style="font-family:'Space Grotesk';font-size:24px;font-weight:700;color:{{ report.skillColor }}">{{ report.skill }}</div><div style="font-size:10.5px;color:#7b8597;font-weight:600;margin-top:2px">SKILL vs NAIVE</div></div>
+              <div style="text-align:center"><div style="font-family:'Space Grotesk';font-size:24px;font-weight:700">±{{ report.calErr }}</div><div style="font-size:10.5px;color:#7b8597;font-weight:600;margin-top:2px">CALIB. ERROR</div></div>
+              <div style="text-align:center"><div style="font-family:'Space Grotesk';font-size:24px;font-weight:700">{{ report.sample }}</div><div style="font-size:10.5px;color:#7b8597;font-weight:600;margin-top:2px">PREDICTIONS</div></div>
+            </div>
+          </div>
+
+          <!-- Calibration chart -->
+          <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px;margin-bottom:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><h2 style="margin:0;font-family:'Space Grotesk';font-size:17px;font-weight:700">Calibration curve</h2>
+              <div style="display:flex;gap:14px;font-size:11px"><span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#5f6878"></span>Predicted</span><span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:var(--ac,#ff8a4c)"></span>Actual</span></div>
+            </div>
+            <p style="margin:0 0 16px;font-size:12.5px;color:#7b8597">Bars matching = the model's probabilities are true. Each pair is a probability range.</p>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;align-items:end;height:180px">
+              <sc-for list="{{ report.buckets }}" as="b" hint-placeholder-count="5">
+                <div style="display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end;gap:6px">
+                  <div style="display:flex;align-items:flex-end;gap:5px;height:130px;width:100%;justify-content:center">
+                    <div style="width:28%;height:{{ b.predH }}%;min-height:3px;background:#5f6878;border-radius:4px 4px 0 0" title="predicted"></div>
+                    <div style="width:28%;height:{{ b.actH }}%;min-height:3px;background:var(--ac,#ff8a4c);border-radius:4px 4px 0 0" title="actual"></div>
+                  </div>
+                  <div style="font-size:11px;font-weight:700;color:{{ b.diffColor }}">{{ b.predPct }}→{{ b.actPct }}</div>
+                  <div style="font-size:10.5px;color:#7b8597">{{ b.label }}</div>
+                  <div style="font-size:10px;color:#5f6878">n={{ b.n }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- Brier + factor audit -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
+            <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px">
+              <h2 style="margin:0 0 4px;font-family:'Space Grotesk';font-size:17px;font-weight:700">Skill score</h2>
+              <p style="margin:0 0 16px;font-size:12.5px;color:#7b8597">Brier score (lower = better). Skill % is how much the model beats just guessing the league base rate.</p>
+              <div style="display:flex;flex-direction:column;gap:11px">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 13px;border-radius:11px;background:#0c0e14"><span style="font-size:13px;color:#c3cad6">Model Brier</span><span style="font-family:'Space Grotesk';font-weight:700;font-size:16px">{{ report.brierModel }}</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 13px;border-radius:11px;background:#0c0e14"><span style="font-size:13px;color:#c3cad6">Naive (base rate)</span><span style="font-family:'Space Grotesk';font-weight:700;font-size:16px;color:#7b8597">{{ report.brierNaive }}</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:13px;border-radius:11px;background:rgba(53,208,192,.07);border:1px solid rgba(53,208,192,.18)"><span style="font-size:13px;font-weight:700;color:#c3cad6">Skill vs naive</span><span style="font-family:'Space Grotesk';font-weight:700;font-size:18px;color:{{ report.skillColor }}">{{ report.skill }}</span></div>
+              </div>
+            </div>
+
+            <sc-if value="{{ report.hasFactors }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px">
+              <h2 style="margin:0 0 4px;font-family:'Space Grotesk';font-size:17px;font-weight:700">Do the signals work?</h2>
+              <p style="margin:0 0 16px;font-size:12.5px;color:#7b8597">Auditing the model's own badges — did flagged players actually outperform their predicted rate?</p>
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <sc-for list="{{ report.factors }}" as="f" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-radius:11px;background:#0c0e14">
+                    <div><div style="font-size:13px;font-weight:600">{{ f.name }}</div><div style="font-size:11px;color:#7b8597;margin-top:2px">{{ f.predPct }} pred → {{ f.actPct }} actual · n={{ f.n }}</div></div>
+                    <span style="font-family:'Space Grotesk';font-weight:700;font-size:15px;color:{{ f.liftColor }}">{{ f.lift }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            </sc-if>
+          </div>
+
+          <div style="margin-top:16px;padding:12px 15px;border-radius:11px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);font-size:12px;color:#8b94a6;line-height:1.55">📊 Grades come from {{ report.daysWithData }} day(s) of finalized games · {{ report.sample }} predictions · {{ report.baseRate }} overall HR rate. The more days you check in, the sharper this gets.</div>
+        </sc-if>
+      </div>
+      </sc-if>
+
       <!-- DATA -->
       <sc-if value="{{ isData }}" hint-placeholder-val="{{ false }}">
       <div style="animation:dlrise .35s ease both">
@@ -1259,11 +1558,13 @@
   &quot;compact&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot; }
 }">
 class Component extends DCLogic {
-  state = { tab: 'dashboard', drawerOpen: false, player: null, status: 'loading', data: null, slip: [], tracked: [], stake: '25', builderLegs: 3, builderStyle: 'balanced', builderMarket: 'hr', ulxSel: null, frontierIdx: null, slipOpen: (typeof window !== 'undefined' && window.innerWidth <= 820) ? false : true, proxyUrl: 'https://claude-mlb.onrender.com', autoPoll: true, lastUpdated: null, search: '', watch: [], ulxSeed: 0, copiedId: null, sortBy: 'score', teamFilter: null, compareA: null, compareB: null, wroLegs: 3, wroMode: 'winrate', wroSeed: 0, wroLocked: {} };
+  state = { tab: 'dashboard', drawerOpen: false, player: null, status: 'loading', data: null, slip: [], tracked: [], stake: '25', builderLegs: 3, builderStyle: 'balanced', builderMarket: 'hr', ulxSel: null, frontierIdx: null, slipOpen: (typeof window !== 'undefined' && window.innerWidth <= 820) ? false : true, proxyUrl: 'https://claude-mlb.onrender.com', autoPoll: true, lastUpdated: null, search: '', watch: [], ulxSeed: 0, copiedId: null, sortBy: 'score', teamFilter: null, compareA: null, compareB: null, wroLegs: 3, wroMode: 'winrate', wroSeed: 0, wroLocked: {}, radarSel: null, bankroll: '1000', kellyFrac: 0.25, solverRisk: 'balanced', predLog: {} };
 
   componentDidMount() {
     try { const p = localStorage.getItem('dl_odds_proxy'); if (p) this.setState({ proxyUrl: p }); } catch (e) {}
+    try { const b = localStorage.getItem('dl_bankroll'); if (b) this.setState({ bankroll: b }); } catch (e) {}
     try { const t = localStorage.getItem('dl_tracked_v1'); if (t) this.setState({ tracked: JSON.parse(t) }); } catch (e) {}
+    try { const pl = localStorage.getItem('dl_predlog_v2'); if (pl) this.setState({ predLog: JSON.parse(pl) }); } catch (e) {}
     try { const w = localStorage.getItem('dl_watch_v1'); if (w) this.setState({ watch: JSON.parse(w) }); } catch (e) {}
     this.load();
     this._pollId = setInterval(() => { if (this.state.autoPoll && this.state.status === 'live' && !this._refreshing) this.liveRefresh(); }, 60000);
@@ -1680,6 +1981,7 @@ class Component extends DCLogic {
       const statusMap = {}; games.forEach(g => { statusMap[g.gamePk] = g.status && g.status.abstractGameState; });
       const gradedTracked = this.gradeTracked(this.state.tracked, homeredSet, statusMap, oddsMap);
       try { localStorage.setItem('dl_tracked_v1', JSON.stringify(gradedTracked.slice(0, 50))); } catch (e) {}
+      this.updatePredLog(players, homeredSet, statusMap, date);
 
       this.setState({ status: 'live', tracked: gradedTracked, data: { date, season, games, players, gameModel, oddsCount: Object.keys(oddsMap).length, booksOk, priceDiff, liveHRs, weatherByVenue, statusMap } });
     } catch (e) {
@@ -1688,6 +1990,25 @@ class Component extends DCLogic {
   }
 
   refresh = () => { this.load(); };
+
+  // Snapshot today's model predictions + grade against actual results (accumulates daily)
+  updatePredLog(players, homeredSet, statusMap, date) {
+    try {
+      const log = JSON.parse(localStorage.getItem('dl_predlog_v2') || '{}');
+      const preds = (players || []).filter(p => (p.pa || 0) >= 80 && p.modelPct >= 3).map(p => ({
+        k: this.normName(p.name), p: p.modelPct, score: p.score, g: p.gameId,
+        due: !!p.isDue, brl: (p.barrelPct || 0) >= 9, wx: (p.wxMult || 1) >= 1.04
+      }));
+      const statusByGame = {};
+      Object.keys(statusMap || {}).forEach(g => { statusByGame[g] = statusMap[g]; });
+      log[date] = { date, preds, homered: Array.from(homeredSet || []), statusByGame };
+      // keep last 24 dates
+      const keys = Object.keys(log).sort();
+      while (keys.length > 24) { delete log[keys.shift()]; }
+      localStorage.setItem('dl_predlog_v2', JSON.stringify(log));
+      this.setState({ predLog: log });
+    } catch (e) {}
+  }
 
   addToSlip = () => {
     const p = this.state.player; if (!p || !p.name) return;
@@ -1698,6 +2019,18 @@ class Component extends DCLogic {
   removeFromSlip = (e) => { const id = e.currentTarget.dataset.legid; this.setState(s => ({ slip: s.slip.filter(l => l.id !== id) })); };
   clearSlip = () => this.setState({ slip: [] });
   setStake = (e) => { this.setState({ stake: e.target.value }); };
+  setBankroll = (e) => { const v = e.target.value; this.setState({ bankroll: v }); try { localStorage.setItem('dl_bankroll', v); } catch (er) {} };
+  setKellyFrac = (e) => { this.setState({ kellyFrac: parseFloat(e.currentTarget.dataset.frac) }); };
+  setSolverRisk = (e) => { this.setState({ solverRisk: e.currentTarget.dataset.risk }); };
+  addSolverToSlip = () => {
+    const s = this._solver;
+    if (!s || !s.anchor || !s.anchor.legs) return;
+    const byId = {}; ((this.state.data && this.state.data.players) || []).forEach(p => { byId[String(p.id)] = p; });
+    const newLegs = s.anchor.legs.map(l => { const pl = byId[l.id]; return { id: l.id, name: l.name, team: l.team, market: 'HR', oddsAm: pl ? pl.oddsAm : null, odds: l.odds, modelPct: l.modelPct, time: pl ? pl.time : '' }; });
+    const existing = this.state.slip.map(x => x.id);
+    const toAdd = newLegs.filter(l => !existing.includes(l.id));
+    this.setState(st => ({ slip: [...st.slip, ...toAdd], slipOpen: true }));
+  };
   setStakePreset = (e) => { this.setState({ stake: String(parseInt(e.currentTarget.dataset.amount, 10)) }); };
   setBuilderLegs = (e) => { this.setState({ builderLegs: parseInt(e.currentTarget.dataset.legs, 10) }); };
   setBuilderStyle = (e) => { this.setState({ builderStyle: e.currentTarget.dataset.style }); };
@@ -2089,6 +2422,208 @@ class Component extends DCLogic {
       };
     });
 
+    // Weather Radar — parks positioned on US map by lat/lon, colored by HR conditions
+    const radarParks = (() => {
+      if (!live || !gamesRaw) return [];
+      const geo = this.parkGeo();
+      const seenV = {};
+      const out = [];
+      gamesRaw.forEach(g => {
+        const venue = (g.venue && g.venue.name) || '';
+        if (!venue || seenV[venue]) return;
+        const info = geo[venue];
+        if (!info) return;
+        seenV[venue] = 1;
+        const wx = wxByVenue[venue] || { mult: 1 };
+        const mult = wx.mult || 1;
+        // Ball-carry index 0–100 from weather multiplier
+        const carry = Math.round(Math.max(0, Math.min(100, (mult - 0.85) / (1.18 - 0.85) * 100)));
+        // Equirectangular projection (continental US)
+        const x = Math.max(2, Math.min(98, (info.lon + 125) / 58 * 100));
+        const y = Math.max(4, Math.min(96, (49 - info.lat) / 25 * 100));
+        // Color ramp: blue (cold/suppress) → amber → red (hot/boost)
+        const dotColor = info.dome ? '#5f6878' : carry >= 70 ? '#ff5d5d' : carry >= 55 ? '#ff8a4c' : carry >= 42 ? '#ffc24d' : carry >= 30 ? '#6ea8d8' : '#5b8fc9';
+        const glow = info.dome ? 0.15 : Math.max(0.2, (carry / 100) * 0.9 + 0.15);
+        const size = info.dome ? 13 : Math.round(13 + (carry / 100) * 13);
+        const topHitters = enriched.filter(p => p.gameId === g.gamePk).sort((a, b) => b.score - a.score).slice(0, 3);
+        out.push({
+          venue, gameId: g.gamePk,
+          matchup: g.teams.away.team.abbreviation + ' @ ' + g.teams.home.team.abbreviation,
+          x: x.toFixed(1), y: y.toFixed(1), carry, dotColor, glow: glow.toFixed(2), size,
+          dome: !!info.dome,
+          temp: wx.temp != null ? wx.temp + '°' : '—',
+          wind: wx.label || (info.dome ? 'Roof closed' : '—'),
+          windSpeed: wx.windSpeed != null ? wx.windSpeed : null,
+          comp: wx.comp != null ? wx.comp : null,
+          roof: wx.roof || (info.dome ? 'Dome' : 'Open'),
+          condText: info.dome ? 'Dome — neutral' : carry >= 70 ? 'Crushing — ball flies' : carry >= 55 ? 'Favorable carry' : carry >= 42 ? 'Slightly helping' : carry >= 30 ? 'Slightly suppressing' : 'Dead air — hard to leave',
+          multLabel: (mult >= 1 ? '+' : '') + Math.round((mult - 1) * 100) + '%',
+          multColor: mult >= 1.06 ? 'var(--pos,#35d0c0)' : mult >= 0.97 ? '#ffc24d' : '#ff6b6b',
+          topHitters: topHitters.map(p => ({ id: p.id, name: p.name, score: p.score, modelPct: p.modelPct, best: p.best, headshot: p.headshot, ring: p.ring }))
+        });
+      });
+      return out.sort((a, b) => b.carry - a.carry);
+    })();
+    const radarTop = radarParks.length ? radarParks[0] : null;
+    const radarHot = radarParks.filter(p => !p.dome && p.carry >= 55).length;
+    const radarSel = radarParks.find(p => p.gameId === this.state.radarSel) || radarTop;
+
+    // ─── SLATE SOLVER — bankroll-aware optimal portfolio (fractional Kelly) ───
+    const solver = (() => {
+      const bankroll = Math.max(0, parseFloat(this.state.bankroll) || 0);
+      const kf = this.state.kellyFrac || 0.25;
+      const risk = this.state.solverRisk || 'balanced';
+      // Edge floor + odds band per risk profile
+      const cfg = risk === 'safe' ? { edgeFloor: 4, maxOdds: 350, minProb: 12, maxBets: 5, capPct: 0.18 }
+                : risk === 'aggro' ? { edgeFloor: 1, maxOdds: 900, minProb: 5, maxBets: 8, capPct: 0.40 }
+                : { edgeFloor: 2.5, maxOdds: 550, minProb: 8, maxBets: 6, capPct: 0.28 };
+      if (!hasOdds) return { needsOdds: true };
+      // Candidate straight bets: positive Kelly, within band, one per player
+      const cands = enriched.filter(p => p.oddsAm != null && (p.pa || 0) >= 80 && p.modelPct >= cfg.minProb && p.oddsAm <= cfg.maxOdds)
+        .map(p => {
+          const d = this.amDec(p.oddsAm), b = d - 1, prob = p.modelPct / 100;
+          const fStar = (b * prob - (1 - prob)) / b; // full Kelly fraction
+          const ev = (prob * d - 1) * 100;
+          const edge = p.edgeNum != null ? p.edgeNum : ev;
+          return { p, d, b, prob, fStar, ev, edge };
+        })
+        .filter(c => c.fStar > 0 && c.edge >= cfg.edgeFloor)
+        .sort((a, b) => b.fStar - a.fStar)
+        .slice(0, cfg.maxBets);
+      // Allocate fractional Kelly, then scale down if total exceeds cap
+      let raw = cands.map(c => ({ c, frac: c.fStar * kf }));
+      let totalFrac = raw.reduce((s, r) => s + r.frac, 0);
+      const cap = cfg.capPct;
+      const scale = totalFrac > cap ? cap / totalFrac : 1;
+      const bets = raw.map(r => {
+        const frac = r.frac * scale;
+        const stake = bankroll * frac;
+        const toWin = stake * r.c.b;
+        return {
+          id: r.c.p.id, name: r.c.p.name, team: r.c.p.teamAbbr, score: r.c.p.score, ring: r.c.p.ring, headshot: r.c.p.headshot,
+          odds: r.c.p.best, oddsAm: r.c.p.oddsAm, modelPct: r.c.p.modelPct,
+          ev: (r.c.ev >= 0 ? '+' : '') + r.c.ev.toFixed(1) + '%', evColor: r.c.ev >= 8 ? 'var(--pos,#35d0c0)' : r.c.ev >= 0 ? '#ffc24d' : '#ff6b6b',
+          kellyPct: (frac * 100).toFixed(1) + '%',
+          stake: '$' + stake.toFixed(2), stakeNum: stake,
+          toWin: '$' + toWin.toFixed(2),
+          evDollars: (r.c.prob * toWin - (1 - r.c.prob) * stake)
+        };
+      });
+      const totalStaked = bets.reduce((s, b) => s + b.stakeNum, 0);
+      const expProfit = bets.reduce((s, b) => s + b.evDollars, 0);
+      const expROI = totalStaked > 0 ? (expProfit / totalStaked) * 100 : 0;
+      const exposurePct = bankroll > 0 ? (totalStaked / bankroll) * 100 : 0;
+      // Build an anchor parlay for upside (top 3 distinct-game candidates)
+      const anchorLegs = [];
+      const usedG = new Set();
+      for (const c of cands) { if (anchorLegs.length >= 3) break; if (!usedG.has(c.p.gameId)) { anchorLegs.push(c); usedG.add(c.p.gameId); } }
+      let anchor = null;
+      if (anchorLegs.length === 3) {
+        const dec = anchorLegs.reduce((s, c) => s * c.d, 1);
+        const win = anchorLegs.reduce((s, c) => s * c.prob, 1);
+        const aStake = Math.max(2, bankroll * 0.01); // 1u flyer
+        anchor = {
+          legs: anchorLegs.map(c => ({ id: c.p.id, name: c.p.name, team: c.p.teamAbbr, odds: c.p.best, headshot: c.p.headshot, ring: c.p.ring, score: c.p.score, modelPct: c.p.modelPct })),
+          odds: this.decAm(dec), winPct: (win * 100).toFixed(1) + '%',
+          stake: '$' + aStake.toFixed(2), toWin: '$' + (aStake * (dec - 1)).toFixed(0),
+          ev: (((win * dec) - 1) * 100 >= 0 ? '+' : '') + (((win * dec) - 1) * 100).toFixed(1) + '%'
+        };
+      }
+      return {
+        needsOdds: false, bankroll, bets, hasBets: bets.length > 0, noBets: bets.length === 0,
+        betCount: bets.length,
+        totalStaked: '$' + totalStaked.toFixed(2),
+        expProfit: (expProfit >= 0 ? '+$' : '-$') + Math.abs(expProfit).toFixed(2),
+        expProfitColor: expProfit >= 0 ? 'var(--pos,#35d0c0)' : '#ff6b6b',
+        expROI: (expROI >= 0 ? '+' : '') + expROI.toFixed(1) + '%',
+        exposurePct: exposurePct.toFixed(1) + '%',
+        exposureWidth: Math.min(100, exposurePct).toFixed(0) + '%',
+        exposureColor: exposurePct > 35 ? '#ff6b6b' : exposurePct > 22 ? '#ffc24d' : 'var(--pos,#35d0c0)',
+        anchor
+      };
+    })();
+    this._solver = solver;
+    const kfOpts = [
+      { f: 0.125, label: '⅛ Kelly', sub: 'Very safe', on: (this.state.kellyFrac || 0.25) === 0.125 },
+      { f: 0.25, label: '¼ Kelly', sub: 'Recommended', on: (this.state.kellyFrac || 0.25) === 0.25 },
+      { f: 0.5, label: '½ Kelly', sub: 'Aggressive', on: (this.state.kellyFrac || 0.25) === 0.5 }
+    ].map(o => Object.assign(o, { bg: o.on ? 'var(--pos,#35d0c0)' : '#0c0e14', fg: o.on ? '#0a0c11' : '#9aa3b2', border: o.on ? 'transparent' : 'rgba(255,255,255,.1)' }));
+    const riskOpts = [
+      { r: 'safe', label: 'Safe' }, { r: 'balanced', label: 'Balanced' }, { r: 'aggro', label: 'Aggressive' }
+    ].map(o => { const on = (this.state.solverRisk || 'balanced') === o.r; return Object.assign(o, { bg: on ? 'var(--ac,#ff8a4c)' : '#0c0e14', fg: on ? '#0a0c11' : '#9aa3b2', border: on ? 'transparent' : 'rgba(255,255,255,.1)' }); });
+
+    // ─── MODEL REPORT CARD — grade past predictions vs real results ───
+    const report = (() => {
+      const log = this.state.predLog || {};
+      const dates = Object.keys(log).sort();
+      // Collect graded predictions: a pred is graded if its game went Final
+      const graded = [];
+      let daysWithData = 0;
+      dates.forEach(d => {
+        const e = log[d]; if (!e || !e.preds) return;
+        const homered = new Set(e.homered || []);
+        const sbg = e.statusByGame || {};
+        let any = false;
+        e.preds.forEach(pr => {
+          const st = sbg[pr.g];
+          if (st === 'Final') { graded.push({ p: pr.p / 100, hit: homered.has(pr.k) ? 1 : 0, due: pr.due, brl: pr.brl, wx: pr.wx, date: d }); any = true; }
+        });
+        if (any) daysWithData++;
+      });
+      const N = graded.length;
+      if (N < 8) { const today = (this.state.data && this.state.data.date) || ''; const lk = (log[today] && log[today].preds) ? log[today].preds.length : 0; return { enough: false, notEnough: true, locked: lk, daysWithData, sample: N }; }
+      // Calibration buckets
+      const buckets = [
+        { lo: 0, hi: 0.08, label: '0–8%' }, { lo: 0.08, hi: 0.14, label: '8–14%' },
+        { lo: 0.14, hi: 0.20, label: '14–20%' }, { lo: 0.20, hi: 0.28, label: '20–28%' },
+        { lo: 0.28, hi: 1.01, label: '28%+' }
+      ].map(b => {
+        const inB = graded.filter(g => g.p >= b.lo && g.p < b.hi);
+        const n = inB.length;
+        const pred = n ? inB.reduce((s, g) => s + g.p, 0) / n * 100 : 0;
+        const act = n ? inB.reduce((s, g) => s + g.hit, 0) / n * 100 : 0;
+        return { label: b.label, n, predPct: pred.toFixed(0) + '%', actPct: act.toFixed(0) + '%',
+          predH: Math.min(100, pred / 0.4).toFixed(0), actH: Math.min(100, act / 0.4).toFixed(0),
+          predNum: pred, actNum: act,
+          diffColor: Math.abs(pred - act) <= 3 ? 'var(--pos,#35d0c0)' : Math.abs(pred - act) <= 7 ? '#ffc24d' : '#ff6b6b', hasN: n >= 3 };
+      });
+      // Brier score (model) vs naive (league base rate = overall hit rate)
+      const baseRate = graded.reduce((s, g) => s + g.hit, 0) / N;
+      const brierModel = graded.reduce((s, g) => s + Math.pow(g.p - g.hit, 2), 0) / N;
+      const brierNaive = graded.reduce((s, g) => s + Math.pow(baseRate - g.hit, 2), 0) / N;
+      const skill = (1 - brierModel / brierNaive) * 100; // Brier Skill Score %
+      // Overall calibration error (mean abs across weighted buckets)
+      const calErr = buckets.filter(b => b.n >= 3).reduce((s, b) => s + Math.abs(b.predNum - b.actNum) * b.n, 0) / Math.max(1, buckets.filter(b => b.n >= 3).reduce((s, b) => s + b.n, 0));
+      // Factor audit
+      const audit = (sel, name) => {
+        const inF = graded.filter(sel); const n = inF.length;
+        if (n < 4) return { name, n, ok: false };
+        const pred = inF.reduce((s, g) => s + g.p, 0) / n * 100;
+        const act = inF.reduce((s, g) => s + g.hit, 0) / n * 100;
+        const lift = act - pred;
+        return { name, n, ok: true, predPct: pred.toFixed(0) + '%', actPct: act.toFixed(0) + '%',
+          lift: (lift >= 0 ? '+' : '') + lift.toFixed(0) + ' pts', liftColor: lift >= 1 ? 'var(--pos,#35d0c0)' : lift >= -2 ? '#ffc24d' : '#ff6b6b' };
+      };
+      const factors = [
+        audit(g => g.due, '☢️ Due badge'),
+        audit(g => g.brl, '💥 High barrel% (9+)'),
+        audit(g => g.wx, '🌬️ Weather-boosted')
+      ].filter(f => f.ok);
+      const verdict = Math.abs(calErr) <= 2.5 ? { txt: 'Well calibrated', col: 'var(--pos,#35d0c0)', sub: 'Model probabilities closely match real outcomes.' }
+        : Math.abs(calErr) <= 5 ? { txt: 'Reasonably calibrated', col: '#ffc24d', sub: 'Minor drift between predicted and actual — within normal variance.' }
+        : { txt: 'Needs calibration', col: '#ff6b6b', sub: 'Predictions are drifting from outcomes — small sample or model bias.' };
+      return {
+        enough: true, sample: N, daysWithData,
+        baseRate: (baseRate * 100).toFixed(1) + '%',
+        brierModel: brierModel.toFixed(3), brierNaive: brierNaive.toFixed(3),
+        skill: (skill >= 0 ? '+' : '') + skill.toFixed(1) + '%', skillColor: skill >= 0 ? 'var(--pos,#35d0c0)' : '#ff6b6b',
+        skillBeats: skill >= 0,
+        calErr: calErr.toFixed(1) + ' pts', buckets, factors, verdict,
+        hasFactors: factors.length > 0
+      };
+    })();
+
+
     // Games view
     let games;
     if (live) {
@@ -2299,6 +2834,9 @@ class Component extends DCLogic {
     // Nav
     const nav = [
       { id: 'dashboard', label: 'Dashboard', icon: '◎' }, { id: 'games', label: 'Games', icon: '◆' },
+      { id: 'radar', label: 'Radar', icon: '🛰️' },
+      { id: 'solver', label: 'Solver', icon: '🎯' },
+      { id: 'report', label: 'Report Card', icon: '🎓' },
       { id: 'builder', label: 'Builder', icon: '⊞' }, { id: 'data', label: 'Data', icon: '🧠' },
       { id: 'research', label: 'Research', icon: '🔎' }, { id: 'track', label: 'Tracking', icon: '◈' },
       { id: 'tools', label: 'Tools', icon: '⚙' }, { id: 'live', label: 'Live', icon: '◉' }
@@ -2392,7 +2930,12 @@ class Component extends DCLogic {
         return result;
         } catch (e) { return null; }
       })(),
-      isDash: tab === 'dashboard', isGames: tab === 'games', isBuilder: tab === 'builder',
+      isDash: tab === 'dashboard', isGames: tab === 'games', isBuilder: tab === 'builder', isRadar: tab === 'radar', isSolver: tab === 'solver', isReport: tab === 'report',
+      solver, kfOpts, riskOpts, bankroll: this.state.bankroll,
+      report,
+      setBankroll: this.setBankroll, setKellyFrac: this.setKellyFrac, setSolverRisk: this.setSolverRisk, addSolverToSlip: this.addSolverToSlip,
+      radarParks, radarTop, radarHot, radarSel, radarHasData: radarParks.length > 0,
+      setRadarSel: (e) => this.setState({ radarSel: parseInt(e.currentTarget.dataset.game) }),
       isData: tab === 'data', isTrack: tab === 'track', isLive: tab === 'live',
       isResearch: tab === 'research', isTools: tab === 'tools', isMisc: false,
       otherIcon: other[0], otherTitle: other[1],
