@@ -163,9 +163,12 @@
               <span style="font-family:'Space Grotesk';font-weight:700;font-size:11px;letter-spacing:.13em;color:#ffc24d;background:rgba(255,194,77,.12);border:1px solid rgba(255,194,77,.32);padding:5px 10px;border-radius:8px">★ TODAY'S LOCKS</span>
               <span style="font-size:13px;color:#c3cad6;font-weight:600">If you only call 3 dingers tonight</span>
             </div>
-            <div style="display:flex;align-items:center;gap:18px;font-size:12.5px;color:#8b94a6">
-              <span>Expected HRs <b style="font-family:'Space Grotesk';color:#eef1f6;font-size:14px">~{{ lockExp }}</b></span>
-              <span>Chance ≥1 hits <b style="font-family:'Space Grotesk';color:var(--pos,#35d0c0);font-size:14px">{{ lockAtLeast }}</b></span>
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:18px;font-size:12.5px;color:#8b94a6">
+                <span>Expected HRs <b style="font-family:'Space Grotesk';color:#eef1f6;font-size:14px">~{{ lockExp }}</b></span>
+                <span>Chance ≥1 hits <b style="font-family:'Space Grotesk';color:var(--pos,#35d0c0);font-size:14px">{{ lockAtLeast }}</b></span>
+              </div>
+              <button onClick="{{ addLocksToSlip }}" title="Add all locks to your bet slip" style="display:flex;align-items:center;gap:6px;padding:8px 14px;border:none;border-radius:9px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:700;font-size:12.5px;color:#0a0c11;background:#ffc24d" style-hover="filter:brightness(1.07)"><span style="font-size:15px;line-height:1">＋</span>Add all to slip</button>
             </div>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:12px;min-width:0">
@@ -187,6 +190,7 @@
                   <div style="text-align:right"><div style="font-size:10px;color:#7b8597;font-weight:600">BEST</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:15px">{{ l.best }}</div></div>
                 </div>
                 <div style="font-size:11.5px;color:#8b94a6;line-height:1.45">{{ l.why }}</div>
+                <button data-lockid="{{ l.id }}" onClick="{{ addLockToSlip }}" style="margin-top:auto;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:9px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:700;font-size:12px;color:#ffc24d;background:rgba(255,194,77,.12);border:1px solid rgba(255,194,77,.3)" style-hover="background:rgba(255,194,77,.2)"><span style="font-size:14px;line-height:1">＋</span>Add to slip</button>
               </div>
             </sc-for>
           </div>
@@ -542,6 +546,98 @@
             <div style="font-family:'Space Grotesk';font-size:18px;font-weight:700;color:#c3cad6">No +EV plays clear the bar tonight</div>
             <p style="margin:8px auto 0;font-size:13.5px;color:#7b8597;max-width:400px">At this risk profile the model finds no bets with positive Kelly value. Loosening to "Aggressive" widens the band — or there's simply no edge on tonight's prices. Discipline is a position too.</p>
           </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <!-- HEDGE -->
+      <sc-if value="{{ isHedge }}" hint-placeholder-val="{{ false }}">
+      <div style="animation:dlrise .35s ease both">
+        <div style="margin-bottom:18px">
+          <div style="font-size:11px;letter-spacing:.14em;color:#ffc24d;font-weight:700;margin-bottom:6px">ROUND-ROBIN HEDGE</div>
+          <h1 style="margin:0;font-family:'Space Grotesk';font-size:28px;font-weight:700;letter-spacing:-.02em">Mix &amp; match — any two dingers win</h1>
+          <p style="margin:6px 0 0;color:#8b94a6;font-size:14px;max-width:680px">Pick up to 5 bats and we build every 2-leg parlay between them — 5 bats makes 10 bets. You don't need a specific pair: <b style="color:#c3cad6">any two of your hitters going deep</b> cashes a parlay, and most pairs pay more than the whole card costs.</p>
+        </div>
+
+        <div style="display:flex;gap:11px;align-items:flex-start;background:rgba(255,194,77,.08);border:1px solid rgba(255,194,77,.28);border-radius:13px;padding:13px 15px;margin-bottom:20px">
+          <span style="font-size:16px;line-height:1.3">⚠️</span>
+          <div style="font-size:12.5px;color:#d8cfa8;line-height:1.5">No bet guarantees a green day — this needs <b style="color:#ffc24d">two of your bats to homer</b> (if zero or one do, the card loses). But two HRs from a 5-man pool is far likelier than nailing one exact pair — that's the edge. The all-miss downside is shown below.</div>
+        </div>
+
+        <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px;display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;margin-bottom:22px">
+          <div>
+            <div style="font-size:11px;color:#7b8597;font-weight:700;letter-spacing:.04em;margin-bottom:7px">STAKE PER BET</div>
+            <div style="display:flex;align-items:center;padding:9px 13px;border-radius:11px;background:#0c0e14;border:2px solid rgba(255,194,77,.35)">
+              <span style="font-size:16px;font-weight:700;color:#9aa3b2;margin-right:4px">$</span>
+              <input type="text" inputMode="decimal" value="{{ rrStake }}" onInput="{{ setRRStake }}" placeholder="10" style="width:90px;background:transparent;border:none;color:#eef1f6;font-family:'Space Grotesk';font-weight:700;font-size:18px;outline:none"/>
+            </div>
+            <div style="margin-top:7px;font-size:11px;color:#7b8597">same stake on each 2-leg parlay</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#7b8597;font-weight:700;letter-spacing:.04em;margin-bottom:7px">YOUR CARD</div>
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 13px;border-radius:11px;background:#0c0e14;border:1px solid rgba(255,255,255,.1)">
+              <span style="font-family:'Space Grotesk';font-weight:700;font-size:18px;color:var(--ac,#ff8a4c)">{{ rr.selCount }}</span><span style="font-size:12px;color:#7b8597">bats</span>
+              <span style="color:#5f6878">→</span>
+              <span style="font-family:'Space Grotesk';font-weight:700;font-size:18px">{{ rr.betCount }}</span><span style="font-size:12px;color:#7b8597">bets</span>
+            </div>
+            <div style="margin-top:7px;font-size:11px"><button onClick="{{ resetRR }}" style="background:none;border:none;color:#ffc24d;cursor:pointer;font-family:'Hanken Grotesk';font-weight:600;font-size:11.5px;padding:0">↺ Auto-pick top 5</button></div>
+          </div>
+          <sc-if value="{{ rr.synthetic }}" hint-placeholder-val="{{ false }}">
+            <div style="max-width:230px;font-size:11.5px;color:#ffc24d;line-height:1.45;padding-top:22px">Using model-fair prices — connect odds in Tools for live book numbers.</div>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ rr.reason }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:34px 20px;text-align:center;font-size:13.5px;color:#7b8597">{{ rr.reason }}</div>
+        </sc-if>
+
+        <sc-if value="{{ rr.enough }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="width:3px;height:17px;border-radius:2px;background:var(--ac,#ff8a4c);flex:none"></span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">1 · Pick your bats <span style="font-size:12px;color:#7b8597;font-weight:500">— tap up to 5</span></h2></div>
+          <div data-mcol2 style="display:grid;grid-template-columns:repeat(auto-fill,minmax(184px,1fr));gap:10px;margin-bottom:26px">
+            <sc-for list="{{ rr.pickers }}" as="p" hint-placeholder-count="10">
+              <button data-rrid="{{ p.id }}" onClick="{{ toggleRR }}" style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:13px;cursor:pointer;text-align:left;background:{{ p.cardBg }};border:1px solid {{ p.cardBorder }};transition:background .14s,border-color .14s">
+                <div style="width:38px;height:38px;flex:none;border-radius:50%;background:{{ p.ring }};display:grid;place-items:center"><div style="position:relative;width:30px;height:30px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center"><img src="{{ p.headshot }}" alt="" referrerpolicy="no-referrer" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center" onerror="this.remove()"/><span style="position:relative;font-family:'Space Grotesk';font-weight:700;font-size:11px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9)">{{ p.score }}</span></div></div>
+                <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div><div style="font-size:11px;color:#7b8597">{{ p.team }} · HR {{ p.hitPct }} · {{ p.odds }}</div></div>
+                <span style="width:22px;height:22px;flex:none;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;background:{{ p.markBg }};color:{{ p.markFg }}">{{ p.mark }}</span>
+              </button>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ rr.tooFew }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#13161e;border:1px solid rgba(255,194,77,.25);border-radius:14px;padding:16px;font-size:13px;color:#ffc24d">Pick at least 2 bats to build a round-robin.</div>
+          </sc-if>
+
+          <sc-if value="{{ rr.hasBets }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="width:3px;height:17px;border-radius:2px;background:var(--pos,#35d0c0);flex:none"></span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">2 · Your {{ rr.betCount }}-bet round-robin</h2></div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:14px">
+              <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:13px 15px"><div style="font-size:10.5px;color:#7b8597;font-weight:600">BETS</div><div style="font-family:'Space Grotesk';font-size:23px;font-weight:700;margin-top:3px">{{ rr.betCount }}</div></div>
+              <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:13px 15px"><div style="font-size:10.5px;color:#7b8597;font-weight:600">TOTAL STAKED</div><div style="font-family:'Space Grotesk';font-size:23px;font-weight:700;margin-top:3px">{{ rr.totalStaked }}</div></div>
+              <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:13px 15px"><div style="font-size:10.5px;color:#7b8597;font-weight:600">SMALLEST PAIR PAYS</div><div style="font-family:'Space Grotesk';font-size:23px;font-weight:700;margin-top:3px;color:var(--pos,#35d0c0)">{{ rr.oneCashMin }}</div></div>
+              <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:13px 15px"><div style="font-size:10.5px;color:#7b8597;font-weight:600">≥2 HR (MODEL)</div><div style="font-family:'Space Grotesk';font-size:23px;font-weight:700;margin-top:3px;color:#ffc24d">{{ rr.ge2Pct }}</div></div>
+              <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:13px 15px"><div style="font-size:10.5px;color:#7b8597;font-weight:600">MODEL EV</div><div style="font-family:'Space Grotesk';font-size:23px;font-weight:700;margin-top:3px;color:{{ rr.evColor }}">{{ rr.evLabel }}</div></div>
+            </div>
+
+            <div style="background:#13161e;border:1px solid rgba(53,208,192,.18);border-radius:14px;padding:14px 16px;margin-bottom:18px;font-size:13px;color:#c3cad6;line-height:1.55">{{ rr.anyTwoNote }} The smallest pair returns <b>{{ rr.oneCashMin }}</b> against <b>{{ rr.totalStaked }}</b> total risk — net <b style="color:{{ rr.netOneMinColor }}">{{ rr.netOneMin }}</b> if only that one pair lands. Longer-odds pairs and every extra HR only add to it.</div>
+
+            <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;margin-bottom:18px">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:#0f1218;font-size:11px;color:#7b8597;font-weight:600;letter-spacing:.03em"><span>2-LEG PARLAY</span><span>STAKE → PAYS</span></div>
+              <sc-for list="{{ rr.combos }}" as="c" hint-placeholder-count="10">
+                <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.05)">
+                  <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.aName }} <span style="color:#5f6878;font-weight:500">+</span> {{ c.bName }}</div><div style="font-size:11px;color:#7b8597;margin-top:2px">{{ c.aTeam }} · {{ c.bTeam }} · both HR {{ c.winPct }} · {{ c.odds }}</div></div>
+                  <div style="text-align:right;min-width:96px"><div style="font-family:'Space Grotesk';font-weight:700;font-size:13.5px">{{ c.stake }} <span style="color:var(--pos,#35d0c0)">→ {{ c.payout }}</span></div></div>
+                  <button data-combo="{{ c.idx }}" onClick="{{ addComboToSlip }}" style="flex:none;padding:8px 12px;border-radius:9px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:700;font-size:11.5px;color:#0a0c11;background:var(--ac,#ff8a4c)" style-hover="filter:brightness(1.07)">+ Slip</button>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:6px 16px 12px;margin-bottom:6px">
+              <div style="font-size:10.5px;color:#7b8597;font-weight:600;letter-spacing:.03em;padding:11px 0 6px">COVERAGE — HOW MANY OF YOUR BATS HOMER</div>
+              <sc-for list="{{ rr.scenarios }}" as="s" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-top:1px solid rgba(255,255,255,.05);font-size:12.5px"><span style="color:#c3cad6;font-weight:600">{{ s.homers }}</span><span style="color:var(--pos,#35d0c0);font-weight:600">{{ s.cashes }}</span></div>
+              </sc-for>
+            </div>
+            <div style="font-size:11.5px;color:#7b8597;line-height:1.5">Each <b style="color:#9aa3b2">+ Slip</b> loads that pair as a 2-leg parlay — place them as separate bets. If 0 or 1 of your bats homers, the card loses your {{ rr.totalStaked }}.</div>
+          </sc-if>
         </sc-if>
       </div>
       </sc-if>
@@ -1570,7 +1666,7 @@
   &quot;compact&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot; }
 }">
 class Component extends DCLogic {
-  state = { tab: 'dashboard', drawerOpen: false, player: null, status: 'loading', data: null, slip: [], tracked: [], stake: '25', builderLegs: 3, builderStyle: 'balanced', builderMarket: 'hr', ulxSel: null, frontierIdx: null, slipOpen: (typeof window !== 'undefined' && window.innerWidth <= 820) ? false : true, proxyUrl: 'https://claude-mlb.onrender.com', autoPoll: true, lastUpdated: null, search: '', watch: [], ulxSeed: 0, copiedId: null, sortBy: 'score', teamFilter: null, compareA: null, compareB: null, wroLegs: 3, wroMode: 'winrate', wroSeed: 0, wroLocked: {}, radarSel: null, bankroll: '1000', kellyFrac: 0.25, solverRisk: 'balanced', predLog: {} };
+  state = { tab: 'dashboard', drawerOpen: false, player: null, status: 'loading', data: null, slip: [], tracked: [], stake: '25', builderLegs: 3, builderStyle: 'balanced', builderMarket: 'hr', ulxSel: null, frontierIdx: null, slipOpen: (typeof window !== 'undefined' && window.innerWidth <= 820) ? false : true, proxyUrl: 'https://claude-mlb.onrender.com', autoPoll: true, lastUpdated: null, search: '', watch: [], ulxSeed: 0, copiedId: null, sortBy: 'score', teamFilter: null, compareA: null, compareB: null, wroLegs: 3, wroMode: 'winrate', wroSeed: 0, wroLocked: {}, radarSel: null, bankroll: '1000', kellyFrac: 0.25, solverRisk: 'balanced', predLog: {}, rrSel: [], rrStake: '10' };
 
   componentDidMount() {
     try { const p = localStorage.getItem('dl_odds_proxy'); if (p) this.setState({ proxyUrl: p }); } catch (e) {}
@@ -2132,12 +2228,38 @@ class Component extends DCLogic {
     if (!this.state.slip.find(l => l.id === leg.id)) this.setState(s => ({ slip: [...s.slip, leg] }));
     this.setState({ drawerOpen: false });
   };
+  // Shared: add one or more enriched players to the slip (dedupes by id, opens the slip)
+  _addLegs = (players) => {
+    const mk = (p) => ({ id: p.id, name: p.name, team: p.teamAbbr, market: 'HR', oddsAm: p.oddsAm != null ? p.oddsAm : null, odds: (p.oddsAm != null ? ((p.oddsAm > 0 ? '+' : '') + p.oddsAm) : '—'), modelPct: p.modelPct, time: p.time });
+    this.setState(s => {
+      const existing = new Set(s.slip.map(x => x.id));
+      const toAdd = (players || []).filter(p => p && p.id && !existing.has(p.id)).map(mk);
+      return toAdd.length ? { slip: [...s.slip, ...toAdd], slipOpen: true } : {};
+    });
+  };
   removeFromSlip = (e) => { const id = e.currentTarget.dataset.legid; this.setState(s => ({ slip: s.slip.filter(l => l.id !== id) })); };
   clearSlip = () => this.setState({ slip: [] });
   setStake = (e) => { this.setState({ stake: e.target.value }); };
   setBankroll = (e) => { const v = e.target.value; this.setState({ bankroll: v }); try { localStorage.setItem('dl_bankroll', v); } catch (er) {} };
   setKellyFrac = (e) => { this.setState({ kellyFrac: parseFloat(e.currentTarget.dataset.frac) }); };
   setSolverRisk = (e) => { this.setState({ solverRisk: e.currentTarget.dataset.risk }); };
+  setRRStake = (e) => { this.setState({ rrStake: e.target.value }); };
+  resetRR = () => { this.setState({ rrSel: [] }); };
+  toggleRR = (e) => {
+    const id = e.currentTarget.dataset.rrid; if (!id) return;
+    const base = (this._rrSelEffective || []).slice();
+    const i = base.indexOf(id);
+    let next;
+    if (i >= 0) { next = base.filter(x => x !== id); }
+    else { if (base.length >= 5) return; next = base.concat([id]); }
+    this.setState({ rrSel: next });
+  };
+  addComboToSlip = (e) => {
+    const i = parseInt(e.currentTarget.dataset.combo, 10);
+    const c = (this._rrCombos || [])[i]; if (!c) return;
+    const mk = (p) => ({ id: p.id, name: p.name, team: p.teamAbbr, market: 'HR', oddsAm: p.oddsAm != null ? p.oddsAm : null, odds: (p.oddsAm != null ? ((p.oddsAm > 0 ? '+' : '') + p.oddsAm) : '—'), modelPct: p.modelPct, time: p.time });
+    this.setState({ slip: [mk(c._a), mk(c._b)], slipOpen: true });
+  };
   addSolverToSlip = () => {
     const s = this._solver;
     if (!s || !s.anchor || !s.anchor.legs) return;
@@ -2246,6 +2368,79 @@ class Component extends DCLogic {
     }));
     return { has: true, cards, expLabel: expHR.toFixed(2), atLeastOneLabel: Math.round(atLeast1 * 100) + '%' };
   }
+
+  // ─── ROUND-ROBIN HEDGE — pick up to 5 bats, bet every 2-leg parlay combo ───
+  // C(n,2) parlays (5 bats → 10 bets). ANY TWO of your bats homering cashes a parlay;
+  // because each 2-leg pays multiples of one stake, two HRs usually = a green day.
+  computeRoundRobin(enriched, hasOdds, selIds, perStake) {
+    const amDec = this.amDec.bind(this), decAm = this.decAm.bind(this);
+    const fmt = (n) => '$' + (Math.round(n * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmtS = (n) => (n >= 0 ? '+$' : '−$') + (Math.round(Math.abs(n) * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const decOf = (p) => p.oddsAm != null ? amDec(p.oddsAm) : Math.max(1.25, (1 / Math.max(0.03, p.modelPct / 100)) * 0.92);
+    const oddsStr = (p) => { if (p.oddsAm != null) return (p.oddsAm > 0 ? '+' : '') + p.oddsAm; const d = decOf(p); const a = d >= 2 ? Math.round((d - 1) * 100) : -Math.round(100 / (d - 1)); return (a > 0 ? '+' : '') + a + ' · model'; };
+    const stake = Math.max(0, parseFloat(perStake) || 0);
+
+    // Candidate pool for the picker (top HR plays; prefer confirmed lineups when plentiful)
+    let cands = (enriched || []).filter(p => (p.pa || 0) >= 80 && p.modelPct >= 7);
+    const conf = cands.filter(p => p.lineupConfirmed);
+    if (conf.length >= 8) cands = conf;
+    cands = cands.slice().sort((a, b) => b.modelPct - a.modelPct).slice(0, 12);
+    if (cands.length < 2) return { enough: false, reason: 'Not enough qualified hitters yet — refresh once lineups post.' };
+
+    // Selection: valid ids, max 5; default to top 5 when none chosen
+    const byId = {}; cands.forEach(p => byId[p.id] = p);
+    let sel = (selIds || []).filter(id => byId[id]).slice(0, 5);
+    const autoSel = sel.length === 0;
+    if (autoSel) sel = cands.slice(0, 5).map(p => p.id);
+    const selSet = new Set(sel);
+
+    const pickers = cands.map(p => ({
+      id: p.id, name: p.name, team: p.teamAbbr, headshot: p.headshot, ring: p.ring, score: p.score,
+      hitPct: Math.round(p.modelPct) + '%', odds: oddsStr(p), on: selSet.has(p.id),
+      cardBg: selSet.has(p.id) ? 'rgba(255,138,76,.13)' : '#0c0e14', cardBorder: selSet.has(p.id) ? 'var(--ac,#ff8a4c)' : 'rgba(255,255,255,.09)',
+      mark: selSet.has(p.id) ? '✓' : '+', markBg: selSet.has(p.id) ? 'var(--ac,#ff8a4c)' : 'rgba(255,255,255,.08)', markFg: selSet.has(p.id) ? '#0a0c11' : '#9aa3b2'
+    }));
+
+    const selPlayers = sel.map(id => byId[id]);
+    const n = selPlayers.length;
+    // Every 2-leg combo
+    const combos = [];
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+      const a = selPlayers[i], b = selPlayers[j];
+      const dec = decOf(a) * decOf(b);
+      const winPct = (a.modelPct / 100) * (b.modelPct / 100) * 100;
+      combos.push({ idx: combos.length, aId: a.id, bId: b.id, aName: a.name, bName: b.name, aTeam: a.teamAbbr, bTeam: b.teamAbbr,
+        odds: decAm(dec), dec: dec, winPct: winPct.toFixed(1) + '%', stake: fmt(stake), payout: fmt(stake * dec), _a: a, _b: b });
+    }
+    const betCount = combos.length;
+    const totalStaked = betCount * stake;
+    const payVals = combos.map(c => stake * c.dec);
+    const minPay = payVals.length ? Math.min.apply(null, payVals) : 0;
+    const maxPay = payVals.length ? Math.max.apply(null, payVals) : 0;
+    // P(≥2 homer) under independence
+    const ps = selPlayers.map(p => Math.min(0.95, Math.max(0.01, p.modelPct / 100)));
+    const P0 = ps.reduce((s, p) => s * (1 - p), 1);
+    const P1 = ps.reduce((sum, _, i) => sum + ps[i] * ps.reduce((s, q, j) => j === i ? s : s * (1 - q), 1), 0);
+    const ge2 = Math.max(0, 1 - P0 - P1);
+    const ev = combos.reduce((s, c) => s + (c.dec * stake) * (c._a.modelPct / 100) * (c._b.modelPct / 100), 0) - totalStaked;
+    const C2 = (k) => k * (k - 1) / 2;
+    const scenarios = [];
+    for (let k = 2; k <= n; k++) { const c = C2(k); scenarios.push({ homers: k + ' of ' + n + ' homer', cashes: c + (c === 1 ? ' parlay cashes' : ' parlays cash'), good: k >= 2 }); }
+
+    return {
+      enough: true, synthetic: !hasOdds, pickers, selIds: sel, selCount: n, betCount, maxReached: n >= 5, atFloor: n <= 2,
+      hasBets: betCount >= 1, tooFew: n < 2, combos,
+      totalStaked: fmt(totalStaked),
+      anyTwoNote: 'Any 2 of your ' + n + ' bats homering cashes at least one parlay — and most pairs pay more than the whole card costs.',
+      oneCashMin: fmt(minPay), oneCashMax: fmt(maxPay),
+      netOneMin: fmtS(minPay - totalStaked), netOneMinColor: (minPay - totalStaked) >= 0 ? 'var(--pos,#35d0c0)' : '#ff8d8d',
+      coversOnTwo: minPay >= totalStaked,
+      ge2Pct: Math.round(ge2 * 100) + '%',
+      evLabel: fmtS(ev), evColor: ev >= 0 ? 'var(--pos,#35d0c0)' : '#ff8d8d',
+      scenarios
+    };
+  }
+
   badgesFor(p) {
     const AC = 'rgba(255,138,76,.13)', ACF = 'var(--ac,#ff8a4c)', GO = 'rgba(255,194,77,.13)', GOF = '#ffc24d', PO = 'rgba(53,208,192,.13)', POF = 'var(--pos,#35d0c0)';
     const out = [];
@@ -2557,6 +2752,11 @@ class Component extends DCLogic {
     const qualStar = filteredEnriched.filter(p => (p.pa || 0) >= 90);
     const starPlays = (qualStar.length >= 6 ? qualStar : filteredEnriched).slice(0, 8);
     const lk = this.computeLocks(enriched);
+
+    // ─── Round-Robin Hedge ───
+    const rr = this.computeRoundRobin(enriched, hasOdds, this.state.rrSel, this.state.rrStake);
+    this._rrCombos = rr.combos || [];
+    this._rrSelEffective = rr.selIds || [];
 
     // Park report
     const seen = {}; const parkArr = [];
@@ -2995,6 +3195,7 @@ class Component extends DCLogic {
       { id: 'dashboard', label: 'Dashboard', icon: '◎' }, { id: 'games', label: 'Games', icon: '◆' },
       { id: 'radar', label: 'Radar', icon: '🛰️' },
       { id: 'solver', label: 'Solver', icon: '🎯' },
+      { id: 'hedge', label: 'Hedge', icon: '🛡️' },
       { id: 'report', label: 'Report Card', icon: '🎓' },
       { id: 'builder', label: 'Builder', icon: '⊞' }, { id: 'data', label: 'Data', icon: '🧠' },
       { id: 'research', label: 'Research', icon: '🔎' }, { id: 'track', label: 'Tracking', icon: '◈' },
@@ -3089,7 +3290,8 @@ class Component extends DCLogic {
         return result;
         } catch (e) { return null; }
       })(),
-      isDash: tab === 'dashboard', isGames: tab === 'games', isBuilder: tab === 'builder', isRadar: tab === 'radar', isSolver: tab === 'solver', isReport: tab === 'report',
+      isDash: tab === 'dashboard', isGames: tab === 'games', isBuilder: tab === 'builder', isRadar: tab === 'radar', isSolver: tab === 'solver', isReport: tab === 'report', isHedge: tab === 'hedge',
+      rr, rrStake: this.state.rrStake, toggleRR: this.toggleRR, setRRStake: this.setRRStake, resetRR: this.resetRR, addComboToSlip: this.addComboToSlip,
       solver, kfOpts, riskOpts, bankroll: this.state.bankroll,
       report,
       setBankroll: this.setBankroll, setKellyFrac: this.setKellyFrac, setSolverRisk: this.setSolverRisk, addSolverToSlip: this.addSolverToSlip,
@@ -3114,6 +3316,8 @@ class Component extends DCLogic {
       dashSub: live ? 'Live MLB model — every qualified hitter ranked by Dinger Score (regressed HR rate, park & opposing-starter adjusted).' : 'Sample board shown — the live MLB model loads automatically when online.',
       kpis, starPlays, parkReport, combos: combosOut, games,
       locks: lk.cards || [], hasLocks: !!lk.has, lockExp: lk.expLabel || '0', lockAtLeast: lk.atLeastOneLabel || '0%',
+      addLockToSlip: (e) => { e.stopPropagation(); const id = e.currentTarget.dataset.lockid; this._addLegs([byId[id]]); },
+      addLocksToSlip: () => { this._addLegs((lk.cards || []).map(c => byId[c.id])); },
       gamesTitle: live ? (this.state.data.games.length + '-game slate · ' + kpis[0].v + ' projected HRs') : 'Sample slate',
       dataRows, dataCount: enriched.length, dataSource: live ? 'MLB API' : 'Sample', seasonYr: live ? this.state.data.season : '—',
       hasLive: liveHRs.length > 0, noLive: liveHRs.length === 0, liveHRs, liveEmpty,
