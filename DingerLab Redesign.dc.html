@@ -107,7 +107,7 @@
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0a0c11" stroke-width="2.2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>
       Refresh
     </button>
-    <div data-mhide data-hmd style="display:flex;align-items:center;gap:8px;padding:7px 11px;border-radius:10px;background:#13161e;border:1px solid rgba(255,255,255,.07);font-size:12px;color:#7b8597">v6.0</div>
+    <div data-mhide data-hmd style="display:flex;align-items:center;gap:8px;padding:7px 11px;border-radius:10px;background:#13161e;border:1px solid rgba(255,255,255,.07);font-size:12px;color:#7b8597">v1.0</div>
   </header>
 
   <div data-shell style="display:grid;grid-template-columns:208px minmax(0,1fr) {{ slipColWidth }};gap:0;flex:1;min-height:0;transition:grid-template-columns .22s ease">
@@ -156,6 +156,43 @@
           </sc-for>
         </div>
 
+        <sc-if value="{{ hasLocks }}" hint-placeholder-val="{{ false }}">
+        <div style="background:linear-gradient(135deg,rgba(255,194,77,.10),rgba(255,138,76,.04) 60%,transparent);border:1px solid rgba(255,194,77,.28);border-radius:18px;padding:18px;margin-bottom:26px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:11px">
+              <span style="font-family:'Space Grotesk';font-weight:700;font-size:11px;letter-spacing:.13em;color:#ffc24d;background:rgba(255,194,77,.12);border:1px solid rgba(255,194,77,.32);padding:5px 10px;border-radius:8px">★ TODAY'S LOCKS</span>
+              <span style="font-size:13px;color:#c3cad6;font-weight:600">If you only call 3 dingers tonight</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:18px;font-size:12.5px;color:#8b94a6">
+              <span>Expected HRs <b style="font-family:'Space Grotesk';color:#eef1f6;font-size:14px">~{{ lockExp }}</b></span>
+              <span>Chance ≥1 hits <b style="font-family:'Space Grotesk';color:var(--pos,#35d0c0);font-size:14px">{{ lockAtLeast }}</b></span>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;min-width:0">
+            <sc-for list="{{ locks }}" as="l" hint-placeholder-count="3">
+              <div data-player="{{ l.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;position:relative;background:#0f1218;border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:11px;flex:1 1 160px;min-width:0;overflow:hidden;transition:border-color .15s" style-hover="border-color:rgba(255,194,77,.55)">
+                <div style="display:flex;align-items:center;gap:11px">
+                  <span style="font-family:'Space Grotesk';font-weight:700;font-size:14px;color:#ffc24d;flex:none">{{ l.rank }}</span>
+                  <div style="position:relative;width:46px;height:46px;flex:none;border-radius:50%;overflow:hidden;background:#0c0e14;display:grid;place-items:center">
+                    <span style="position:relative;font-family:'Space Grotesk';font-weight:700;font-size:12px;color:#5f6878">HR</span>
+                    <img src="{{ l.headshot }}" alt="" referrerpolicy="no-referrer" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center" onerror="this.remove()"/>
+                  </div>
+                  <div style="min-width:0;flex:1">
+                    <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ l.name }} <span style="font-size:13px">{{ l.scoreEmoji }}</span></div>
+                    <div style="font-size:12px;color:#7b8597">{{ l.matchup }}</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 11px;border-radius:11px;background:#13161e;border:1px solid rgba(255,194,77,.18)">
+                  <div><div style="font-size:10px;color:#7b8597;font-weight:600">HR CHANCE</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:19px;color:#ffc24d">{{ l.hrPct }}</div></div>
+                  <div style="text-align:right"><div style="font-size:10px;color:#7b8597;font-weight:600">BEST</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:15px">{{ l.best }}</div></div>
+                </div>
+                <div style="font-size:11.5px;color:#8b94a6;line-height:1.45">{{ l.why }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
         <sc-if value="{{ hasWatch }}" hint-placeholder-val="{{ false }}">
           <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="font-size:18px">★</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Your watchlist</h2><span style="font-size:12px;color:#7b8597">{{ watchCount }} pinned</span></div>
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:12px;margin-bottom:30px">
@@ -163,7 +200,7 @@
               <div style="background:#13161e;border:1px solid rgba(255,194,77,.22);border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:13px">
                 <div style="display:flex;align-items:center;gap:12px">
                   <div data-player="{{ p.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;position:relative;width:54px;height:54px;flex:none;border-radius:50%;background:{{ p.ring }};display:grid;place-items:center">
-                    <div style="position:relative;width:44px;height:44px;border-radius:50%;background:#13161e;overflow:hidden;display:grid;place-items:center"><img src="{{ p.headshot }}" alt="" referrerpolicy="no-referrer" style="width:44px;height:44px;object-fit:cover;object-position:top center" onerror="this.remove()"/><span style="position:absolute;bottom:-2px;right:-2px;min-width:19px;height:19px;padding:0 4px;border-radius:10px;background:var(--ac,#ff8a4c);color:#0a0c11;font-family:'Space Grotesk';font-weight:700;font-size:10.5px;display:grid;place-items:center;border:2px solid #13161e">{{ p.score }}</span></div>
+                    <div style="position:relative;width:44px;height:44px;border-radius:50%;background:#13161e;overflow:hidden;display:grid;place-items:center"><img src="{{ p.headshot }}" alt="" referrerpolicy="no-referrer" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;opacity:.45" onerror="this.remove()"/><span style="position:relative;font-family:'Space Grotesk';font-weight:700;font-size:16px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9),0 0 3px rgba(0,0,0,.8);letter-spacing:-.01em">{{ p.score }}</span></div>
                   </div>
                   <div data-player="{{ p.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;min-width:0;flex:1">
                     <div style="font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div>
@@ -205,17 +242,17 @@
 
         <!-- Due badge section -->
         <sc-if value="{{ hasDue }}" hint-placeholder-val="{{ false }}">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px"><span style="font-size:16px">☢️</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:16px;font-weight:700">Due List</h2><span style="font-size:12px;color:#7b8597">High quality contact, cold stretch — market may be slow</span></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px"><span style="width:3px;height:17px;border-radius:2px;background:#ffc24d;flex:none"></span><h2 style="margin:0;font-family:'Space Grotesk';font-size:16px;font-weight:700">Due List</h2><span style="font-size:12px;color:#7b8597">High quality contact, cold stretch — market may be slow</span></div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px">
             <sc-for list="{{ dueList }}" as="d" hint-placeholder-count="2">
               <div data-player="{{ d.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:13px;background:#13161e;border:1px solid rgba(255,194,77,.2);flex:none">
                 <div style="width:40px;height:40px;border-radius:50%;background:conic-gradient(#ffc24d {{ d.score }}%,rgba(255,255,255,.07) 0);display:grid;place-items:center;flex:none">
                   <div style="position:relative;width:32px;height:32px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center">
-                    <img src="{{ d.headshot }}" alt="" referrerpolicy="no-referrer" style="width:32px;height:32px;object-fit:cover;object-position:top center" onerror="this.remove()"/>
-                    <span style="position:absolute;bottom:-1px;right:-1px;min-width:17px;height:17px;padding:0 3px;border-radius:9px;background:#ffc24d;color:#0a0c11;font-family:'Space Grotesk';font-weight:700;font-size:9.5px;display:grid;place-items:center;border:1.5px solid #13161e">{{ d.score }}</span>
+                    <img src="{{ d.headshot }}" alt="" referrerpolicy="no-referrer" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;opacity:.45" onerror="this.remove()"/>
+                    <span style="position:relative;font-family:'Space Grotesk';font-weight:700;font-size:12px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9),0 0 3px rgba(0,0,0,.8);letter-spacing:-.01em">{{ d.score }}</span>
                   </div>
                 </div>
-                <div><div style="font-weight:700;font-size:13.5px">{{ d.dueName }}</div><div style="font-size:11.5px;color:#7b8597;margin-top:2px">{{ d.dueTeam }} · {{ d.dueBarrel }} · {{ d.dueHH }}</div><div style="font-size:11px;color:#ffc24d;margin-top:2px">☢️ due — cold stretch</div></div>
+                <div><div style="font-weight:700;font-size:13.5px">{{ d.dueName }}</div><div style="font-size:11.5px;color:#7b8597;margin-top:2px">{{ d.dueTeam }} · {{ d.dueBarrel }} · {{ d.dueHH }}</div><div style="font-size:11px;color:#ffc24d;margin-top:2px">due — cold stretch</div></div>
                 <div style="font-family:'Space Grotesk';font-weight:700;font-size:15px;margin-left:auto">{{ d.dueOdds }}</div>
               </div>
             </sc-for>
@@ -223,9 +260,9 @@
         </sc-if>
 
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <div style="display:flex;align-items:center;gap:9px"><span style="font-size:18px">⭐</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Top Star Plays</h2>
+          <div style="display:flex;align-items:center;gap:9px"><span style="width:3px;height:18px;border-radius:2px;background:var(--ac,#ff8a4c);flex:none"></span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Top Star Plays</h2>
             <sc-if value="{{ compareAId }}" hint-placeholder-val="{{ false }}">
-              <span style="font-size:11px;padding:4px 9px;border-radius:20px;background:rgba(255,138,76,.15);color:var(--ac,#ff8a4c);font-weight:700">⚖️ A set — pick B</span>
+              <span style="font-size:11px;padding:4px 9px;border-radius:20px;background:rgba(255,138,76,.15);color:var(--ac,#ff8a4c);font-weight:700">A set — pick B</span>
             </sc-if>
           </div>
           <button data-tab="games" onClick="{{ setTab }}" style="background:none;border:1px solid rgba(255,255,255,.12);color:#9aa3b2;font-weight:600;font-size:12.5px;padding:7px 13px;border-radius:9px;cursor:pointer" style-hover="border-color:var(--ac,#ff8a4c);color:#eef1f6">View all games →</button>
@@ -236,14 +273,15 @@
               <div style="display:flex;align-items:center;gap:12px">
                 <div style="position:relative;width:60px;height:60px;flex:none;border-radius:50%;background:{{ p.ring }};display:grid;place-items:center">
                   <div style="position:relative;width:50px;height:50px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center">
-                    <img src="{{ p.headshot }}" alt="" referrerpolicy="no-referrer" style="width:50px;height:50px;object-fit:cover;object-position:top center" onerror="this.remove()"/>
-                    <span style="position:absolute;bottom:-2px;right:-2px;min-width:20px;height:20px;padding:0 4px;border-radius:10px;background:var(--ac,#ff8a4c);color:#0a0c11;font-family:'Space Grotesk';font-weight:700;font-size:11px;display:grid;place-items:center;border:2px solid #13161e">{{ p.score }}</span>
+                    <span style="position:relative;font-family:'Space Grotesk';font-weight:700;font-size:18px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9),0 0 3px rgba(0,0,0,.8);letter-spacing:-.01em">{{ p.score }}</span>
+                    <img src="{{ p.headshot }}" alt="" referrerpolicy="no-referrer" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center" onerror="this.remove()"/>
                   </div>
                 </div>
                 <div style="min-width:0">
                   <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
                     <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div>
-                    <sc-if value="{{ p.isDue }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(255,194,77,.18);color:#ffc24d">☢️ DUE</span></sc-if>
+                    <span style="font-family:'Space Grotesk';font-weight:800;font-size:16px;color:var(--ac,#ff8a4c);flex:none">{{ p.score }}</span><span style="font-size:13px;flex:none">{{ p.scoreEmoji }}</span>
+                    <sc-if value="{{ p.isDue }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(255,194,77,.18);color:#ffc24d">DUE</span></sc-if>
                     <sc-if value="{{ p.lineupConfirmed }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(53,208,192,.15);color:var(--pos,#35d0c0)">✓ IN</span></sc-if>
                   </div>
                   <div style="font-size:12px;color:#7b8597;margin-top:2px">{{ p.matchup }}</div>
@@ -251,69 +289,20 @@
                 </div>
               </div>
               <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 11px;border-radius:11px;background:#0c0e14;border:1px solid rgba(255,255,255,.06)">
-                <div><div style="font-size:10.5px;color:#7b8597;font-weight:600">HR · model</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:16px">{{ p.modelPct }}%</div></div>
-                <div style="text-align:center"><div style="font-size:10.5px;color:#7b8597;font-weight:600">best</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:16px">{{ p.best }}</div></div>
+                <div><div style="font-size:10.5px;color:#7b8597;font-weight:600">HR · model</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:16px;color:{{ p.modelColor }}">{{ p.modelPct }}%</div></div>
+                <div style="text-align:center"><div style="font-size:10.5px;color:#7b8597;font-weight:600">best</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:16px;color:{{ p.bestColor }}">{{ p.best }}</div></div>
                 <div style="text-align:right"><div style="font-size:10.5px;color:#7b8597;font-weight:600">EV</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:16px;color:{{ p.evColor }}">{{ p.ev }}</div></div>
               </div>
               <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
                 <sc-for list="{{ p.badges }}" as="b" hint-placeholder-count="2">
                   <span style="font-size:10.5px;font-weight:700;padding:4px 8px;border-radius:7px;background:{{ b.bg }};color:{{ b.fg }}">{{ b.label }}</span>
                 </sc-for>
-                <button data-compare="{{ p.id }}" onClick="{{ addCompare }}" title="Compare" style="margin-left:auto;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:transparent;cursor:pointer;font-size:11px;font-weight:700;color:#9aa3b2" style-hover="color:#ffc24d;border-color:rgba(255,194,77,.35)">⚖️ Compare</button>
+                <button data-compare="{{ p.id }}" onClick="{{ addCompare }}" title="Compare" style="margin-left:auto;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:transparent;cursor:pointer;font-size:11px;font-weight:700;color:#9aa3b2" style-hover="color:#ffc24d;border-color:rgba(255,194,77,.35)">Compare</button>
               </div>
             </div>
           </sc-for>
         </div>
 
-        <div data-mcol1 style="display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:18px;margin-bottom:8px">
-          <div>
-            <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="font-size:18px">🧩</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Best Combos</h2></div>
-            <div style="display:flex;flex-direction:column;gap:11px">
-              <sc-for list="{{ combos }}" as="c" hint-placeholder-count="2">
-                <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:15px;padding:15px">
-                  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:11px">
-                    <div><div style="font-weight:700;font-size:14px">{{ c.title }}</div><div style="font-size:12px;color:#7b8597">{{ c.sub }}</div></div>
-                    <div style="text-align:right"><div style="font-family:'Space Grotesk';font-weight:700;font-size:19px;color:var(--ac,#ff8a4c)">{{ c.odds }}</div><div style="font-size:11px;color:var(--pos,#35d0c0);font-weight:600">{{ c.evLabel }}</div></div>
-                  </div>
-                  <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:11px">
-                    <sc-for list="{{ c.legs }}" as="l" hint-placeholder-count="3">
-                      <div style="display:flex;justify-content:space-between;font-size:13px;padding:7px 10px;border-radius:9px;background:#0c0e14"><span>{{ l.name }}</span><span style="color:#9aa3b2;font-family:'Space Grotesk'">{{ l.odds }}</span></div>
-                    </sc-for>
-                  </div>
-                  <div style="display:flex;gap:14px;font-size:12px;color:#7b8597;margin-bottom:11px">
-                    <span>Win chance <b style="color:#eef1f6;font-family:'Space Grotesk'">{{ c.win }}</b></span>
-                    <span>Avg score <b style="color:#eef1f6;font-family:'Space Grotesk'">{{ c.avg }}</b></span>
-                    <span>Grade <b style="color:var(--ac,#ff8a4c);font-family:'Space Grotesk'">{{ c.grade }}</b></span>
-                  </div>
-                  <div style="display:flex;gap:7px">
-                    <button data-combo="{{ $index }}" onClick="{{ addComboLegs }}" style="flex:1;padding:8px;border:none;border-radius:9px;cursor:pointer;font-weight:700;font-size:12px;color:#0a0c11;background:var(--ac,#ff8a4c)">+ Slip</button>
-                    <button data-combo="{{ $index }}" onClick="{{ trackCombo }}" style="flex:1;padding:8px;border:1px solid rgba(255,255,255,.12);border-radius:9px;cursor:pointer;font-weight:600;font-size:12px;color:#c3cad6;background:transparent">Track 📋</button>
-                  </div>
-                </div>
-              </sc-for>
-            </div>
-          </div>
-
-          <div>
-            <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="font-size:18px">🏟️</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Daily Park Report</h2></div>
-            <div style="display:flex;flex-direction:column;gap:11px">
-              <sc-for list="{{ parkReport }}" as="pk" hint-placeholder-count="3">
-                <div style="background:#13161e;border:1px solid {{ pk.border }};border-radius:15px;padding:14px">
-                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
-                    <div style="display:flex;align-items:center;gap:9px"><span style="font-family:'Space Grotesk';font-weight:700;color:{{ pk.rankColor }}">{{ pk.rank }}</span><span style="font-weight:700;font-size:14px">{{ pk.name }}</span></div>
-                    <div style="font-family:'Space Grotesk';font-weight:700;font-size:17px;color:{{ pk.boostColor }}">{{ pk.boost }}</div>
-                  </div>
-                  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px">
-                    <div style="text-align:center;padding:7px 4px;border-radius:9px;background:#0c0e14"><div style="font-size:10px;color:#7b8597;font-weight:600">PARK</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:13px">{{ pk.park }}</div></div>
-                    <div style="text-align:center;padding:7px 4px;border-radius:9px;background:#0c0e14"><div style="font-size:10px;color:#7b8597;font-weight:600">WIND</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:13px">{{ pk.wind }}</div></div>
-                    <div style="text-align:center;padding:7px 4px;border-radius:9px;background:#0c0e14"><div style="font-size:10px;color:#7b8597;font-weight:600">TEMP</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:13px">{{ pk.temp }}</div></div>
-                    <div style="text-align:center;padding:7px 4px;border-radius:9px;background:#0c0e14"><div style="font-size:10px;color:#7b8597;font-weight:600">ROOF</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:13px">{{ pk.roof }}</div></div>
-                  </div>
-                </div>
-              </sc-for>
-            </div>
-          </div>
-        </div>
       </div>
       </sc-if>
 
@@ -341,7 +330,7 @@
               <div data-mcol1 style="padding:14px 17px;display:grid;grid-template-columns:1fr 1fr;gap:11px">
                 <sc-for list="{{ g.players }}" as="p" hint-placeholder-count="2">
                   <div data-player="{{ p.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;display:flex;align-items:center;gap:11px;padding:11px;border-radius:12px;background:#0c0e14;border:1px solid rgba(255,255,255,.06)" style-hover="border-color:rgba(255,138,76,.45)">
-                    <div style="width:40px;height:40px;border-radius:50%;flex:none;background:{{ p.ring }};display:grid;place-items:center"><div style="position:relative;width:32px;height:32px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center"><img src="{{ p.headshot }}" alt="" referrerpolicy="no-referrer" style="width:32px;height:32px;object-fit:cover;object-position:top center" onerror="this.remove()"/><span style="position:absolute;bottom:-1px;right:-1px;min-width:16px;height:16px;padding:0 3px;border-radius:8px;background:var(--ac,#ff8a4c);color:#0a0c11;font-family:'Space Grotesk';font-weight:700;font-size:9px;display:grid;place-items:center;border:1.5px solid #0c0e14">{{ p.score }}</span></div></div>
+                    <div style="width:40px;height:40px;border-radius:50%;flex:none;background:{{ p.ring }};display:grid;place-items:center"><div style="position:relative;width:32px;height:32px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center"><img src="{{ p.headshot }}" alt="" referrerpolicy="no-referrer" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;opacity:.45" onerror="this.remove()"/><span style="position:relative;font-family:'Space Grotesk';font-weight:700;font-size:12px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9),0 0 3px rgba(0,0,0,.8);letter-spacing:-.01em">{{ p.score }}</span></div></div>
                     <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div><div style="font-size:11px;letter-spacing:1px"><span style="color:#ffc24d">{{ p.starsOn }}</span><span style="color:#3a4150">{{ p.starsOff }}</span> <span style="color:#7b8597;letter-spacing:0">HR {{ p.modelPct }}%</span></div></div>
                     <div style="text-align:right"><div style="font-family:'Space Grotesk';font-weight:700;font-size:14px">{{ p.best }}</div><div style="font-size:11px;color:{{ p.evColor }};font-weight:600">{{ p.ev }}</div></div>
                   </div>
@@ -406,7 +395,7 @@
               <div style="display:flex;flex-direction:column;gap:8px">
                 <sc-for list="{{ radarSel.topHitters }}" as="h" hint-placeholder-count="3">
                   <div data-player="{{ h.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:11px;background:#0c0e14;border:1px solid rgba(255,255,255,.06)">
-                    <div style="width:38px;height:38px;flex:none;border-radius:50%;background:{{ h.ring }};display:grid;place-items:center"><div style="position:relative;width:30px;height:30px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center"><img src="{{ h.headshot }}" alt="" referrerpolicy="no-referrer" style="width:30px;height:30px;object-fit:cover;object-position:top center" onerror="this.remove()"/><span style="position:absolute;bottom:-1px;right:-1px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:var(--ac,#ff8a4c);color:#0a0c11;font-family:'Space Grotesk';font-weight:700;font-size:8.5px;display:grid;place-items:center;border:1.5px solid #0c0e14">{{ h.score }}</span></div></div>
+                    <div style="width:38px;height:38px;flex:none;border-radius:50%;background:{{ h.ring }};display:grid;place-items:center"><div style="position:relative;width:30px;height:30px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center"><img src="{{ h.headshot }}" alt="" referrerpolicy="no-referrer" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;opacity:.45" onerror="this.remove()"/><span style="position:relative;font-family:'Space Grotesk';font-weight:700;font-size:11px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9),0 0 3px rgba(0,0,0,.8);letter-spacing:-.01em">{{ h.score }}</span></div></div>
                     <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ h.name }}</div><div style="font-size:11.5px;color:#7b8597">HR {{ h.modelPct }}%</div></div>
                     <div style="font-family:'Space Grotesk';font-weight:700;font-size:14px;color:var(--ac,#ff8a4c)">{{ h.best }}</div>
                   </div>
@@ -418,7 +407,7 @@
         </div>
 
         <!-- PARK RANKING STRIP -->
-        <div style="display:flex;align-items:center;gap:9px;margin:24px 0 13px"><span style="font-size:17px">🌡️</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Tonight's parks by carry</h2><span style="font-size:12px;color:#7b8597">{{ radarHot }} parks playing hot</span></div>
+        <div style="display:flex;align-items:center;gap:9px;margin:24px 0 13px"><span style="width:3px;height:17px;border-radius:2px;background:var(--ac,#ff8a4c);flex:none"></span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Tonight's parks by carry</h2><span style="font-size:12px;color:#7b8597">{{ radarHot }} parks playing hot</span></div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">
           <sc-for list="{{ radarParks }}" as="r" hint-placeholder-count="6">
             <button data-game="{{ r.gameId }}" onClick="{{ setRadarSel }}" style="text-align:left;cursor:pointer;background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:13px;padding:13px 14px;display:flex;align-items:center;gap:12px" style-hover="border-color:rgba(255,138,76,.4)">
@@ -480,7 +469,7 @@
 
         <sc-if value="{{ solver.needsOdds }}" hint-placeholder-val="{{ false }}">
           <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:40px 20px;text-align:center">
-            <div style="font-size:34px;opacity:.5;margin-bottom:12px">🎯</div>
+            <div style="margin-bottom:12px;display:flex;justify-content:center;opacity:.55"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#7b8597" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="#7b8597" stroke="none"/></svg></div>
             <div style="font-family:'Space Grotesk';font-size:18px;font-weight:700;color:#c3cad6">Connect odds to solve the slate</div>
             <p style="margin:8px auto 0;font-size:13.5px;color:#7b8597;max-width:380px">Kelly sizing needs live prices. The solver activates once your OddsBlaze feed posts props.</p>
           </div>
@@ -502,11 +491,11 @@
           </div>
 
           <!-- Straight bets -->
-          <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="font-size:17px">💵</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Recommended straight bets</h2></div>
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="width:3px;height:17px;border-radius:2px;background:var(--pos,#35d0c0);flex:none"></span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Recommended straight bets</h2></div>
           <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;margin-bottom:24px">
             <sc-for list="{{ solver.bets }}" as="b" hint-placeholder-count="4">
               <div data-player="{{ b.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;display:flex;align-items:center;gap:13px;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.05)" style-hover="background:#161a24">
-                <div style="width:42px;height:42px;flex:none;border-radius:50%;background:{{ b.ring }};display:grid;place-items:center"><div style="position:relative;width:34px;height:34px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center"><img src="{{ b.headshot }}" alt="" referrerpolicy="no-referrer" style="width:34px;height:34px;object-fit:cover;object-position:top center" onerror="this.remove()"/><span style="position:absolute;bottom:-1px;right:-1px;min-width:16px;height:16px;padding:0 3px;border-radius:8px;background:var(--ac,#ff8a4c);color:#0a0c11;font-family:'Space Grotesk';font-weight:700;font-size:9px;display:grid;place-items:center;border:1.5px solid #0c0e14">{{ b.score }}</span></div></div>
+                <div style="width:42px;height:42px;flex:none;border-radius:50%;background:{{ b.ring }};display:grid;place-items:center"><div style="position:relative;width:34px;height:34px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center"><img src="{{ b.headshot }}" alt="" referrerpolicy="no-referrer" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;opacity:.45" onerror="this.remove()"/><span style="position:relative;font-family:'Space Grotesk';font-weight:700;font-size:13px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9),0 0 3px rgba(0,0,0,.8);letter-spacing:-.01em">{{ b.score }}</span></div></div>
                 <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ b.name }} <span style="font-size:11.5px;color:#7b8597;font-weight:500">{{ b.team }} · HR</span></div><div style="font-size:11.5px;color:#7b8597;margin-top:2px">HR {{ b.modelPct }}% · Kelly {{ b.kellyPct }} of bankroll</div></div>
                 <div style="text-align:center;min-width:50px"><div style="font-size:10px;color:#7b8597;font-weight:600">ODDS</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:14px;color:var(--ac,#ff8a4c)">{{ b.odds }}</div></div>
                 <div style="text-align:center;min-width:48px"><div style="font-size:10px;color:#7b8597;font-weight:600">EV</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:14px;color:{{ b.evColor }}">{{ b.ev }}</div></div>
@@ -517,7 +506,7 @@
 
           <!-- Anchor parlay -->
           <sc-if value="{{ solver.anchor }}" hint-placeholder-val="{{ false }}">
-            <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="font-size:17px">🚀</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Anchor parlay <span style="font-size:12px;color:#7b8597;font-weight:500">— 1u upside flyer</span></h2></div>
+            <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="width:3px;height:17px;border-radius:2px;background:var(--ac,#ff8a4c);flex:none"></span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Anchor parlay <span style="font-size:12px;color:#7b8597;font-weight:500">— 1u upside flyer</span></h2></div>
             <div style="background:#13161e;border:1px solid rgba(255,138,76,.22);border-radius:16px;padding:16px">
               <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:14px">
                 <div><div style="font-size:10.5px;color:#7b8597;font-weight:600">ODDS</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:20px;color:var(--ac,#ff8a4c)">{{ solver.anchor.odds }}</div></div>
@@ -530,7 +519,7 @@
               <div style="display:flex;flex-direction:column;gap:7px">
                 <sc-for list="{{ solver.anchor.legs }}" as="l" hint-placeholder-count="3">
                   <div data-player="{{ l.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:11px;background:#0c0e14">
-                    <div style="width:34px;height:34px;flex:none;border-radius:50%;background:{{ l.ring }};display:grid;place-items:center"><div style="position:relative;width:27px;height:27px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center"><img src="{{ l.headshot }}" alt="" referrerpolicy="no-referrer" style="width:27px;height:27px;object-fit:cover;object-position:top center" onerror="this.remove()"/></div></div>
+                    <div style="width:34px;height:34px;flex:none;border-radius:50%;background:{{ l.ring }};display:grid;place-items:center"><div style="position:relative;width:27px;height:27px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center"><img src="{{ l.headshot }}" alt="" referrerpolicy="no-referrer" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;opacity:.45" onerror="this.remove()"/><span style="position:relative;font-family:'Space Grotesk';font-weight:700;font-size:11px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9),0 0 3px rgba(0,0,0,.8);letter-spacing:-.01em">{{ l.score }}</span></div></div>
                     <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13px">{{ l.name }} <span style="font-size:11px;color:#7b8597;font-weight:500">{{ l.team }}</span></div></div>
                     <div style="font-size:11.5px;color:#7b8597">HR {{ l.modelPct }}%</div>
                     <div style="font-family:'Space Grotesk';font-weight:700;font-size:13px;color:var(--ac,#ff8a4c)">{{ l.odds }}</div>
@@ -540,7 +529,7 @@
             </div>
           </sc-if>
 
-          <div style="margin-top:18px;padding:12px 15px;border-radius:11px;background:rgba(53,208,192,.05);border:1px solid rgba(53,208,192,.16);font-size:12px;color:#8b94a6;line-height:1.55">⚖️ Kelly sizing assumes your model probabilities are accurate. Fractional Kelly (¼) hedges against model error — the safer choice. Never stake more than you can lose; the solver caps total exposure but variance is real.</div>
+          <div style="margin-top:18px;padding:12px 15px;border-radius:11px;background:rgba(53,208,192,.05);border:1px solid rgba(53,208,192,.16);font-size:12px;color:#8b94a6;line-height:1.55">Kelly sizing assumes your model probabilities are accurate. Fractional Kelly (¼) hedges against model error — the safer choice. Never stake more than you can lose; the solver caps total exposure but variance is real.</div>
         </sc-if>
 
         <sc-if value="{{ solver.hasBets }}" hint-placeholder-val="{{ true }}">
@@ -549,7 +538,7 @@
 
         <sc-if value="{{ solver.noBets }}" hint-placeholder-val="{{ false }}">
           <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:40px 20px;text-align:center">
-            <div style="font-size:34px;opacity:.5;margin-bottom:12px">🧮</div>
+            <div style="margin-bottom:12px;display:flex;justify-content:center;opacity:.55"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#7b8597" stroke-width="1.6" stroke-linecap="round"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></div>
             <div style="font-family:'Space Grotesk';font-size:18px;font-weight:700;color:#c3cad6">No +EV plays clear the bar tonight</div>
             <p style="margin:8px auto 0;font-size:13.5px;color:#7b8597;max-width:400px">At this risk profile the model finds no bets with positive Kelly value. Loosening to "Aggressive" widens the band — or there's simply no edge on tonight's prices. Discipline is a position too.</p>
           </div>
@@ -569,7 +558,7 @@
         <!-- Not enough data yet -->
         <sc-if value="{{ report.notEnough }}" hint-placeholder-val="{{ true }}">
         <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:34px 22px;text-align:center">
-          <div style="font-size:34px;margin-bottom:14px">🎓</div>
+          <div style="margin-bottom:14px;display:flex;justify-content:center;opacity:.6"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#7b8597" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18l5-5 4 3 7-8"/><path d="M16 8h4v4"/></svg></div>
           <div style="font-family:'Space Grotesk';font-size:19px;font-weight:700;color:#c3cad6">Building your track record</div>
           <p style="margin:10px auto 18px;font-size:13.5px;color:#7b8597;max-width:440px;line-height:1.6">The report card grades real predictions as games finalize — it can't be faked with a backtest you didn't run. <strong style="color:#9aa3b2">{{ report.locked }} predictions locked today</strong>; calibration populates as tonight's bats finish and accumulates each day you check in.</p>
           <div style="display:inline-flex;gap:22px;padding:14px 22px;border-radius:13px;background:#0c0e14;border:1px solid rgba(255,255,255,.07)">
@@ -647,7 +636,7 @@
             </sc-if>
           </div>
 
-          <div style="margin-top:16px;padding:12px 15px;border-radius:11px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);font-size:12px;color:#8b94a6;line-height:1.55">📊 Grades come from {{ report.daysWithData }} day(s) of finalized games · {{ report.sample }} predictions · {{ report.baseRate }} overall HR rate. The more days you check in, the sharper this gets.</div>
+          <div style="margin-top:16px;padding:12px 15px;border-radius:11px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);font-size:12px;color:#8b94a6;line-height:1.55">Grades come from {{ report.daysWithData }} day(s) of finalized games · {{ report.sample }} predictions · {{ report.baseRate }} overall HR rate. The more days you check in, the sharper this gets.</div>
         </sc-if>
       </div>
       </sc-if>
@@ -717,7 +706,7 @@
           <div style="display:flex;flex-direction:column;gap:10px">
             <sc-for list="{{ liveHRs }}" as="h" hint-placeholder-count="3">
               <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;background:#13161e;border:1px solid {{ h.border }}">
-                <div style="font-size:24px">💥</div>
+                <div style="position:relative;width:38px;height:38px;flex:none;border-radius:50%;overflow:hidden;background:#0c0e14;display:grid;place-items:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ac,#ff8a4c)" stroke-width="1.6"><circle cx="12" cy="12" r="8.5"/><path d="M8 6c2 3 2 9 0 12M16 6c-2 3-2 9 0 12"/></svg><img src="{{ h.headshot }}" alt="" referrerpolicy="no-referrer" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center" onerror="this.remove()"/></div>
                 <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px">{{ h.player }} <span style="font-size:12px;color:#7b8597;font-weight:500">· {{ h.detail }}</span></div><div style="font-size:12px;color:#8b94a6;margin-top:2px">{{ h.line }}</div></div>
                 <span style="font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:7px;background:{{ h.tagBg }};color:{{ h.tagFg }}">{{ h.tag }}</span>
               </div>
@@ -726,7 +715,7 @@
         </sc-if>
         <sc-if value="{{ noLive }}" hint-placeholder-val="{{ true }}">
           <div style="display:flex;flex-direction:column;align-items:center;padding:30px 0 16px;text-align:center;color:#7b8597;margin-bottom:22px">
-            <div style="font-size:36px;margin-bottom:12px;opacity:.6">⚾</div>
+            <div style="margin-bottom:12px;display:flex;justify-content:center;opacity:.55"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#7b8597" stroke-width="1.6"><circle cx="12" cy="12" r="8.5"/><path d="M8 6c2 3 2 9 0 12M16 6c-2 3-2 9 0 12"/></svg></div>
             <div style="font-family:'Space Grotesk';font-size:18px;font-weight:700;color:#c3cad6">No home runs yet</div>
             <p style="margin:8px 0 0;font-size:13.5px;max-width:360px">{{ liveEmpty }}</p>
           </div>
@@ -888,10 +877,10 @@
 
               <!-- Warnings -->
               <sc-if value="{{ wro.warnLow }}" hint-placeholder-val="{{ false }}">
-                <div style="padding:10px 18px;background:rgba(255,194,77,.08);border-bottom:1px solid rgba(255,194,77,.15);font-size:12.5px;color:#ffc24d">⚠️ True win probability below 1% — consider dropping to fewer legs or targeting higher-probability plays.</div>
+                <div style="padding:10px 18px;background:rgba(255,194,77,.08);border-bottom:1px solid rgba(255,194,77,.15);font-size:12.5px;color:#ffc24d"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg>True win probability below 1% — consider dropping to fewer legs or targeting higher-probability plays.</div>
               </sc-if>
               <sc-if value="{{ wro.warnEv }}" hint-placeholder-val="{{ false }}">
-                <div style="padding:10px 18px;background:rgba(255,107,107,.08);border-bottom:1px solid rgba(255,107,107,.15);font-size:12.5px;color:#ff8d8d">⚠️ Negative expected value — the book has edge here. Switching to Best EV mode may find better-priced legs.</div>
+                <div style="padding:10px 18px;background:rgba(255,107,107,.08);border-bottom:1px solid rgba(255,107,107,.15);font-size:12.5px;color:#ff8d8d"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg>Negative expected value — the book has edge here. Switching to Best EV mode may find better-priced legs.</div>
               </sc-if>
 
               <!-- Legs -->
@@ -900,8 +889,8 @@
                   <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:13px;background:#0c0e14;border:{{ l.cardBorder }}">
                     <div data-player="{{ l.id }}" onClick="{{ openDrawer }}" style="cursor:pointer;width:44px;height:44px;flex:none;border-radius:50%;background:{{ l.ring }};display:grid;place-items:center">
                       <div style="position:relative;width:36px;height:36px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center">
-                        <img src="{{ l.headshot }}" alt="" referrerpolicy="no-referrer" style="width:36px;height:36px;object-fit:cover;object-position:top center" onerror="this.remove()"/>
-                        <span style="position:absolute;bottom:-1px;right:-1px;min-width:16px;height:16px;padding:0 3px;border-radius:8px;background:var(--ac,#ff8a4c);color:#0a0c11;font-family:'Space Grotesk';font-weight:700;font-size:9px;display:grid;place-items:center;border:1.5px solid #0c0e14">{{ l.score }}</span>
+                        <img src="{{ l.headshot }}" alt="" referrerpolicy="no-referrer" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;opacity:.45" onerror="this.remove()"/>
+                        <span style="position:relative;font-family:'Space Grotesk';font-weight:700;font-size:14px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9),0 0 3px rgba(0,0,0,.8);letter-spacing:-.01em">{{ l.score }}</span>
                       </div>
                     </div>
                     <div style="flex:1;min-width:0">
@@ -996,7 +985,7 @@
             <div style="text-align:center;padding:10px 4px;border-radius:11px;background:#0c0e14"><div style="font-size:10px;color:#7b8597;font-weight:600">GREEN-LIGHT</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:18px;color:{{ ulxGateFg }}">{{ ulxPassesLabel }}</div></div>
           </div>
 
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px"><span style="font-size:14px">🚦</span><div style="font-family:'Space Grotesk';font-weight:700;font-size:13.5px">Green-light gate · 7-of-10 to clear</div></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px"><span style="width:3px;height:14px;border-radius:2px;background:var(--pos,#35d0c0);flex:none"></span><div style="font-family:'Space Grotesk';font-weight:700;font-size:13.5px">Green-light gate · 7-of-10 to clear</div></div>
           <div data-mcol1 style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:16px">
             <sc-for list="{{ ulxChecks }}" as="c" hint-placeholder-count="10">
               <div style="display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:10px;background:{{ c.rowBg }}">
@@ -1008,14 +997,14 @@
 
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
             <button onClick="{{ addUlxToSlip }}" style="flex:1;min-width:160px;padding:12px;border:none;border-radius:11px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:800;font-size:14px;color:#0a0c11;background:var(--ac,#ff8a4c)" style-hover="filter:brightness(1.08)">+ Add 3 legs to slip</button>
-            <button onClick="{{ trackUlx }}" style="flex:1;min-width:140px;padding:12px;border:1px solid rgba(255,255,255,.14);border-radius:11px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:700;font-size:14px;color:#c3cad6;background:transparent" style-hover="border-color:var(--pos,#35d0c0);color:#eef1f6">Track 📋</button>
+            <button onClick="{{ trackUlx }}" style="flex:1;min-width:140px;padding:12px;border:1px solid rgba(255,255,255,.14);border-radius:11px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:700;font-size:14px;color:#c3cad6;background:transparent" style-hover="border-color:var(--pos,#35d0c0);color:#eef1f6">Track</button>
             <span style="font-size:11.5px;color:#7b8597">{{ ulxOddsMode }}</span>
           </div>
         </div>
         </sc-if>
         <sc-if value="{{ noUlx }}" hint-placeholder-val="{{ true }}">
         <div style="background:#13161e;border:1px dashed rgba(255,255,255,.12);border-radius:16px;padding:28px;text-align:center;color:#7b8597;margin-bottom:24px">
-          <div style="font-size:30px;margin-bottom:10px;opacity:.6">🧬</div>
+          <div style="margin-bottom:10px;display:flex;justify-content:center;opacity:.55"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#7b8597" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg></div>
           <div style="font-family:'Space Grotesk';font-weight:700;font-size:16px;color:#c3cad6">ULX needs a full board</div>
           <p style="margin:7px 0 0;font-size:13px;max-width:380px;margin-inline:auto">Once today's slate loads (3+ games with qualified hitters), the role-based parlay assembles here automatically.</p>
         </div>
@@ -1047,7 +1036,7 @@
             </div>
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="font-size:18px">🧩</span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Generated cross plays</h2></div>
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px"><span style="width:3px;height:18px;border-radius:2px;background:var(--ac,#ff8a4c);flex:none"></span><h2 style="margin:0;font-family:'Space Grotesk';font-size:18px;font-weight:700">Generated cross plays</h2></div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">
           <sc-for list="{{ combos }}" as="c" hint-placeholder-count="3">
             <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:15px;padding:16px">
@@ -1067,7 +1056,7 @@
               </div>
               <div style="display:flex;gap:7px;margin-top:11px">
                 <button data-combo="{{ $index }}" onClick="{{ addComboLegs }}" style="flex:1;padding:9px;border:none;border-radius:10px;cursor:pointer;font-weight:700;font-size:12.5px;color:#0a0c11;background:var(--ac,#ff8a4c)">+ Slip</button>
-                <button data-combo="{{ $index }}" onClick="{{ trackCombo }}" style="flex:1;padding:9px;border:1px solid rgba(255,255,255,.14);border-radius:10px;cursor:pointer;font-weight:600;font-size:12.5px;color:#c3cad6;background:transparent">Track 📋</button>
+                <button data-combo="{{ $index }}" onClick="{{ trackCombo }}" style="flex:1;padding:9px;border:1px solid rgba(255,255,255,.14);border-radius:10px;cursor:pointer;font-weight:600;font-size:12.5px;color:#c3cad6;background:transparent">Track</button>
               </div>
             </div>
           </sc-for>
@@ -1081,6 +1070,12 @@
           <div style="font-size:11px;letter-spacing:.14em;color:var(--ac,#ff8a4c);font-weight:700;margin-bottom:6px">TRACKING & CLV</div>
           <h1 style="margin:0;font-family:'Space Grotesk';font-size:28px;font-weight:700;letter-spacing:-.02em">Saved plays</h1>
           <p style="margin:6px 0 0;color:#8b94a6;font-size:14px;max-width:560px">Build a slip, hit <b style="color:#c3cad6">Save → Track</b>, and every play lands here with odds, model EV and grade. Mark results to track your edge.</p>
+          <div style="display:inline-flex;align-items:center;gap:8px;margin-top:13px;padding:8px 13px;border-radius:10px;background:rgba(53,208,192,.1);border:1px solid rgba(53,208,192,.25)">
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--pos,#35d0c0);animation:dlpulse 1.6s infinite;flex:none"></span>
+            <span style="font-size:12.5px;font-weight:700;color:var(--pos,#35d0c0)">Auto-grading on</span>
+            <span style="font-size:12.5px;color:#7b8597">· pending slips settle automatically when each game goes final</span>
+            <sc-if value="{{ gradeServer }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;margin-left:4px;padding:3px 9px;border-radius:7px;background:rgba(255,138,76,.1);border:1px solid rgba(255,138,76,.25);font-size:11.5px;font-weight:600;color:var(--ac,#ff8a4c)"><span style="width:6px;height:6px;border-radius:50%;background:var(--ac,#ff8a4c)"></span>Server-verified · grades even while the app is closed</span></sc-if>
+          </div>
         </div>
 
         <sc-if value="{{ hasGraded }}" hint-placeholder-val="{{ false }}">
@@ -1096,9 +1091,9 @@
 
         <sc-if value="{{ noTracked }}" hint-placeholder-val="{{ true }}">
           <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:40vh;text-align:center;color:#7b8597;border:1px dashed rgba(255,255,255,.1);border-radius:16px;padding:40px">
-            <div style="font-size:38px;margin-bottom:12px;opacity:.6">📋</div>
+            <div style="margin-bottom:12px;display:flex;justify-content:center;opacity:.55"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#7b8597" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h4"/></svg></div>
             <div style="font-family:'Space Grotesk';font-size:18px;font-weight:700;color:#c3cad6">No tracked bets yet</div>
-            <p style="margin:8px 0 0;font-size:13.5px;max-width:380px">Save a parlay from the slip or use <b style="color:#c3cad6">Track 📋</b> on any combo card — it saves here instantly.</p>
+            <p style="margin:8px 0 0;font-size:13.5px;max-width:380px">Save a parlay from the slip or use <b style="color:#c3cad6">Track</b> on any combo card — it saves here instantly.</p>
           </div>
         </sc-if>
 
@@ -1108,6 +1103,7 @@
               <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 16px">
                 <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
                   <span style="font-size:11px;font-weight:700;padding:5px 11px;border-radius:20px;flex:none;background:{{ t.statusBg }};color:{{ t.statusFg }}">{{ t.statusLabel }}</span>
+                  <sc-if value="{{ t.autoGraded }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;padding:5px 8px;border-radius:20px;flex:none;align-self:center;background:rgba(255,255,255,.05);color:#7b8597">⟳ AUTO</span></sc-if>
                   <div style="flex:1;min-width:180px">
                     <div style="font-weight:700;font-size:14px">{{ t.label }}</div>
                     <div style="font-size:12px;color:#7b8597;margin-top:2px">{{ t.legsPreview }} · ${{ t.stake }} · {{ t.date }}</div>
@@ -1126,10 +1122,24 @@
                   <button data-id="{{ t.id }}" data-book="playbook" onClick="{{ sendToBook }}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border:1px solid rgba(196,181,253,.3);border-radius:9px;cursor:pointer;font-weight:700;font-size:12.5px;color:#c4b5fd;background:rgba(196,181,253,.07)" style-hover="filter:brightness(1.12)">📋 Playbook ↗</button>
                 </div>
 
-                <sc-if value="{{ t.pending }}" hint-placeholder-val="{{ false }}">
-                  <div style="display:flex;gap:8px;margin-top:11px">
-                    <button data-id="{{ t.id }}" data-result="won" onClick="{{ setResult }}" style="flex:1;padding:8px;border:1px solid rgba(53,208,192,.3);border-radius:9px;cursor:pointer;font-weight:700;font-size:12.5px;color:var(--pos,#35d0c0);background:rgba(53,208,192,.08)">✓ Won</button>
-                    <button data-id="{{ t.id }}" data-result="lost" onClick="{{ setResult }}" style="flex:1;padding:8px;border:1px solid rgba(255,107,107,.25);border-radius:9px;cursor:pointer;font-weight:700;font-size:12.5px;color:#ff8d8d;background:rgba(255,107,107,.07)">✗ Lost</button>
+                <sc-if value="{{ t.pendingAuto }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;align-items:center;gap:8px;margin-top:11px;padding:8px 11px;border-radius:9px;background:rgba(53,208,192,.07);border:1px solid rgba(53,208,192,.18)">
+                    <span style="width:7px;height:7px;border-radius:50%;background:var(--pos,#35d0c0);animation:dlpulse 1.6s infinite;flex:none"></span>
+                    <span style="font-size:12px;color:var(--pos,#35d0c0);font-weight:600">Auto-grading</span>
+                    <span style="font-size:12px;color:#7b8597">· settles when final</span>
+                    <span style="display:flex;gap:11px;margin-left:auto">
+                      <button data-id="{{ t.id }}" data-result="won" onClick="{{ setResult }}" style="background:none;border:none;cursor:pointer;font-size:11px;font-weight:600;color:#7b8597;padding:0" style-hover="color:var(--pos,#35d0c0)">mark won</button>
+                      <button data-id="{{ t.id }}" data-result="lost" onClick="{{ setResult }}" style="background:none;border:none;cursor:pointer;font-size:11px;font-weight:600;color:#7b8597;padding:0" style-hover="color:#ff8d8d">mark lost</button>
+                    </span>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ t.pendingManual }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:11px">
+                    <div style="font-size:11.5px;color:#9aa3b2;margin-bottom:7px">No game link on this slip — grade it manually:</div>
+                    <div style="display:flex;gap:8px">
+                      <button data-id="{{ t.id }}" data-result="won" onClick="{{ setResult }}" style="flex:1;padding:8px;border:1px solid rgba(53,208,192,.3);border-radius:9px;cursor:pointer;font-weight:700;font-size:12.5px;color:var(--pos,#35d0c0);background:rgba(53,208,192,.08)">Won</button>
+                      <button data-id="{{ t.id }}" data-result="lost" onClick="{{ setResult }}" style="flex:1;padding:8px;border:1px solid rgba(255,107,107,.25);border-radius:9px;cursor:pointer;font-weight:700;font-size:12.5px;color:#ff8d8d;background:rgba(255,107,107,.07)">Lost</button>
+                    </div>
                   </div>
                 </sc-if>
               </div>
@@ -1347,7 +1357,7 @@
               <span style="font-family:'Space Grotesk';font-weight:700;font-size:15px;color:var(--ac,#ff8a4c)">{{ parlayPayout }}</span>
             </div>
           </div>
-          <button onClick="{{ saveTrack }}" style="width:100%;padding:12px;border:none;border-radius:11px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:800;font-size:14px;color:#0a0c11;background:var(--ac,#ff8a4c)" style-hover="filter:brightness(1.08)">Save → Track 📋</button>
+          <button onClick="{{ saveTrack }}" style="width:100%;padding:12px;border:none;border-radius:11px;cursor:pointer;font-family:'Hanken Grotesk';font-weight:800;font-size:14px;color:#0a0c11;background:var(--ac,#ff8a4c)" style-hover="filter:brightness(1.08)">Save → Track</button>
         </div>
       </sc-if>
       <sc-if value="{{ oddsConnected }}" hint-placeholder-val="{{ false }}">
@@ -1454,8 +1464,8 @@
         <div style="display:flex;align-items:center;gap:14px;min-width:0">
           <div style="position:relative;width:64px;height:64px;flex:none;border-radius:50%;background:{{ p.ring }};display:grid;place-items:center">
             <div style="position:relative;width:54px;height:54px;border-radius:50%;background:#0c0e14;overflow:hidden;display:grid;place-items:center">
-              <img src="{{ p.headshot }}" alt="" referrerpolicy="no-referrer" style="width:54px;height:54px;object-fit:cover;object-position:top center" onerror="this.remove()"/>
-              <span style="position:absolute;bottom:-2px;right:-2px;min-width:22px;height:22px;padding:0 5px;border-radius:11px;background:var(--ac,#ff8a4c);color:#0a0c11;font-family:'Space Grotesk';font-weight:700;font-size:12px;display:grid;place-items:center;border:2px solid #13161e">{{ p.score }}</span>
+              <img src="{{ p.headshot }}" alt="" referrerpolicy="no-referrer" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;opacity:.45" onerror="this.remove()"/>
+              <span style="position:relative;font-family:'Space Grotesk';font-weight:700;font-size:19px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9),0 0 3px rgba(0,0,0,.8);letter-spacing:-.01em">{{ p.score }}</span>
             </div>
           </div>
           <div style="min-width:0">
@@ -1570,8 +1580,105 @@ class Component extends DCLogic {
     try { const w = localStorage.getItem('dl_watch_v1'); if (w) this.setState({ watch: JSON.parse(w) }); } catch (e) {}
     this.load();
     this._pollId = setInterval(() => { if (this.state.autoPoll && this.state.status === 'live' && !this._refreshing) this.liveRefresh(); }, 60000);
+    // Always-on auto-grader — resolves pending slips when their games go final, regardless of tab or slate
+    this._gradeId = setInterval(() => { this.autoGrade(); }, 90000);
+    setTimeout(() => this.autoGrade(), 2500);
   }
-  componentWillUnmount() { if (this._pollId) clearInterval(this._pollId); }
+  componentWillUnmount() { if (this._pollId) clearInterval(this._pollId); if (this._gradeId) clearInterval(this._gradeId); }
+
+  // Always-on grader: for every pending slip, fetch each leg's game result directly and settle won/lost when final.
+  // ISO yyyy-mm-dd for a tracked slip (slate date if present, else parsed locale date, else today)
+  isoFromEntry(t) {
+    try { if (t.dateStr) return String(t.dateStr).slice(0, 10); const d = new Date(t.date); if (!isNaN(d.getTime())) return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); } catch (e) {}
+    return this.dateStr();
+  }
+  // Shape a tracked slip for the server's savedParlays ledger (graded by its background loop)
+  toServerSlip(t) {
+    const iso = this.isoFromEntry(t);
+    return { id: t.id, result: t.status === 'won' ? 'win' : t.status === 'lost' ? 'loss' : 'pending', label: t.label, stake: t.stake, odds: t.odds, win: t.win, ev: t.ev, date: iso,
+      legData: (t.legs || []).map(l => ({ name: l.name, mlbId: l.id != null ? l.id : null, gamePk: l.gameId != null ? l.gameId : null, date: iso, mkt: 'hr', hit: (l.won === true ? true : l.won === false ? false : null) })) };
+  }
+  // Push the full ledger so the server can settle it even while this tab is closed
+  async pushTracked() {
+    const base = (this.state.proxyUrl || '').replace(/\/$/, '');
+    if (!base || !(this.state.tracked || []).length) return;
+    try { await this.tFetch(base + '/api/state', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ savedParlays: (this.state.tracked || []).map(t => this.toServerSlip(t)) }) }, 12000); } catch (e) {}
+  }
+  // Authoritative grading via the server: push ledger, trigger a grade pass, merge verdicts back
+  async serverGrade() {
+    const base = (this.state.proxyUrl || '').replace(/\/$/, '');
+    if (!base) return false;
+    await this.pushTracked();
+    let state = null;
+    try { const r = await this.tFetch(base + '/api/grade', { method: 'POST' }, 25000).then(r => r.ok ? r.json() : null); state = r && r.state; } catch (e) {}
+    if (!state) { try { state = await this.tFetch(base + '/api/state', null, 12000).then(r => r.ok ? r.json() : null); } catch (e) {} }
+    if (!state || !Array.isArray(state.savedParlays)) return false;
+    const byId = {}; state.savedParlays.forEach(s => { if (s && s.id != null) byId[s.id] = s; });
+    let changed = false;
+    const merged = (this.state.tracked || []).map(t => {
+      if (t.status !== 'pending') return t;
+      const s = byId[t.id]; if (!s) return t;
+      if (s.result === 'win' || s.result === 'loss') {
+        changed = true;
+        const legs = (t.legs || []).map((l, i) => { const sl = (s.legData || [])[i]; return (sl && sl.hit != null) ? Object.assign({}, l, { won: !!sl.hit, done: true }) : l; });
+        return Object.assign({}, t, { legs, status: s.result === 'win' ? 'won' : 'lost', gradedAt: Date.now(), autoGraded: true, gradeSource: 'server' });
+      }
+      return t;
+    });
+    if (changed) { try { localStorage.setItem('dl_tracked_v1', JSON.stringify(merged.slice(0, 50))); } catch (e) {} this.setState({ tracked: merged }); }
+    return changed;
+  }
+  // Orchestrator: server first (authoritative), then client-direct fallback for anything still open
+  async autoGrade() {
+    if (this._grading) return;
+    if (!(this.state.tracked || []).some(t => t.status === 'pending')) return;
+    this._grading = true;
+    try { await this.serverGrade(); } catch (e) {}
+    try { await this.clientGrade(); } catch (e) {}
+    this._grading = false;
+  }
+  async clientGrade() {
+    const pending = (this.state.tracked || []).filter(t => t.status === 'pending');
+    if (!pending.length) return;
+    try {
+      this._gameCache = this._gameCache || {};
+      const gids = [...new Set(pending.flatMap(t => (t.legs || []).map(l => l.gameId).filter(g => g != null)))];
+      await Promise.all(gids.map(async gid => {
+        const cached = this._gameCache[gid];
+        if (cached && cached.final) return; // finished games never change — don't refetch
+        try {
+          const j = await this.tFetch('https://statsapi.mlb.com/api/v1.1/game/' + gid + '/feed/live', null, 12000).then(r => r.ok ? r.json() : null);
+          if (!j) return;
+          const state = (j.gameData && j.gameData.status && j.gameData.status.abstractGameState) || null;
+          const homered = new Set();
+          const plays = (j.liveData && j.liveData.plays && j.liveData.plays.allPlays) || [];
+          plays.forEach(pl => { if (pl.result && pl.result.eventType === 'home_run') { const b = pl.matchup && pl.matchup.batter && pl.matchup.batter.fullName; if (b) homered.add(this.normName(b)); } });
+          this._gameCache[gid] = { final: state === 'Final', state, homered };
+        } catch (e) {}
+      }));
+      let changed = false;
+      const graded = (this.state.tracked || []).map(t => {
+        if (t.status !== 'pending') return t;
+        const legs = (t.legs || []).map(l => Object.assign({}, l));
+        let anyConfirmedLoss = false, allFinalWon = legs.length > 0;
+        legs.forEach(l => {
+          if (l.gameId == null) { allFinalWon = false; return; }
+          const gc = this._gameCache[l.gameId];
+          if (gc && gc.final) { l.won = gc.homered.has(l.key); l.done = true; if (!l.won) { anyConfirmedLoss = true; allFinalWon = false; } }
+          else { allFinalWon = false; }
+        });
+        let status = 'pending';
+        if (anyConfirmedLoss) status = 'lost';
+        else if (allFinalWon) status = 'won';
+        if (status !== 'pending') { changed = true; return Object.assign({}, t, { legs, status, gradedAt: Date.now(), autoGraded: true }); }
+        return Object.assign({}, t, { legs });
+      });
+      if (changed) {
+        try { localStorage.setItem('dl_tracked_v1', JSON.stringify(graded.slice(0, 50))); } catch (e) {}
+        this.setState({ tracked: graded });
+      }
+    } catch (e) {}
+  }
 
   async liveRefresh() {
     if (!this.state.data) return;
@@ -1627,11 +1734,11 @@ class Component extends DCLogic {
   };
   trackUlx = () => {
     const u = this._ulx; if (!u || !u.legs || u.legs.length < 3) return;
-    const legs = u.legs.map(l => ({ name: l.name, market: 'HR', odds: l.oddsStr, key: this.normName(l.name), gameId: l.gameId, betAm: l.oddsAm != null ? l.oddsAm : null, betImp: l.oddsAm != null ? this.amImp(l.oddsAm) : null }));
+    const legs = u.legs.map(l => ({ id: l.id != null ? l.id : null, name: l.name, market: 'HR', odds: l.oddsStr, key: this.normName(l.name), gameId: l.gameId, betAm: l.oddsAm != null ? l.oddsAm : null, betImp: l.oddsAm != null ? this.amImp(l.oddsAm) : null }));
     const entry = { id: Date.now().toString(), date: new Date().toLocaleDateString(), label: 'ULX · ' + u.legs.map(l => l.name).join(' + '), legs, odds: u.oddsStr, win: u.winStr, ev: u.gateLabel, stake: parseFloat(this.state.stake) || 0, status: 'pending', avgClv: null };
     const tracked = [entry, ...this.state.tracked];
     try { localStorage.setItem('dl_tracked_v1', JSON.stringify(tracked.slice(0, 50))); } catch (e) {}
-    this.setState({ tracked });
+    this.setState({ tracked }); setTimeout(() => this.pushTracked(), 300);
   };
   setSearch = (e) => { this.setState({ search: e.target.value }); };
   clearSearch = () => { this.setState({ search: '' }); };
@@ -1683,6 +1790,13 @@ class Component extends DCLogic {
   amDec(a) { return a > 0 ? 1 + a / 100 : 1 + 100 / (-a); }
   amImp(a) { return a > 0 ? 100 / (a + 100) : (-a) / (-a + 100); }
   decAm(d) { return d >= 2 ? ('+' + Math.round((d - 1) * 100)) : ('-' + Math.round(100 / (d - 1))); }
+  tFetch(url, opts, ms) {
+    ms = ms || 12000;
+    let ctrl = null; try { ctrl = new AbortController(); } catch (e) {}
+    const o = Object.assign({}, opts || {}); if (ctrl) o.signal = ctrl.signal;
+    const t = ctrl ? setTimeout(() => { try { ctrl.abort(); } catch (e) {} }, ms) : null;
+    return fetch(url, o).finally(() => { if (t) clearTimeout(t); });
+  }
   async fetchOdds() {
     const books = ['draftkings', 'fanatics', 'betmgm', 'caesars'];
     const proxyBase = ((() => { try { return localStorage.getItem('dl_odds_proxy'); } catch (e) { return null; } })() || 'https://claude-mlb.onrender.com').replace(/\/$/, '');
@@ -1700,7 +1814,7 @@ class Component extends DCLogic {
     const feed = []; const homered = new Set();
     await Promise.all(relevant.map(async g => {
       try {
-        const j = await fetch('https://statsapi.mlb.com/api/v1.1/game/' + g.gamePk + '/feed/live').then(r => r.ok ? r.json() : null);
+        const j = await this.tFetch('https://statsapi.mlb.com/api/v1.1/game/' + g.gamePk + '/feed/live').then(r => r.ok ? r.json() : null);
         if (!j) return;
         const awayAbbr = g.teams.away.team.abbreviation, homeAbbr = g.teams.home.team.abbreviation;
         const isFinal = (g.status && g.status.abstractGameState) === 'Final';
@@ -1716,7 +1830,7 @@ class Component extends DCLogic {
           const dist = hd.totalDistance ? Math.round(hd.totalDistance) + ' ft' : '';
           const aS = pl.result.awayScore, hS = pl.result.homeScore;
           const rbi = pl.result.rbi || 1;
-          feed.push({ player: batter, detail: (rbi > 1 ? rbi + '-run HR' : 'solo HR') + ' · ' + inn + (isFinal ? ' · Final' : ''), line: [mph, dist].filter(Boolean).join(' · ') + (mph || dist ? ' · ' : '') + awayAbbr + ' ' + aS + '–' + hS + ' ' + homeAbbr, onBoard: boardSet.has(this.normName(batter)), ts: (pl.about && pl.about.endTime) || '' });
+          feed.push({ player: batter, id: (pl.matchup && pl.matchup.batter && pl.matchup.batter.id) || null, detail: (rbi > 1 ? rbi + '-run HR' : 'solo HR') + ' · ' + inn + (isFinal ? ' · Final' : ''), line: [mph, dist].filter(Boolean).join(' · ') + (mph || dist ? ' · ' : '') + awayAbbr + ' ' + aS + '–' + hS + ' ' + homeAbbr, onBoard: boardSet.has(this.normName(batter)), ts: (pl.about && pl.about.endTime) || '' });
         });
       } catch (e) {}
     }));
@@ -1758,7 +1872,7 @@ class Component extends DCLogic {
       if (info.dome) { out[g.gamePk] = { mult: 1, temp: 72, label: 'Roof closed', roof: 'Dome' }; return; }
       try {
         const u = 'https://api.open-meteo.com/v1/forecast?latitude=' + info.lat + '&longitude=' + info.lon + '&current=temperature_2m,wind_speed_10m,wind_direction_10m&temperature_unit=fahrenheit&wind_speed_unit=mph';
-        const j = await fetch(u).then(r => r.ok ? r.json() : null); const c = j && j.current;
+        const j = await this.tFetch(u).then(r => r.ok ? r.json() : null); const c = j && j.current;
         if (!c) { out[g.gamePk] = { mult: 1 }; return; }
         const temp = c.temperature_2m, spd = c.wind_speed_10m || 0, dir = c.wind_direction_10m || 0;
         const windTo = (dir + 180) % 360; let diff = Math.abs(windTo - info.cf) % 360; if (diff > 180) diff = 360 - diff;
@@ -1773,7 +1887,7 @@ class Component extends DCLogic {
   }
   async fetchStatcast(season) {
     try {
-      const j = await fetch('https://baseballsavant.mlb.com/leaderboard/statcast?type=batter&year=' + season + '&position=&team=&min=q&csv=false', { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : null);
+      const j = await this.tFetch('https://baseballsavant.mlb.com/leaderboard/statcast?type=batter&year=' + season + '&position=&team=&min=q&csv=false', { headers: { Accept: 'application/json' } }).then(r => r.ok ? r.json() : null);
       const out = {};
       if (!j || !Array.isArray(j)) return out;
       j.forEach(p => {
@@ -1786,7 +1900,7 @@ class Component extends DCLogic {
   }
   async fetchDayNightSplits(season) {
     try {
-      const j = await fetch('https://statsapi.mlb.com/api/v1/stats?stats=statSplits&group=hitting&season=' + season + '&sitCodes=d,n&playerPool=All&gameType=R&limit=6000').then(r => r.ok ? r.json() : null);
+      const j = await this.tFetch('https://statsapi.mlb.com/api/v1/stats?stats=statSplits&group=hitting&season=' + season + '&sitCodes=d,n&playerPool=All&gameType=R&limit=6000').then(r => r.ok ? r.json() : null);
       const out = {};
       if (!j || !j.stats || !j.stats[0]) return out;
       (j.stats[0].splits || []).forEach(s => {
@@ -1803,7 +1917,7 @@ class Component extends DCLogic {
     const out = {};
     await Promise.all(games.filter(g => g.status && g.status.abstractGameState === 'Preview').map(async g => {
       try {
-        const j = await fetch('https://statsapi.mlb.com/api/v1/game/' + g.gamePk + '/boxscore').then(r => r.ok ? r.json() : null);
+        const j = await this.tFetch('https://statsapi.mlb.com/api/v1/game/' + g.gamePk + '/boxscore').then(r => r.ok ? r.json() : null);
         if (!j) return;
         const away = (j.teams && j.teams.away && j.teams.away.battingOrder) || [];
         const home = (j.teams && j.teams.home && j.teams.home.battingOrder) || [];
@@ -1818,7 +1932,7 @@ class Component extends DCLogic {
     for (let i = 0; i < pids.length; i += 40) {
       const chunk = pids.slice(i, i + 40);
       try {
-        const r = await fetch('https://statsapi.mlb.com/api/v1/people?personIds=' + chunk.join(',') + '&hydrate=stats(group=pitching,type=gameLog,season=' + season + ')');
+        const r = await this.tFetch('https://statsapi.mlb.com/api/v1/people?personIds=' + chunk.join(',') + '&hydrate=stats(group=pitching,type=gameLog,season=' + season + ')');
         const j = await r.json();
         (j.people || []).forEach(p => {
           const splits = (p.stats && p.stats[0] && p.stats[0].splits) || [];
@@ -1852,7 +1966,7 @@ class Component extends DCLogic {
       const avgClv = clvs.length ? +(clvs.reduce((a, b) => a + b, 0) / clvs.length).toFixed(1) : (t.avgClv != null ? t.avgClv : null);
       let status = t.status;
       if (anyLost) status = 'lost'; else if (allDone && legs.length) status = 'won';
-      return Object.assign({}, t, { legs, status, avgClv });
+      return Object.assign({}, t, { legs, status, avgClv, autoGraded: status !== 'pending' ? true : t.autoGraded });
     });
   }
   async bulkPeople(ids, group, season) {
@@ -1860,7 +1974,7 @@ class Component extends DCLogic {
     for (let i = 0; i < ids.length; i += 40) {
       const chunk = ids.slice(i, i + 40);
       try {
-        const r = await fetch('https://statsapi.mlb.com/api/v1/people?personIds=' + chunk.join(',') + '&hydrate=stats(group=' + group + ',type=season,season=' + season + ')');
+        const r = await this.tFetch('https://statsapi.mlb.com/api/v1/people?personIds=' + chunk.join(',') + '&hydrate=stats(group=' + group + ',type=season,season=' + season + ')');
         const j = await r.json();
         (j.people || []).forEach(p => {
           const st = (p.stats && p.stats[0] && p.stats[0].splits && p.stats[0].splits[0] && p.stats[0].splits[0].stat) || {};
@@ -1876,7 +1990,7 @@ class Component extends DCLogic {
     try {
       const date = this.dateStr();
       const season = date.slice(0, 4);
-      const sched = await fetch('https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=' + date + '&hydrate=probablePitcher,venue,team,linescore').then(r => r.json());
+      const sched = await this.tFetch('https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=' + date + '&hydrate=probablePitcher,venue,team,linescore').then(r => r.json());
       const games = ((sched.dates && sched.dates[0] && sched.dates[0].games) || []);
       if (!games.length) throw new Error('no games');
 
@@ -1888,7 +2002,7 @@ class Component extends DCLogic {
       const teamIds = [...new Set(games.flatMap(g => [g.teams.away.team.id, g.teams.home.team.id]))];
       const rosters = {};
       await Promise.all(teamIds.map(async tid => {
-        try { const r = await fetch('https://statsapi.mlb.com/api/v1/teams/' + tid + '/roster/active').then(r => r.json()); rosters[tid] = (r.roster || []).filter(p => p.position.type !== 'Pitcher').map(p => p.person.id); }
+        try { const r = await this.tFetch('https://statsapi.mlb.com/api/v1/teams/' + tid + '/roster/active').then(r => r.json()); rosters[tid] = (r.roster || []).filter(p => p.position.type !== 'Pitcher').map(p => p.person.id); }
         catch (e) { rosters[tid] = []; }
       }));
       const allHitters = [...new Set(Object.values(rosters).flat())];
@@ -1936,7 +2050,7 @@ class Component extends DCLogic {
             const scMult = barrelPct > 0 ? Math.min(1.14, Math.max(0.90, 1 + (barrelPct - 8) * 0.012 + (hardHitPct - 38) * 0.004)) : 1;
             // Day/night split multiplier
             const dn = dayNight[String(pid)] || {};
-            const isNight = g.gameDate && parseInt(g.gameDate.split('T')[1]) >= 18;
+            const isNight = g.dayNight ? (g.dayNight === 'night') : (g.gameDate && parseInt(g.gameDate.split('T')[1]) >= 18);
             const dnCode = isNight ? 'n' : 'd';
             const dnSplit = dn[dnCode], dnOther = dn[isNight ? 'd' : 'n'];
             let dnMult = 1;
@@ -2043,12 +2157,12 @@ class Component extends DCLogic {
   saveTrack = () => {
     const { slip } = this.state; const stake = parseFloat(this.state.stake) || 0; if (!slip.length) return;
     const byId = {}; ((this.state.data && this.state.data.players) || []).forEach(p => byId[p.id] = p);
-    const legs = slip.map(l => { const pl = byId[l.id]; const betAm = l.oddsAm; return { name: l.name, market: l.market, odds: l.odds, key: this.normName(l.name), gameId: pl ? pl.gameId : null, betAm: betAm != null ? betAm : null, betImp: betAm != null ? this.amImp(betAm) : null }; });
+    const legs = slip.map(l => { const pl = byId[l.id]; const betAm = l.oddsAm; return { id: l.id, name: l.name, market: l.market, odds: l.odds, key: this.normName(l.name), gameId: pl ? pl.gameId : null, betAm: betAm != null ? betAm : null, betImp: betAm != null ? this.amImp(betAm) : null }; });
     const entry = { id: Date.now().toString(), date: new Date().toLocaleDateString(), label: slip.map(l => l.name).join(' + '), legs, odds: '—', win: '—', ev: '—', stake, status: 'pending', avgClv: null };
     if (slip.every(l => l.oddsAm != null)) { const dec = slip.reduce((s, l) => s * this.amDec(l.oddsAm), 1); entry.odds = this.decAm(dec); const win = slip.reduce((s, l) => s * (l.modelPct / 100), 1); entry.win = (win * 100).toFixed(1) + '%'; entry.ev = ((win * dec - 1) * 100).toFixed(1) + '%'; }
     const tracked = [entry, ...this.state.tracked];
     try { localStorage.setItem('dl_tracked_v1', JSON.stringify(tracked.slice(0, 50))); } catch (e) {}
-    this.setState({ tracked, slip: [] });
+    this.setState({ tracked, slip: [] }); setTimeout(() => this.pushTracked(), 300);
   };
   addComboLegs = (e) => {
     const idx = parseInt(e.currentTarget.dataset.combo || '0', 10);
@@ -2060,11 +2174,11 @@ class Component extends DCLogic {
     const idx = parseInt(e.currentTarget.dataset.combo || '0', 10);
     const c = (this._lastCombos || [])[idx]; if (!c) return;
     const byId = {}; ((this.state.data && this.state.data.players) || []).forEach(p => byId[p.id] = p);
-    const legs = c.legs.map(l => { const pl = byId[l._id]; const nm = l.name.replace(' — HR', ''); const betAm = l.oddsAm; return { name: nm, market: 'HR', odds: l.odds, key: this.normName(nm), gameId: pl ? pl.gameId : null, betAm: betAm != null ? betAm : null, betImp: betAm != null ? this.amImp(betAm) : null }; });
+    const legs = c.legs.map(l => { const pl = byId[l._id]; const nm = l.name.replace(' — HR', ''); const betAm = l.oddsAm; return { id: l._id != null ? l._id : null, name: nm, market: 'HR', odds: l.odds, key: this.normName(nm), gameId: pl ? pl.gameId : null, betAm: betAm != null ? betAm : null, betImp: betAm != null ? this.amImp(betAm) : null }; });
     const entry = { id: Date.now().toString(), date: new Date().toLocaleDateString(), label: c.legs.map(l => l.name).join(' + '), legs, odds: c.odds, win: c.win, ev: c.evLabel, stake: parseFloat(this.state.stake) || 0, status: 'pending', avgClv: null };
     const tracked = [entry, ...this.state.tracked];
     try { localStorage.setItem('dl_tracked_v1', JSON.stringify(tracked.slice(0, 50))); } catch (e) {}
-    this.setState({ tracked });
+    this.setState({ tracked }); setTimeout(() => this.pushTracked(), 300);
   };
   sendToBook = (e) => {
     const id = e.currentTarget.dataset.id, book = e.currentTarget.dataset.book;
@@ -2093,15 +2207,49 @@ class Component extends DCLogic {
     const { id, result } = e.currentTarget.dataset;
     const tracked = this.state.tracked.map(t => t.id === id ? Object.assign({}, t, { status: result }) : t);
     try { localStorage.setItem('dl_tracked_v1', JSON.stringify(tracked)); } catch (e) {}
-    this.setState({ tracked });
+    this.setState({ tracked }); setTimeout(() => this.pushTracked(), 300);
   };
 
   // ---------- enrichment ----------
   starsN(score) { return score >= 88 ? 5 : score >= 80 ? 4 : score >= 72 ? 3 : score >= 62 ? 2 : 1; }
+  // Daily "locks" — the 2-3 highest-conviction HR calls.
+  // Ensembles model probability with de-vigged market-implied probability, then weights by corroborating signals.
+  computeLocks(enriched) {
+    const amImp = this.amImp.bind(this);
+    let pool = (enriched || []).filter(p => (p.pa || 0) >= 120 && p.modelPct >= 8);
+    if (!pool.length) return { has: false };
+    const anyConfirmed = pool.some(p => p.lineupConfirmed);
+    if (anyConfirmed) pool = pool.filter(p => p.lineupConfirmed); // a guy not in the lineup can't homer
+    const scored = pool.map(p => {
+      const modelP = p.modelPct / 100;
+      let trueP = modelP;
+      if (p.oddsAm != null) { const mk = amImp(p.oddsAm) * 0.92; trueP = 0.6 * modelP + 0.4 * mk; } // ensemble model + market
+      let mult = 1;
+      if (p.lineupConfirmed) mult *= 1.04;
+      if (p.barrelPct >= 10) mult *= 1.05; else if (p.barrelPct >= 8) mult *= 1.02; else if (p.barrelPct > 0 && p.barrelPct < 5) mult *= 0.96;
+      if (p.pa >= 250) mult *= 1.02;
+      if ((p.parkF || 100) >= 110) mult *= 1.03;
+      if ((p.wxMult || 1) >= 1.05) mult *= 1.03;
+      if ((p.platoon || 1) >= 1.05) mult *= 1.02;
+      mult = Math.max(0.85, Math.min(1.18, mult));
+      return Object.assign({}, p, { lockProb: trueP, conviction: trueP * mult });
+    }).sort((a, b) => b.conviction - a.conviction);
+    const top = scored.slice(0, 3);
+    if (!top.length) return { has: false };
+    const probs = top.map(p => Math.max(0.02, Math.min(0.6, p.lockProb)));
+    const expHR = probs.reduce((s, x) => s + x, 0);
+    const atLeast1 = 1 - probs.reduce((s, x) => s * (1 - x), 1);
+    const cards = top.map((p, i) => ({
+      id: p.id, rank: '#' + (i + 1), name: p.name, headshot: p.headshot, matchup: p.matchup, scoreEmoji: p.scoreEmoji, best: p.best,
+      hrPct: Math.round(p.lockProb * 100) + '%',
+      why: (p.reasons && p.reasons[2]) || p.bullThesis || ('Model HR ' + p.modelPct + '% · score ' + p.score)
+    }));
+    return { has: true, cards, expLabel: expHR.toFixed(2), atLeastOneLabel: Math.round(atLeast1 * 100) + '%' };
+  }
   badgesFor(p) {
     const AC = 'rgba(255,138,76,.13)', ACF = 'var(--ac,#ff8a4c)', GO = 'rgba(255,194,77,.13)', GOF = '#ffc24d', PO = 'rgba(53,208,192,.13)', POF = 'var(--pos,#35d0c0)';
     const out = [];
-    if (p.score >= 92) out.push({ label: '🏆 Trophy', bg: GO, fg: GOF });
+    if (p.score >= 92) out.push({ label: 'Trophy', bg: GO, fg: GOF });
     if (p.ops >= 0.880) out.push({ label: 'Power', bg: AC, fg: ACF });
     if (p.parkF >= 107) out.push({ label: 'Park Edge', bg: AC, fg: ACF });
     if (p.oppHR9 >= 1.45) out.push({ label: 'P-Weak', bg: AC, fg: ACF });
@@ -2130,6 +2278,7 @@ class Component extends DCLogic {
       headshot: p.id ? 'https://midfield.mlbstatic.com/v1/people/' + p.id + '/spots/120' : '',
       starsOn: '★'.repeat(n), starsOff: '★'.repeat(5 - n),
       matchup: p.teamAbbr + ' vs ' + p.oppAbbr,
+      scoreEmoji: (p.score >= 92 ? '🔥' : p.score >= 85 ? '💣' : p.score >= 78 ? '⚡' : p.score >= 70 ? '👀' : '🧊'),
       isDue: !!p.isDue, lineupConfirmed: !!p.lineupConfirmed,
       barrelPct: p.barrelPct ? p.barrelPct.toFixed(1) + '%' : '—',
       hardHitPct: p.hardHitPct ? p.hardHitPct.toFixed(0) + '%' : '—',
@@ -2140,10 +2289,10 @@ class Component extends DCLogic {
         if (p.barrelPct >= 9) reasons.push(`${p.barrelPct.toFixed(1)}% barrel rate — consistent hard contact`);
         if (p.modelPct >= 30) reasons.push(`${p.modelPct}% model probability — high confidence`);
         if (p.parkF >= 110) reasons.push(`PF ${p.parkF} — ${p.venue} favors power`);
-        if (p.edgeNum != null && p.edgeNum >= 3) reasons.push(`+${p.edgeNum} edge vs market — we beat the book`);
-        if (p.platoon >= 1.08) reasons.push(`${(p.platoon*100-100).toFixed(0)}% platoon boost vs ${p.oppHand}`);
+        if (edge != null && edge >= 3) reasons.push(`+${edge} edge vs market — we beat the book`);
+        if (p.platoon >= 1.07) reasons.push(`${(p.platoon*100-100).toFixed(0)}% platoon boost vs ${p.oppHand}`);
         if (p.formMult >= 1.05) reasons.push(`Hot form · last 10 games: ${p.recHr9 ? p.recHr9.toFixed(2) : '—'} HR/9`);
-        if (p.wxMult >= 1.04) reasons.push(`${p.wx} conditions favor HR flight`);
+        if (p.wxMult >= 1.04) reasons.push(`${(p.wx && p.wx.label) || 'Weather'} conditions favor HR flight`);
         return reasons.length ? reasons.slice(0,3).join(' | ') : 'Strong fundamentals';
       })(),
       // Bear case — include last 3 HR vs this pitcher
@@ -2162,6 +2311,8 @@ class Component extends DCLogic {
       })(),
       sub: p.teamAbbr + ' vs ' + p.oppAbbr + ' · vs ' + p.oppPitcher,
       best: best, ev: ev, evColor: evColor, edge: edge, evNum: p.oddsAm != null ? +( (p.modelPct / 100 * this.amDec(p.oddsAm) - 1) * 100 ).toFixed(1) : null, edgeNum: edge,
+      modelColor: (p.modelPct >= 28 ? 'var(--ac,#ff8a4c)' : p.modelPct >= 18 ? '#eef1f6' : '#9aa3b2'),
+      bestColor: (p.oddsAm == null ? '#5f6878' : (edge != null && edge > 0 ? 'var(--pos,#35d0c0)' : '#eef1f6')),
       probBar: Math.min(100, Math.round(p.modelPct / 0.30)) + '%',
       badges: this.badgesFor(p),
       markets: [{ label: 'HR · ' + p.modelPct + '% model', bg: 'rgba(255,138,76,.14)', fg: 'var(--ac,#ff8a4c)' }, oddsMarket],
@@ -2359,7 +2510,7 @@ class Component extends DCLogic {
       legs, checks, passes, green,
       legIds: [anchor.id, value.id, longshot.id],
       swapPools: roleRes.map(r => r.ids),
-      gateLabel: green ? '✅ GREEN LIGHT' : '⚠️ ' + passes + '/10',
+      gateLabel: green ? 'GREEN LIGHT' : passes + '/10',
       gateBg: green ? 'rgba(53,208,192,.13)' : 'rgba(255,194,77,.12)',
       gateBorder: green ? 'rgba(53,208,192,.5)' : 'rgba(255,194,77,.4)',
       gateFg: green ? 'var(--pos,#35d0c0)' : '#ffc24d',
@@ -2390,8 +2541,9 @@ class Component extends DCLogic {
     const slateHR = live ? Math.round(players.reduce((s, p) => s + p.modelPct / 100, 0)) : 24;
     const topScore = enriched.length ? enriched[0].score : '—';
     const topPct = enriched.length ? enriched[0].modelPct : '—';
-    let hotPark = 100, hotName = '—';
+    let hotPark = -Infinity, hotName = '—';
     enriched.forEach(p => { if (p.parkF > hotPark) { hotPark = p.parkF; hotName = p.venue; } });
+    if (!isFinite(hotPark)) { hotPark = 100; }
     let bestEv = null, bestEvName = '';
     if (hasOdds) { enriched.forEach(p => { if (p.oddsAm != null && p.pa >= 120 && p.oddsAm <= 500 && p.oddsAm >= -400) { const evv = (p.modelPct / 100 * this.amDec(p.oddsAm) - 1) * 100; if (bestEv == null || evv > bestEv) { bestEv = evv; bestEvName = p.name; } } }); }
     const kpis = [
@@ -2404,6 +2556,7 @@ class Component extends DCLogic {
 
     const qualStar = filteredEnriched.filter(p => (p.pa || 0) >= 90);
     const starPlays = (qualStar.length >= 6 ? qualStar : filteredEnriched).slice(0, 8);
+    const lk = this.computeLocks(enriched);
 
     // Park report
     const seen = {}; const parkArr = [];
@@ -2688,6 +2841,7 @@ class Component extends DCLogic {
     const rawLiveHRs = (live && this.state.data.liveHRs) || [];
     const liveHRs = rawLiveHRs.map(h => ({
       player: h.player, detail: h.detail, line: h.line,
+      headshot: h.id ? 'https://midfield.mlbstatic.com/v1/people/' + h.id + '/spots/120' : '',
       border: h.onBoard ? 'rgba(255,138,76,.28)' : 'rgba(255,255,255,.07)',
       tag: h.onBoard ? 'on board ✓' : 'off board',
       tagBg: h.onBoard ? 'rgba(53,208,192,.14)' : 'rgba(255,255,255,.06)',
@@ -2707,7 +2861,7 @@ class Component extends DCLogic {
         if (spread < 2.0) return;
         const lagging = entries.reduce((b, e) => (!b || e[1] > b[1]) ? e : b, null);
         const sharp = entries.reduce((b, e) => (!b || e[1] < b[1]) ? e : b, null);
-        const bkLabel = { draftkings: 'DraftKings', fanatics: 'FanDuel', betmgm: 'BetMGM', caesars: 'Caesars' };
+        const bkLabel = { draftkings: 'DraftKings', fanatics: 'Fanatics', betmgm: 'BetMGM', caesars: 'Caesars' };
         steam.push({ name: p.name, team: p.teamAbbr, laggingBook: bkLabel[lagging[0]] || lagging[0], laggingOdds: (lagging[1] > 0 ? '+' : '') + lagging[1], sharpBook: bkLabel[sharp[0]] || sharp[0], sharpOdds: (sharp[1] > 0 ? '+' : '') + sharp[1], spread: spread.toFixed(1), spreadNum: spread });
       });
       steam.sort((a, b) => b.spreadNum - a.spreadNum);
@@ -2725,7 +2879,7 @@ class Component extends DCLogic {
     // Tracking CLV scorecard
     const graded = tracked.filter(t => t.status !== 'pending'), wins = graded.filter(t => t.status === 'won').length;
     const hitRate = graded.length > 0 ? Math.round(wins / graded.length * 100) : null;
-    const roi = graded.length > 0 ? +(graded.reduce((s, t) => { const stake = t.stake || 0; if (t.status === 'won') { const dec = t.oddsAm && t.oddsAm !== '—' ? (parseInt(String(t.oddsAm), 10) > 0 ? 1 + parseInt(String(t.oddsAm), 10) / 100 : 1 + 100 / (-parseInt(String(t.oddsAm), 10))) : 1; return s + stake * (dec - 1); } return s - stake; }, 0)).toFixed(2) : null;
+    const roi = graded.length > 0 ? +(graded.reduce((s, t) => { const stake = t.stake || 0; if (t.status === 'won') { const dec = t.odds && t.odds !== '—' ? (parseInt(String(t.odds), 10) > 0 ? 1 + parseInt(String(t.odds), 10) / 100 : 1 + 100 / (-parseInt(String(t.odds), 10))) : 1; return s + stake * (dec - 1); } return s - stake; }, 0)).toFixed(2) : null;
     const clvEntries = tracked.filter(t => t.avgClv != null);
     const beatClose = clvEntries.length ? Math.round(clvEntries.filter(t => t.avgClv > 0).length / clvEntries.length * 100) : null;
     const avgClvAll = clvEntries.length ? +(clvEntries.reduce((s, t) => s + t.avgClv, 0) / clvEntries.length).toFixed(1) : null;
@@ -2811,6 +2965,9 @@ class Component extends DCLogic {
       statusFg: t.status === 'won' ? 'var(--pos,#35d0c0)' : t.status === 'lost' ? '#ff8d8d' : '#ffc24d',
       legsPreview: t.legs ? t.legs.map(l => l.name).join(' · ').slice(0, 55) : '',
       won: t.status === 'won', lost: t.status === 'lost', pending: t.status === 'pending', justCopied: t.id === this.state.copiedId,
+      autoGraded: !!t.autoGraded,
+      pendingAuto: t.status === 'pending' && (t.legs || []).length > 0 && (t.legs || []).every(l => l.gameId != null),
+      pendingManual: t.status === 'pending' && (t.legs || []).some(l => l.gameId == null),
       hasClv: t.avgClv != null,
       clvLabel: t.avgClv != null ? ('CLV ' + (t.avgClv > 0 ? '+' : '') + t.avgClv) : '',
       clvBg: t.avgClv != null ? (t.avgClv > 0 ? 'rgba(53,208,192,.13)' : t.avgClv < 0 ? 'rgba(255,107,107,.12)' : 'rgba(255,255,255,.06)') : 'transparent',
@@ -2841,7 +2998,7 @@ class Component extends DCLogic {
       { id: 'report', label: 'Report Card', icon: '🎓' },
       { id: 'builder', label: 'Builder', icon: '⊞' }, { id: 'data', label: 'Data', icon: '🧠' },
       { id: 'research', label: 'Research', icon: '🔎' }, { id: 'track', label: 'Tracking', icon: '◈' },
-      { id: 'tools', label: 'Tools', icon: '⚙' }, { id: 'live', label: 'Live', icon: '◉' }
+      { id: 'live', label: 'Live', icon: '◉' }
     ].map(n => { const on = n.id === tab; return Object.assign({}, n, { bg: on ? 'rgba(255,138,76,.13)' : 'transparent', fg: on ? '#eef1f6' : '#9aa3b2', bar: on ? 'var(--ac,#ff8a4c)' : 'transparent', mIcon: on ? 'var(--ac,#ff8a4c)' : '#7b8597' }); });
     const otherMap = { research: ['🔎', 'Research'], tools: ['⚙', 'Tools'] };
     const other = otherMap[tab] || ['◎', 'Section'];
@@ -2956,13 +3113,14 @@ class Component extends DCLogic {
       hasLastUpdated: !!this.state.lastUpdated,
       dashSub: live ? 'Live MLB model — every qualified hitter ranked by Dinger Score (regressed HR rate, park & opposing-starter adjusted).' : 'Sample board shown — the live MLB model loads automatically when online.',
       kpis, starPlays, parkReport, combos: combosOut, games,
+      locks: lk.cards || [], hasLocks: !!lk.has, lockExp: lk.expLabel || '0', lockAtLeast: lk.atLeastOneLabel || '0%',
       gamesTitle: live ? (this.state.data.games.length + '-game slate · ' + kpis[0].v + ' projected HRs') : 'Sample slate',
       dataRows, dataCount: enriched.length, dataSource: live ? 'MLB API' : 'Sample', seasonYr: live ? this.state.data.season : '—',
       hasLive: liveHRs.length > 0, noLive: liveHRs.length === 0, liveHRs, liveEmpty,
       liveStatus: live ? (liveHRs.length > 0 ? liveHRs.length + ' HR' + (liveHRs.length === 1 ? '' : 's') + ' today · ' + this.state.data.games.length + ' games' : 'Watching · ' + this.state.data.games.length + ' games today') : 'Offline',
       oddsConnected: hasOdds, oddsNotConnected: !hasOdds, booksLabel: (live ? this.state.data.booksOk : 0) + ' books',
       valueRankLabel: hasOdds ? 'ranked by edge' : 'ranked by model',
-      openDrawer: async (e) => { const id = e.currentTarget.dataset.player; if (!byId[id]) return; const p = byId[id]; if (p.gameId) { try { const j = await fetch(this.state.proxyUrl + '/api/game/' + p.gameId + '/boxscore').then(r => r.ok ? r.json() : null); if (j && j.teams) { const away = (j.teams.away && j.teams.away.battingOrder) || []; const home = (j.teams.home && j.teams.home.battingOrder) || []; const confirmed = new Set([...away, ...home].map(String)); if (confirmed.has(String(id))) p.lineupConfirmed = true; } } catch (e) {} } this.setState({ drawerOpen: true, player: p, search: '' }); },
+      openDrawer: async (e) => { const id = e.currentTarget.dataset.player; if (!byId[id]) return; const p = byId[id]; if (p.gameId) { try { const j = await this.tFetch('https://statsapi.mlb.com/api/v1/game/' + p.gameId + '/boxscore').then(r => r.ok ? r.json() : null); if (j && j.teams) { const away = (j.teams.away && j.teams.away.battingOrder) || []; const home = (j.teams.home && j.teams.home.battingOrder) || []; const confirmed = new Set([...away, ...home].map(String)); if (confirmed.has(String(id))) p.lineupConfirmed = true; } } catch (e) {} } this.setState({ drawerOpen: true, player: p, search: '' }); },
       closeDrawer: () => this.setState({ drawerOpen: false }),
       drawerOpen: this.state.drawerOpen, p: this.state.player || {},
       // Slip
@@ -3047,7 +3205,7 @@ class Component extends DCLogic {
       // ULX parlay
       ulx, hasUlx: !!ulx, noUlx: !ulx,
       ulxLegs: ulx ? ulx.legs : [], ulxChecks: ulx ? ulx.checks : [],
-      ulxGreen: ulx ? ulx.green : false, ulxGateLabel: ulx ? ulx.gateLabel : '⚠️ 0/10',
+      ulxGreen: ulx ? ulx.green : false, ulxGateLabel: ulx ? ulx.gateLabel : '0/10',
       ulxGateBg: ulx ? ulx.gateBg : 'rgba(255,194,77,.12)', ulxGateBorder: ulx ? ulx.gateBorder : 'rgba(255,194,77,.4)', ulxGateFg: ulx ? ulx.gateFg : '#ffc24d',
       ulxPassesLabel: ulx ? ulx.passesLabel : '0/10 checks', ulxOdds: ulx ? ulx.oddsStr : '—', ulxWin: ulx ? ulx.winStr : '—',
       ulxPayout: ulx ? ulx.payout : '—', ulxOddsMode: ulx ? ulx.oddsMode : '',
@@ -3061,6 +3219,7 @@ class Component extends DCLogic {
       hitRate, roi, gradedCount: graded.length, winsCount: wins,
       beatCloseLabel, avgClvLabel, hasClvData,
       hasGraded: graded.length > 0, noGraded: graded.length === 0, pendingCount: tracked.filter(t => t.status === 'pending').length, totalTracked: tracked.length,
+      gradeServer: !!(this.state.proxyUrl && this.state.proxyUrl.trim()),
       // Live schedule
       scheduleGames, hasSchedule: scheduleGames.length > 0
     };

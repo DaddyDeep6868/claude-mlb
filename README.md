@@ -1,4 +1,4 @@
-# DingerLab v6.0 — Stadium Night
+# DingerLab v1.0 — Stadium Night
 
 MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 
@@ -44,13 +44,18 @@ Set env vars before running (Render dashboard → Environment):
 
 ```
 ODDSBLAZE_KEY=your-key-here
-PORT=8501          # optional, defaults to 8501
+PORT=8501                       # optional, defaults to 8501
+DINGERLAB_ALLOWED_ORIGIN=...    # optional, lock CORS to your front-end origin
 ```
 
 The server handles:
-- `/api/oddsblaze` — CORS-enabled OddsBlaze proxy (reads `ODDSBLAZE_KEY` from env)
+- `/api/oddsblaze` — OddsBlaze proxy (reads `ODDSBLAZE_KEY` from env)
 - `/api/state` — saved parlays + board snapshots sync across devices
-- `/api/grade` — auto-grades pending legs from MLB boxscores
+- `/api/grade` — auto-grades pending legs from MLB boxscores (matches by MLB player id)
+- `/api/grade_ledger` — name-based grading for ad-hoc bet ledgers
+- `/health` — liveness check
+
+A background worker also re-grades pending slips every 10 min, so results settle even with no tab open.
 
 Data is written to `server_data/dingerlab_server_state.json`. Use a host with persistent disk.
 
@@ -61,13 +66,15 @@ Data is written to `server_data/dingerlab_server_state.json`. Use a host with pe
 1. New Web Service → connect this repo.
 2. Build command: `pip install -r requirements.txt`
 3. Start command: `python dingerlab_server.py`
-4. Environment → add `ODDSBLAZE_KEY`.
+4. Environment → add `ODDSBLAZE_KEY`. Optionally add `DINGERLAB_ALLOWED_ORIGIN=https://<you>.github.io` to restrict CORS.
 5. Your URL (e.g. `https://mlb-slate.onrender.com`) goes in the app's **Tools → Live odds proxy**.
 
-> **Security note:** `dingerlab_server.py` contains a hardcoded `ODDSBLAZE_DEFAULT_KEY` fallback. Remove or blank it before making the repo public — the Render env var takes priority and is all you need.
+> **CORS:** the server defaults to allowing any origin (`*`) on `/api/*` so an unconfigured deploy works out of the box. For a public deploy, set `DINGERLAB_ALLOWED_ORIGIN` to your GitHub Pages origin so only your front-end can call the API.
+>
+> **Keys:** no credentials are hardcoded — `ODDSBLAZE_KEY` is read from the environment.
 
 ---
 
 ## Screens
 
-Dashboard (Command Center) · Games · Builder (cross-play generator) · Data (feature store) · Research (steam radar, value plays, what changed) · Tracking (CLV, W/L results) · Tools (odds proxy, model settings, exposure) · Live (HR feed + schedule)
+Dashboard (Command Center) · Games · Radar (weather / ball-carry map) · Solver (bankroll-aware Kelly portfolio) · Report Card (model calibration vs results) · Builder (cross-play generator + payoff frontier) · Data (feature store) · Research (steam radar, value plays, what changed) · Tracking (CLV, W/L results) · Tools (odds proxy, model settings, exposure) · Live (HR feed + schedule)

@@ -2,5 +2,3 @@ streamlit>=1.33
 requests>=2.31
 flask>=3.0
 flask-cors>=4.0
-pyyaml>=6.0
-youtube-transcript-api>=0.6
