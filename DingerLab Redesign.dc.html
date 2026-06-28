@@ -363,7 +363,7 @@
             <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:7% 9%"></div>
             <div style="position:absolute;left:14px;top:12px;font-family:'Space Grotesk';font-size:11px;letter-spacing:.1em;color:#5f6878;font-weight:700">USA · LIVE CONDITIONS</div>
             <sc-for list="{{ radarParks }}" as="r" hint-placeholder-count="6">
-              <button data-game="{{ r.gameId }}" onClick="{{ setRadarSel }}" title="{{ r.venue }}" style="position:absolute;left:{{ r.x }}%;top:{{ r.y }}%;transform:translate(-50%,-50%);width:{{ r.size }}px;height:{{ r.size }}px;border-radius:50%;border:1.5px solid rgba(255,255,255,.5);background:{{ r.dotColor }};box-shadow:0 0 18px rgba(255,93,93,{{ r.glow }});cursor:pointer;padding:0;transition:transform .15s" style-hover="transform:translate(-50%,-50%) scale(1.35);z-index:5"></button>
+              <button data-game="{{ r.gameId }}" onClick="{{ setRadarSel }}" title="{{ r.venue }}" style="position:absolute;left:{{ r.x }}%;top:{{ r.y }}%;transform:translate(-50%,-50%);width:{{ r.size }}px;height:{{ r.size }}px;border-radius:50%;border:1.5px solid rgba(255,255,255,.5);background:{{ r.dotColor }};box-shadow:0 0 18px rgba(255,93,93,{{ r.glow }});cursor:pointer;padding:0;z-index:3;transition:transform .15s" style-hover="transform:translate(-50%,-50%) scale(1.35);z-index:5"></button>
             </sc-for>
             <!-- legend -->
             <div style="position:absolute;right:14px;bottom:12px;display:flex;align-items:center;gap:7px;background:rgba(8,11,17,.7);padding:6px 10px;border-radius:9px;backdrop-filter:blur(8px)">
@@ -3066,7 +3066,7 @@ class Component extends DCLogic {
       });
       steam.sort((a, b) => b.spreadNum - a.spreadNum);
     }
-    const topValue = hasOdds ? enriched.filter(p => p.oddsAm != null && p.pa >= 100 && p.edge != null && p.edge > 0).sort((a, b) => b.edge - a.edge).slice(0, 12) : enriched.slice(0, 12);
+    const topValue = (() => { if (!hasOdds) return enriched.slice(0, 12); const pos = enriched.filter(p => p.oddsAm != null && p.pa >= 100 && p.edge != null && p.edge > 0).sort((a, b) => b.edge - a.edge); if (pos.length >= 6) return pos.slice(0, 12); const used = {}; pos.forEach(p => { used[p.id] = 1; }); const rest = enriched.filter(p => p.pa >= 100 && !used[p.id]).sort((a, b) => ((b.edge != null ? b.edge : -999) - (a.edge != null ? a.edge : -999)) || (b.score - a.score)); return pos.concat(rest).slice(0, 12); })();
     const priceDiff = (live && this.state.data.priceDiff) || [];
     const hasDiff = priceDiff.length > 0;
     const diffItems = priceDiff.slice(0, 10).map(d => ({ name: d.name, prev: (d.prev > 0 ? '+' : '') + d.prev, cur: (d.cur > 0 ? '+' : '') + d.cur, move: (d.move > 0 ? '▲ ' : '▼ ') + Math.abs(d.move) + ' pts', moveColor: d.move > 0 ? '#ff8d8d' : 'var(--pos,#35d0c0)', dir: d.move > 0 ? 'longer' : 'shorter', moveIcon: d.move > 0 ? '📈' : '📉', chipBg: d.move > 0 ? 'rgba(255,141,141,.10)' : 'rgba(53,208,192,.12)' }));
