@@ -30,6 +30,7 @@
   @keyframes dlpulse{0%,100%{opacity:1}50%{opacity:.35}}
   @keyframes dlrise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   @keyframes dlspin{to{transform:rotate(360deg)}}
+  #__bundler_err{display:none!important}
   @media (max-width:1300px){
     [data-hmd]{display:none!important}
     header[data-hdr]{gap:12px!important}
@@ -363,7 +364,7 @@
             <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:7% 9%"></div>
             <div style="position:absolute;left:14px;top:12px;font-family:'Space Grotesk';font-size:11px;letter-spacing:.1em;color:#5f6878;font-weight:700">USA · LIVE CONDITIONS</div>
             <sc-for list="{{ radarParks }}" as="r" hint-placeholder-count="6">
-              <button data-game="{{ r.gameId }}" onClick="{{ setRadarSel }}" title="{{ r.venue }}" style="position:absolute;left:{{ r.x }}%;top:{{ r.y }}%;transform:translate(-50%,-50%);width:{{ r.size }}px;height:{{ r.size }}px;border-radius:50%;border:1.5px solid rgba(255,255,255,.5);background:{{ r.dotColor }};box-shadow:0 0 18px rgba(255,93,93,{{ r.glow }});cursor:pointer;padding:0;z-index:3;transition:transform .15s" style-hover="transform:translate(-50%,-50%) scale(1.35);z-index:5"></button>
+              <button data-game="{{ r.gameId }}" onClick="{{ setRadarSel }}" title="{{ r.venue }}" style="position:absolute;left:{{ r.x }}%;top:{{ r.y }}%;transform:translate(-50%,-50%);width:{{ r.size }}px;height:{{ r.size }}px;border-radius:50%;border:1.5px solid rgba(255,255,255,.5);background:{{ r.dotColor }};box-shadow:0 0 18px rgba(255,93,93,{{ r.glow }});cursor:pointer;padding:0;transition:transform .15s" style-hover="transform:translate(-50%,-50%) scale(1.35);z-index:5"></button>
             </sc-for>
             <!-- legend -->
             <div style="position:absolute;right:14px;bottom:12px;display:flex;align-items:center;gap:7px;background:rgba(8,11,17,.7);padding:6px 10px;border-radius:9px;backdrop-filter:blur(8px)">
@@ -798,6 +799,22 @@
             <span style="font-size:12.5px;font-weight:600;color:var(--pos,#35d0c0)">{{ liveStatus }}</span>
           </div>
         </div>
+        <sc-if value="{{ hasLadder }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#0f1218;border:1px solid rgba(255,138,76,.18);border-radius:16px;padding:16px 16px 8px;margin-bottom:20px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:15px">🪜</span><div style="font-family:'Space Grotesk';font-weight:700;font-size:15px">Live ladder · remaining HR chance</div></div>
+            <p style="margin:0 0 12px;font-size:12px;color:#8b94a6;line-height:1.45">On-board hitters still batting in games already underway — model HR% recomputed for their remaining at-bats.</p>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px">
+              <sc-for list="{{ liveLadder }}" as="l" hint-placeholder-count="5">
+                <button data-player="{{ l.id }}" onClick="{{ openDrawer }}" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;cursor:pointer;text-align:left;background:#13161e;border:1px solid rgba(255,255,255,.07)" style-hover="border-color:rgba(255,138,76,.35)">
+                  <div style="position:relative;width:34px;height:34px;flex:none;border-radius:50%;overflow:hidden;background:#0c0e14;display:grid;place-items:center"><img src="{{ l.headshot }}" alt="" referrerpolicy="no-referrer" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center" onerror="this.remove()"/></div>
+                  <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ l.name }} <span style="font-size:11px;color:#7b8597;font-weight:500">{{ l.teamAbbr }} vs {{ l.oppAbbr }}</span></div><div style="font-size:11px;color:#7b8597;margin-top:1px">{{ l.inningLabel }} · pregame {{ l.modelPct }}%</div></div>
+                  <span style="flex:none;width:70px;height:7px;border-radius:7px;background:rgba(255,255,255,.07);overflow:hidden;display:block"><span style="display:block;height:100%;width:{{ l.remBar }};background:linear-gradient(90deg,var(--ac,#ff8a4c),#ff5ea8)"></span></span>
+                  <div style="text-align:right;min-width:52px"><div style="font-size:10px;color:#7b8597;font-weight:600">REM HR</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:14px;color:var(--ac,#ff8a4c)">{{ l.remPct }}</div></div>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
         <sc-if value="{{ hasLive }}" hint-placeholder-val="{{ false }}">
           <div style="display:flex;flex-direction:column;gap:10px">
             <sc-for list="{{ liveHRs }}" as="h" hint-placeholder-count="3">
@@ -1435,6 +1452,15 @@
         <div style="padding:14px;border-radius:13px;background:#0f1218;border:1px solid rgba(255,255,255,.07);margin-bottom:12px">
           <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px"><span style="color:#9aa3b2">Parlay odds</span><span style="font-family:'Space Grotesk';font-weight:700">{{ parlayOdds }}</span></div>
           <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px"><span style="color:#9aa3b2">Win chance</span><span style="font-family:'Space Grotesk';font-weight:700">{{ parlayWin }}</span></div>
+          <sc-if value="{{ slipCorr }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;padding:8px 10px;border-radius:9px;background:rgba(53,208,192,.08);border:1px solid rgba(53,208,192,.22)">
+              <span style="font-size:12px">🔗</span>
+              <div style="min-width:0">
+                <div style="font-size:11.5px;font-weight:700;color:var(--pos,#35d0c0);line-height:1.3">Correlation-adjusted</div>
+                <div style="font-size:10.5px;color:#8b94a6;line-height:1.35">{{ slipCorrNote }} · naive {{ slipNaiveWin }}</div>
+              </div>
+            </div>
+          </sc-if>
           <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:12px"><span style="color:#9aa3b2">Model EV</span><span style="font-family:'Space Grotesk';font-weight:700;color:var(--pos,#35d0c0)">{{ parlayEv }}</span></div>
           <div style="margin-bottom:7px">
             <div style="font-size:11px;color:#7b8597;font-weight:600;letter-spacing:.04em;margin-bottom:7px">STAKE</div>
@@ -1613,7 +1639,11 @@
         </sc-for>
       </div>
       <div style="background:#0c0e14;border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:14px;margin-bottom:18px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:14px">🧬</span><div style="font-family:'Space Grotesk';font-weight:700;font-size:13px">Model Frontier · factor stack</div></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:14px">🧬</span><div style="font-family:'Space Grotesk';font-weight:700;font-size:13px">Model Frontier · factor stack</div></div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+          <span style="font-size:11px;font-weight:700;padding:4px 9px;border-radius:7px;background:rgba(53,208,192,.12);color:var(--pos,#35d0c0)">{{ p.topDriver }}</span>
+          <sc-if value="{{ p.topDrag }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:700;padding:4px 9px;border-radius:7px;background:rgba(255,141,141,.12);color:#ff8d8d">{{ p.topDrag }}</span></sc-if>
+        </div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 11px;border-radius:9px;background:rgba(255,255,255,.04);margin-bottom:7px">
           <span style="font-size:12px;color:#9aa3b2">Base HR rate</span>
           <span style="font-family:'Space Grotesk';font-weight:700;font-size:13px">{{ p.frontierBase }}</span>
@@ -1632,6 +1662,19 @@
           <span style="font-family:'Space Grotesk';font-weight:700;font-size:15px;color:var(--ac,#ff8a4c)">{{ p.frontierFinal }}</span>
         </div>
       </div>
+      <sc-if value="{{ p.hasLine }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#0c0e14;border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:14px;margin-bottom:18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">
+            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px">📈</span><div style="font-family:'Space Grotesk';font-weight:700;font-size:13px">Line trend · buy window</div></div>
+            <span style="font-size:11.5px;font-weight:700;color:{{ p.lineVerdictColor }}">{{ p.lineVerdict }}</span>
+          </div>
+          <svg viewBox="0 0 {{ p.lineW }} {{ p.lineH }}" preserveAspectRatio="none" style="width:100%;height:40px;display:block;margin-bottom:9px"><polyline points="{{ p.linePts }}" fill="none" stroke="{{ p.lineMoveColor }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>
+          <div style="display:flex;justify-content:space-between;font-size:12px">
+            <span style="color:#9aa3b2">Open <b style="font-family:'Space Grotesk';color:#eef1f6">{{ p.lineOpen }}</b> → now <b style="font-family:'Space Grotesk';color:#eef1f6">{{ p.lineNow }}</b></span>
+            <span style="font-family:'Space Grotesk';font-weight:700;color:{{ p.lineMoveColor }}">{{ p.lineMove }}</span>
+          </div>
+        </div>
+      </sc-if>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:18px">
         <div>
           <div style="font-size:12px;font-weight:700;color:var(--pos,#35d0c0);margin-bottom:8px">WHY IT HITS</div>
@@ -1660,7 +1703,6 @@
 <!-- imported -->
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{
-  &quot;$preview&quot;: { &quot;width&quot;: 1440, &quot;height&quot;: 940 },
   &quot;accent&quot;: { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#ff8a4c&quot;, &quot;tsType&quot;: &quot;string&quot; },
   &quot;positive&quot;: { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#35d0c0&quot;, &quot;tsType&quot;: &quot;string&quot; },
   &quot;compact&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot; }
@@ -1784,6 +1826,7 @@ class Component extends DCLogic {
       const od = await Promise.race([this.fetchOdds(), new Promise((res) => setTimeout(() => res({ best: {}, perBook: {}, booksOk: 0 }), 25000))]);
       const oddsMap = od.best || {}, perBookMap = od.perBook || {}, booksOk = od.booksOk || 0;
       players.forEach(p => { const k = this.normName(p.name); const a = oddsMap[k]; if (a != null) p.oddsAm = a; else delete p.oddsAm; const pb = perBookMap[k]; if (pb) p.oddsPerBook = pb; });
+      this.logLineHistory(players);
       // price diff vs stored snapshot
       const nowSnap = players.filter(p => p.oddsAm != null).slice(0, 120).map(p => ({ k: this.normName(p.name), name: p.name, odds: p.oddsAm }));
       let priceDiff = [];
@@ -1886,6 +1929,60 @@ class Component extends DCLogic {
   amDec(a) { return a > 0 ? 1 + a / 100 : 1 + 100 / (-a); }
   amImp(a) { return a > 0 ? 100 / (a + 100) : (-a) / (-a + 100); }
   decAm(d) { return d >= 2 ? ('+' + Math.round((d - 1) * 100)) : ('-' + Math.round(100 / (d - 1))); }
+  // --- Normal-distribution helpers (same-game correlation engine) ---
+  nPdf(x) { return Math.exp(-0.5 * x * x) / 2.5066282746310002; }
+  nCdf(x) { const t = 1 / (1 + 0.2316419 * Math.abs(x)); const d = 0.3989422804014327 * Math.exp(-x * x / 2); const p = d * t * (0.31938153 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429)))); return x >= 0 ? 1 - p : p; }
+  nPpf(p) { if (p <= 0) return -10; if (p >= 1) return 10; const a = [-39.69683028665376, 220.9460984245205, -275.9285104469687, 138.357751867269, -30.66479806614716, 2.506628277459239], b = [-54.47609879822406, 161.5858368580409, -155.6989798598866, 66.80131188771972, -13.28068155288572], c = [-0.007784894002430293, -0.3223964580411365, -2.400758277161838, -2.549732539343734, 4.374664141464968, 2.938163982698783], d = [0.007784695709041462, 0.3224671290700398, 2.445134137142996, 3.754408661907416]; const pl = 0.02425, ph = 1 - pl; let q, r; if (p < pl) { q = Math.sqrt(-2 * Math.log(p)); return (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1); } if (p <= ph) { q = p - 0.5; r = q * q; return (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q / (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1); } q = Math.sqrt(-2 * Math.log(1 - p)); return -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1); }
+  // Joint P(all legs hit). Same-game legs share a latent game factor (positively correlated → true win% beats the naive product). Cross-game legs stay independent.
+  corrParlayWin(legs) {
+    const clamp = v => Math.min(0.999, Math.max(0.001, v));
+    const naive = legs.reduce((s, l) => s * clamp(l.p), 1);
+    const games = {}; legs.forEach(l => { const k = l.gameId == null ? ('x' + Math.random()) : l.gameId; (games[k] = games[k] || []).push(l); });
+    let joint = 1, sameGame = false, maxRho = 0;
+    Object.keys(games).forEach(k => {
+      const grp = games[k];
+      if (grp.length < 2) { joint *= clamp(grp[0].p); return; }
+      sameGame = true;
+      let pairs = 0, tm = 0;
+      for (let i = 0; i < grp.length; i++) for (let j = i + 1; j < grp.length; j++) { pairs++; if (grp[i].team && grp[i].team === grp[j].team) tm++; }
+      const rho = 0.08 + 0.14 * (pairs ? tm / pairs : 0); // ~0.08 opponents → ~0.22 teammates
+      maxRho = Math.max(maxRho, rho);
+      const lam = Math.sqrt(rho), s = Math.sqrt(1 - rho);
+      const thr = grp.map(l => this.nPpf(1 - clamp(l.p)));
+      const N = 48, lo = -5, hi = 5, h = (hi - lo) / N; let acc = 0;
+      for (let m = 0; m <= N; m++) { const u = lo + m * h; let prod = this.nPdf(u); for (let t = 0; t < thr.length; t++) prod *= this.nCdf((lam * u - thr[t]) / s); acc += (m === 0 || m === N ? 0.5 : 1) * prod; }
+      joint *= acc * h;
+    });
+    return { p: joint, naive, sameGame, rho: maxRho };
+  }
+  // Buy-window: timestamped best-odds log per player for today (reuses normName keys)
+  logLineHistory(players) {
+    try {
+      const date = this.dateStr();
+      const store = JSON.parse(localStorage.getItem('dl_linehist_v1') || '{}');
+      if (store.date !== date) { store.date = date; store.h = {}; }
+      store.h = store.h || {};
+      const t = Date.now();
+      (players || []).forEach(p => { if (p.oddsAm == null) return; const k = this.normName(p.name); const arr = store.h[k] || (store.h[k] = []); const last = arr[arr.length - 1]; if (!last || last[1] !== p.oddsAm) arr.push([t, p.oddsAm]); if (arr.length > 16) arr.splice(0, arr.length - 16); });
+      localStorage.setItem('dl_linehist_v1', JSON.stringify(store));
+    } catch (e) {}
+  }
+  lineHistory(name) {
+    try { const store = JSON.parse(localStorage.getItem('dl_linehist_v1') || '{}'); if (store.date !== this.dateStr()) return null; const arr = store.h && store.h[this.normName(name)]; return (arr && arr.length) ? arr : null; } catch (e) { return null; }
+  }
+  // Drawer line-trend card (buy now / wait) from today's odds history
+  lineTrend(name) {
+    const hist = this.lineHistory(name);
+    if (!hist || hist.length < 2) return { hasLine: false };
+    const open = hist[0][1], now = hist[hist.length - 1][1];
+    const moveImp = (this.amImp(now) - this.amImp(open)) * 100;
+    const imps = hist.map(h => this.amImp(h[1]));
+    const mn = Math.min(...imps), mx = Math.max(...imps), rng = (mx - mn) || 1;
+    const W = 220, H = 40;
+    const pts = hist.map((h, i) => { const x = hist.length > 1 ? (i / (hist.length - 1)) * W : 0; const y = H - 4 - ((this.amImp(h[1]) - mn) / rng) * (H - 8); return x.toFixed(1) + ',' + y.toFixed(1); }).join(' ');
+    const v = moveImp >= 0.8 ? { t: 'Bet now — line steaming in', c: 'var(--pos,#35d0c0)' } : moveImp <= -0.8 ? { t: 'Wait — line drifting out', c: '#ffc24d' } : { t: 'Stable — no urgency', c: '#9aa3b2' };
+    return { hasLine: true, linePts: pts, lineW: W, lineH: H, lineOpen: (open > 0 ? '+' : '') + open, lineNow: (now > 0 ? '+' : '') + now, lineMove: (moveImp >= 0 ? '+' : '') + moveImp.toFixed(1) + 'pp', lineMoveColor: moveImp >= 0 ? 'var(--pos,#35d0c0)' : '#ffc24d', lineVerdict: v.t, lineVerdictColor: v.c, linePtCount: hist.length };
+  }
   tFetch(url, opts, ms) {
     ms = ms || 12000;
     let ctrl = null; try { ctrl = new AbortController(); } catch (e) {}
@@ -2175,6 +2272,7 @@ class Component extends DCLogic {
         oddsMap = od.best || {}; perBookMap = od.perBook || {}; booksOk = od.booksOk || 0;
       } catch (e) {}
       players.forEach(p => { const k = this.normName(p.name); const a = oddsMap[k]; if (a != null) p.oddsAm = a; const pb = perBookMap[k]; if (pb) p.oddsPerBook = pb; });
+      this.logLineHistory(players);
 
       // Price-diff snapshot for Research "What changed"
       const nowSnap = players.filter(p => p.oddsAm != null).slice(0, 120).map(p => ({ k: this.normName(p.name), name: p.name, odds: p.oddsAm }));
@@ -2471,6 +2569,8 @@ class Component extends DCLogic {
     return Object.assign({}, p, {
       ring: 'conic-gradient(var(--ac,#ff8a4c) ' + p.score + '%, rgba(255,255,255,.08) 0)',
       headshot: p.id ? 'https://midfield.mlbstatic.com/v1/people/' + p.id + '/spots/120' : '',
+      topDriver: (function () { const f = [['park', (p.parkF || 100) / 100], ['opposing starter', p.pMult || 1], ['platoon', p.platoon || 1], ['weather', p.wxMult || 1], ['barrel quality', p.scMult || 1], ['pitcher form/rest', (p.fatigueMult || 1) * (p.formMult || 1)], ['day/night', p.dnMult || 1]]; let top = f[0]; f.forEach(x => { if (x[1] > top[1]) top = x; }); return top[1] > 1.01 ? ('Biggest lever: ' + top[0] + ' +' + Math.round((top[1] - 1) * 100) + '%') : 'Balanced — no single dominant factor'; })(),
+      topDrag: (function () { const f = [['park', (p.parkF || 100) / 100], ['opposing starter', p.pMult || 1], ['platoon', p.platoon || 1], ['weather', p.wxMult || 1], ['barrel quality', p.scMult || 1], ['pitcher form/rest', (p.fatigueMult || 1) * (p.formMult || 1)], ['day/night', p.dnMult || 1]]; let lo = f[0]; f.forEach(x => { if (x[1] < lo[1]) lo = x; }); return lo[1] < 0.99 ? ('Drag: ' + lo[0] + ' −' + Math.round((1 - lo[1]) * 100) + '%') : ''; })(),
       starsOn: '★'.repeat(n), starsOff: '★'.repeat(5 - n),
       matchup: p.teamAbbr + ' vs ' + p.oppAbbr,
       scoreEmoji: (p.score >= 92 ? '🔥' : p.score >= 85 ? '💣' : p.score >= 78 ? '⚡' : p.score >= 70 ? '👀' : '🧊'),
@@ -3049,6 +3149,23 @@ class Component extends DCLogic {
     }));
     const liveEmpty = live ? 'No homers yet on the live slate — they stream in here the moment they happen, tagged on/off your model board. Hit Refresh to re-check.' : 'Connect to the live slate to stream home runs as they happen.';
 
+    // #6 Live in-game ladder: remaining-AB HR% for on-board hitters in games already in progress
+    const homeredNow = new Set((rawLiveHRs || []).map(h => this.normName(h.player)));
+    const liveGames = {};
+    if (live) (this.state.data.games || []).forEach(g => { const st = g.status && g.status.abstractGameState; const ls = g.linescore || {}; if (st === 'Live') liveGames[g.gamePk] = { inning: ls.currentInning || 1, half: ls.inningState || '' }; });
+    let liveLadder = [];
+    if (live && Object.keys(liveGames).length) {
+      liveLadder = enriched.filter(p => liveGames[p.gameId] && !homeredNow.has(this.normName(p.name)) && p.modelPct >= 4).map(p => {
+        const g = liveGames[p.gameId];
+        const remInn = Math.max(0.5, 9 - (g.inning || 1));
+        const remPA = remInn * 0.47;
+        const full = Math.min(0.999, Math.max(0.001, p.modelPct / 100));
+        const perPA = 1 - Math.pow(1 - full, 1 / 4.1);
+        const rem = (1 - Math.pow(1 - perPA, remPA)) * 100;
+        return Object.assign({}, p, { remPct: rem.toFixed(1) + '%', remBar: Math.min(100, Math.round(rem / 0.30)) + '%', inningLabel: (g.half ? g.half.slice(0, 3) + ' ' : '') + (g.inning || ''), remRaw: rem });
+      }).sort((a, b) => b.remRaw - a.remRaw).slice(0, 12);
+    }
+
     // Research data
     const steam = [];
     if (hasOdds) {
@@ -3066,7 +3183,7 @@ class Component extends DCLogic {
       });
       steam.sort((a, b) => b.spreadNum - a.spreadNum);
     }
-    const topValue = (() => { if (!hasOdds) return enriched.slice(0, 12); const pos = enriched.filter(p => p.oddsAm != null && p.pa >= 100 && p.edge != null && p.edge > 0).sort((a, b) => b.edge - a.edge); if (pos.length >= 6) return pos.slice(0, 12); const used = {}; pos.forEach(p => { used[p.id] = 1; }); const rest = enriched.filter(p => p.pa >= 100 && !used[p.id]).sort((a, b) => ((b.edge != null ? b.edge : -999) - (a.edge != null ? a.edge : -999)) || (b.score - a.score)); return pos.concat(rest).slice(0, 12); })();
+    const topValue = hasOdds ? enriched.filter(p => p.oddsAm != null && p.pa >= 100 && p.edge != null && p.edge > 0).sort((a, b) => b.edge - a.edge).slice(0, 12) : enriched.slice(0, 12);
     const priceDiff = (live && this.state.data.priceDiff) || [];
     const hasDiff = priceDiff.length > 0;
     const diffItems = priceDiff.slice(0, 10).map(d => ({ name: d.name, prev: (d.prev > 0 ? '+' : '') + d.prev, cur: (d.cur > 0 ? '+' : '') + d.cur, move: (d.move > 0 ? '▲ ' : '▼ ') + Math.abs(d.move) + ' pts', moveColor: d.move > 0 ? '#ff8d8d' : 'var(--pos,#35d0c0)', dir: d.move > 0 ? 'longer' : 'shorter', moveIcon: d.move > 0 ? '📈' : '📉', chipBg: d.move > 0 ? 'rgba(255,141,141,.10)' : 'rgba(53,208,192,.12)' }));
@@ -3147,9 +3264,18 @@ class Component extends DCLogic {
     const hasSlip = slip.length > 0;
     const stakeNum = Math.max(0, parseFloat(stake) || 0);
     let parlayOdds = '—', parlayWin = '—', parlayEv = '—', parlayPayout = '—';
+    let slipCorr = false, slipCorrNote = '', slipNaiveWin = '';
     if (hasSlip) {
-      const win = slip.reduce((s, l) => s * ((l.modelPct || 15) / 100), 1);
+      const legsM = slip.map(l => { const pl = byId[l.id]; return { p: (l.modelPct || 15) / 100, gameId: pl ? pl.gameId : ('x' + l.id), team: pl ? pl.teamAbbr : null }; });
+      const cw = this.corrParlayWin(legsM);
+      const win = cw.p; // correlation-adjusted joint probability
       parlayWin = (win * 100).toFixed(1) + '%';
+      slipCorr = cw.sameGame;
+      if (cw.sameGame) {
+        const uplift = (cw.p - cw.naive) * 100;
+        slipNaiveWin = (cw.naive * 100).toFixed(1) + '%';
+        slipCorrNote = 'Same-game stack · ρ≈' + cw.rho.toFixed(2) + ' · ' + (uplift >= 0 ? '+' : '') + uplift.toFixed(1) + 'pp vs independent';
+      }
       if (slip.every(l => l.oddsAm != null)) {
         const dec = slip.reduce((s, l) => s * this.amDec(l.oddsAm), 1);
         parlayOdds = this.decAm(dec);
@@ -3326,10 +3452,12 @@ class Component extends DCLogic {
       valueRankLabel: hasOdds ? 'ranked by edge' : 'ranked by model',
       openDrawer: async (e) => { const id = e.currentTarget.dataset.player; if (!byId[id]) return; const p = byId[id]; if (p.gameId) { try { const j = await this.tFetch('https://statsapi.mlb.com/api/v1/game/' + p.gameId + '/boxscore').then(r => r.ok ? r.json() : null); if (j && j.teams) { const away = (j.teams.away && j.teams.away.battingOrder) || []; const home = (j.teams.home && j.teams.home.battingOrder) || []; const confirmed = new Set([...away, ...home].map(String)); if (confirmed.has(String(id))) p.lineupConfirmed = true; } } catch (e) {} } this.setState({ drawerOpen: true, player: p, search: '' }); },
       closeDrawer: () => this.setState({ drawerOpen: false }),
-      drawerOpen: this.state.drawerOpen, p: this.state.player || {},
+      drawerOpen: this.state.drawerOpen, p: Object.assign({}, this.state.player || {}, this.state.player ? this.lineTrend(this.state.player.name) : {}),
+      liveLadder, hasLadder: liveLadder.length > 0,
       // Slip
       hasSlip, hasNoSlip: !hasSlip, slipLegs: slip, slipCount: slip.length, slipCountLabel: slip.length + (slip.length === 1 ? ' leg' : ' legs'),
       parlayOdds, parlayWin, parlayEv, parlayPayout, stake,
+      slipCorr, slipCorrNote, slipNaiveWin,
       addToSlip: this.addToSlip, removeFromSlip: this.removeFromSlip, clearSlip: this.clearSlip,
       saveTrack: this.saveTrack, addComboLegs: this.addComboLegs, trackCombo: this.trackCombo,
       setResult: this.setResult, setStake: this.setStake, setStakePreset: this.setStakePreset, sendToBook: this.sendToBook,

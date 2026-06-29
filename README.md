@@ -1,6 +1,8 @@
-# DingerLab v1.0 — Stadium Night
+# DingerLab v2.0 — Stadium Night
 
 MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
+
+**v2.0** adds correlation-aware same-game parlays, a glass-box "biggest lever" pick teardown, buy-window line-trend timing, and a live in-game HR ladder.
 
 ---
 
