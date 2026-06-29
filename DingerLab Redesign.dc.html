@@ -2859,7 +2859,25 @@ class Component extends DCLogic {
     const startedHidden = this.state.hideStarted !== false;
     const startedHiddenCount = enriched.filter(p => p.boardStale).length;
     const liveBase = startedHidden ? sortedEnriched.filter(p => !p.boardStale) : sortedEnriched;
-    const filteredEnriched = teamFilter ? liveBase.filter(p => p.teamAbbr === teamFilter || p.oppAbbr === teamFilter) : liveBase;
+    let filteredEnriched = teamFilter ? liveBase.filter(p => p.teamAbbr === teamFilter || p.oppAbbr === teamFilter) : liveBase;
+    /* INVARIANT: the board can never disappear because of filters alone. */
+    /* Filters apply normally above. If they leave zero players but the source */
+    /* dataset actually has players, fall back to the full sorted board so cards */
+    /* always render. Fallback players are flagged (dimmed + badged) and we */
+    /* surface a reason. A genuinely empty board only happens when the source */
+    /* dataset (enriched) is itself empty (no data / failed to load). */
+    let boardFallback = false, boardFallbackReason = '';
+    if (filteredEnriched.length === 0 && sortedEnriched.length > 0) {
+      boardFallback = true;
+      const allStarted = startedHidden && enriched.length > 0 && enriched.every(p => p.boardStale);
+      if (teamFilter && allStarted) boardFallbackReason = 'All ' + teamFilter + ' games have started — showing results.';
+      else if (allStarted) boardFallbackReason = 'All games have started — showing results.';
+      else if (teamFilter) boardFallbackReason = 'No hitters match the ' + teamFilter + ' filter — showing the full board.';
+      else boardFallbackReason = 'Filters hid every hitter — showing the full board.';
+      filteredEnriched = sortedEnriched.map(p => Object.assign({}, p, { boardFallback: true, boardDim: Math.min(p.boardDim != null ? p.boardDim : 1, 0.55), hasLiveBadge: true, liveBadgeLabel: p.boardStale ? (p.liveBadgeLabel || 'STARTED') : 'NORMALLY HIDDEN', liveBadgeBg: (p.boardStale && p.liveBadgeBg && p.liveBadgeBg !== 'transparent') ? p.liveBadgeBg : 'rgba(255,255,255,.09)', liveBadgeFg: (p.boardStale && p.liveBadgeFg) ? p.liveBadgeFg : '#9aa3b2' }));
+    }
+    const liveEnrichedBase = startedHidden ? enriched.filter(p => !p.boardStale) : enriched;
+    const liveEnriched = liveEnrichedBase.length > 0 ? liveEnrichedBase : enriched;
 
     // KPIs
     const slateHR = live ? Math.round(players.reduce((s, p) => s + p.modelPct / 100, 0)) : 24;
@@ -2880,7 +2898,7 @@ class Component extends DCLogic {
 
     const qualStar = filteredEnriched.filter(p => (p.pa || 0) >= 90);
     const starPlays = (qualStar.length >= 6 ? qualStar : filteredEnriched).slice(0, 8);
-    const lk = this.computeLocks(startedHidden ? enriched.filter(p => !p.boardStale) : enriched);
+    const lk = this.computeLocks(liveEnriched);
 
     // ─── Round-Robin Hedge ───
     const rr = this.computeRoundRobin(enriched, hasOdds, this.state.rrSel, this.state.rrStake);
@@ -3212,7 +3230,7 @@ class Component extends DCLogic {
       });
       steam.sort((a, b) => b.spreadNum - a.spreadNum);
     }
-    const topValueBase = startedHidden ? enriched.filter(p => !p.boardStale) : enriched;
+    const topValueBase = liveEnriched;
     const topValue = hasOdds ? topValueBase.filter(p => p.oddsAm != null && p.pa >= 100 && p.edge != null && p.edge > 0).sort((a, b) => b.edge - a.edge).slice(0, 12) : topValueBase.slice(0, 12);
     const priceDiff = (live && this.state.data.priceDiff) || [];
     const hasDiff = priceDiff.length > 0;
@@ -3469,7 +3487,7 @@ class Component extends DCLogic {
       autoPollDot: this.state.autoPoll ? 'var(--pos,#35d0c0)' : '#5f6878',
       lastUpdatedLabel: this.state.lastUpdated ? ('Updated ' + new Date(this.state.lastUpdated).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })) : '',
       hasLastUpdated: !!this.state.lastUpdated,
-      dashSub: live ? 'Live MLB model — every qualified hitter ranked by Dinger Score (regressed HR rate, park & opposing-starter adjusted).' : 'Sample board shown — the live MLB model loads automatically when online.',
+      dashSub: boardFallback ? boardFallbackReason : (live ? 'Live MLB model — every qualified hitter ranked by Dinger Score (regressed HR rate, park & opposing-starter adjusted).' : 'Sample board shown — the live MLB model loads automatically when online.'),
       kpis, starPlays, parkReport, combos: combosOut, games,
       locks: lk.cards || [], hasLocks: !!lk.has, lockExp: lk.expLabel || '0', lockAtLeast: lk.atLeastOneLabel || '0%',
       addLockToSlip: (e) => { e.stopPropagation(); const id = e.currentTarget.dataset.lockid; this._addLegs([byId[id]]); },
@@ -3537,7 +3555,7 @@ class Component extends DCLogic {
       // Sort + filter + discovery
       sortBy, sortOptions, teamOptions, teamFilter, setSort: this.setSort, setTeamFilter: this.setTeamFilter, clearTeamFilter: this.clearTeamFilter,
       toggleHideStarted: this.toggleHideStarted, hideStarted: startedHidden, hasStartedGames: startedHiddenCount > 0,
-      hideStartedLabel: startedHidden ? ('Hide late/finished · ' + startedHiddenCount) : 'Showing all games',
+      hideStartedLabel: boardFallback ? boardFallbackReason : (startedHidden ? ('Hide late/finished · ' + startedHiddenCount) : 'Showing all games'),
       hideStartedBg: startedHidden ? 'rgba(255,138,76,.14)' : 'transparent',
       hideStartedFg: startedHidden ? 'var(--ac,#ff8a4c)' : '#9aa3b2',
       hideStartedBorder: startedHidden ? 'rgba(255,138,76,.4)' : 'rgba(255,255,255,.12)',
