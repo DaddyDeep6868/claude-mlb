@@ -325,6 +325,29 @@
     return sels.filter(function (s) { return s.edge > thr; }).sort(function (a, b) { return b.ev - a.ev; }).slice(0, 8);
   }
 
+  function scanAll() {
+    var sels = [];
+    MATCHES.forEach(function (m) { sels = sels.concat(marketsForMatch(m)); });
+    goalscorers().forEach(function (g) { sels.push({ grp: 'Goalscorer', label: g.name + ' anytime', prob: g.prob, am: g.am, edge: g.edge, ev: g.ev, score: g.score, match: g.teamName + ' ' + (g.home ? 'v ' : '@ ') + g.oppName, date: g.date }); });
+    return sels;
+  }
+  function findArbs() {
+    var arbs = [];
+    MATCHES.forEach(function (m) {
+      var mm = matchModel(m), H = TEAMS[m.h], A = TEAMS[m.a];
+      function push(type, legs) {
+        var ok = legs.every(function (l) { return l.am != null && isFinite(l.am) && l.am !== 0; });
+        if (!ok) return;
+        var sum = legs.reduce(function (a, l) { return a + impliedProb(l.am); }, 0);
+        if (sum > 0 && sum < 0.9995) arbs.push({ match: H.name + ' v ' + A.name, type: type, legs: legs, sum: sum, roi: (1 / sum - 1) * 100, date: m.date, live: !!m.live });
+      }
+      push('Match Result', [{ n: H.name, am: mm.amH }, { n: 'Draw', am: mm.amD }, { n: A.name, am: mm.amA }]);
+      push('Goals O/U 2.5', [{ n: 'Over 2.5', am: mm.amO25 }, { n: 'Under 2.5', am: mm.amU25 }]);
+      push('Corners O/U 9.5', [{ n: 'Over 9.5', am: mm.amC9o }, { n: 'Under 9.5', am: mm.amC9u }]);
+    });
+    return arbs.sort(function (a, b) { return b.roi - a.roi; });
+  }
+
   // ---------------------------------------------------------------- UI atoms
   function scoreColor(s) { return s >= 70 ? POS : s >= 55 ? GOLD : MUT; }
   function evColor(ev) { return ev > 5 ? POS : ev < -8 ? NEG : MUT; }
@@ -491,10 +514,45 @@
       + strip + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 16px">' + chips + '</div>'
       + (list.length ? '<div class="dlgrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">' + list.map(playerCard).join('') + '</div>' : '<div style="color:' + MUT + ';font-size:13px">No goalscorer markets available yet \u2014 they populate closer to kickoff.</div>');
   }
-  function body() { if (state.tab === 'today') return renderToday(); if (state.tab === 'radar') return renderRadar(); if (state.tab === 'matches') return renderMatches(false); if (state.tab === 'corners') return renderMatches(true); return ''; }
+  function arbRow(a) {
+    var stakes = a.legs.map(function (l) { return { n: l.n, am: l.am, w: impliedProb(l.am) / a.sum }; });
+    return '<div style="background:' + CARD + ';border:1px solid rgba(53,208,192,.30);border-radius:14px;padding:14px 15px">'
+      + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap"><span style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;background:rgba(53,208,192,.16);color:' + POS + '">ARB ' + a.roi.toFixed(2) + '%</span><span style="font-weight:700;font-size:14px">' + esc(a.match) + '</span><span style="font-size:12px;color:' + MUT + '">' + esc(a.type) + '</span>' + (a.live ? '<span class="dlpulse" style="width:7px;height:7px;border-radius:50%;background:' + NEG + '"></span>' : '') + '<span style="margin-left:auto;font-family:' + FH + ';font-weight:700;font-size:13px;color:' + POS + '">+' + a.roi.toFixed(2) + '% guaranteed</span></div>'
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap">' + stakes.map(function (l) { return '<div style="flex:1;min-width:120px;background:' + INSET + ';border:1px solid ' + LINE + ';border-radius:10px;padding:8px 10px"><div style="font-size:11px;color:' + MUT + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(l.n) + '</div><div style="font-family:' + FH + ';font-weight:700;font-size:15px">' + fmtAm(l.am) + '</div><div style="font-size:11px;color:' + POS + ';font-weight:700">stake ' + (l.w * 100).toFixed(1) + '%</div></div>'; }).join('') + '</div></div>';
+  }
+  function scanRow(s2) {
+    var d = s2.date ? ' \u00B7 ' + dayLabel(s2.date) : '';
+    return '<div class="dlrow" style="display:flex;align-items:center;gap:12px;padding:10px 13px;border-radius:11px;background:' + CARD + ';border:1px solid ' + LINE + '">'
+      + '<span style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,.05);color:' + grpColor(s2.grp) + ';flex:none">' + s2.grp.toUpperCase() + '</span>'
+      + '<div style="min-width:0;flex:1"><div style="font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(s2.label) + '</div><div style="font-size:11px;color:' + MUT + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(s2.match) + esc(d) + '</div></div>'
+      + '<div style="text-align:right;flex:none"><div style="font-family:' + FH + ';font-weight:700;font-size:15px">' + fmtAm(s2.am) + '</div><div style="font-size:10.5px;color:' + MUT + '">fair ' + pct(s2.prob) + '</div></div>'
+      + '<div style="text-align:right;flex:none;min-width:58px"><div style="font-family:' + FH + ';font-weight:700;font-size:14px;color:' + evColor(s2.ev) + '">' + (s2.ev > 0 ? '+' : '') + s2.ev.toFixed(1) + '</div><div style="font-size:10px;color:' + MUT + '">EV/100</div></div>' + edgeBadge(s2.edge) + '</div>';
+  }
+  function renderScanner() {
+    var all = scanAll().filter(function (s2) { return isFinite(s2.ev); }).sort(function (a, b) { return b.ev - a.ev; });
+    var value = all.filter(function (s2) { return s2.edge > (LIVE ? 0.005 : 0.02); }).slice(0, 25);
+    var fades = all.filter(function (s2) { return s2.edge < -0.05; }).sort(function (a, b) { return a.ev - b.ev; }).slice(0, 6);
+    var arbs = findArbs();
+    var bestEv = value.length ? value[0].ev : 0;
+    var stats = '<div class="dlstats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">'
+      + statCard('Markets scanned', all.length, TXT, MATCHES.length + ' matches')
+      + statCard('Value bets', value.length, POS, LIVE_STATE === 'ok' ? 'best price vs consensus' : 'model edges')
+      + statCard('Arbitrage', arbs.length, arbs.length ? POS : MUT, arbs.length ? 'guaranteed profit' : 'none right now')
+      + statCard('Top EV', (bestEv > 0 ? '+' : '') + bestEv.toFixed(1), bestEv > 0 ? POS : MUT, 'per $100') + '</div>';
+    var arbNote = LIVE_STATE === 'ok' ? '' : '<div style="color:' + MUT + ';font-size:12.5px;background:' + CARD + ';border:1px solid ' + LINE + ';border-radius:10px;padding:11px 13px">Arbitrage needs live prices from multiple books \u2014 connect the OddsBlaze proxy to surface guaranteed-profit combos. (None in model mode.)</div>';
+    var arbBoard = arbs.length ? '<div style="display:flex;flex-direction:column;gap:10px">' + arbs.map(arbRow).join('') + '</div>' : arbNote;
+    var valueBoard = value.length ? '<div style="display:flex;flex-direction:column;gap:7px">' + value.map(scanRow).join('') + '</div>' : '<div style="color:' + MUT + ';font-size:13px">No positive-edge markets on the current slate.</div>';
+    var fadeBoard = fades.length ? '<div style="display:flex;flex-direction:column;gap:7px">' + fades.map(scanRow).join('') + '</div>' : '';
+    return pageHead('EDGE SCANNER', 'Value & arbitrage', (LIVE_STATE === 'ok' ? 'Live OddsBlaze prices across all books. ' : 'Model prices (connect proxy for live arbitrage). ') + 'Every market ranked by expected value; guaranteed-profit combos flagged.')
+      + stats
+      + sectionHead(POS, 'Arbitrage Opportunities', arbs.length ? arbs.length + ' found' : 'scanning all books') + arbBoard
+      + sectionHead(AC, 'Top Value Bets', 'ranked by EV per $100') + valueBoard
+      + (fadeBoard ? sectionHead(NEG, 'Overpriced (Fade)', 'negative edge') + fadeBoard : '');
+  }
+  function body() { if (state.tab === 'today') return renderToday(); if (state.tab === 'scanner') return renderScanner(); if (state.tab === 'radar') return renderRadar(); if (state.tab === 'matches') return renderMatches(false); if (state.tab === 'corners') return renderMatches(true); return ''; }
 
   // ---------------------------------------------------------------- shell (MLB layout)
-  var NAV = [['today', '\u26A1', 'Today'], ['radar', '\uD83C\uDFAF', 'Goalscorer Radar'], ['matches', '\u26BD', 'Matches'], ['corners', '\uD83D\uDEA9', 'Corners']];
+  var NAV = [['today', '\u26A1', 'Today'], ['scanner', '\uD83D\uDD0D', 'Edge Scanner'], ['radar', '\uD83C\uDFAF', 'Goalscorer Radar'], ['matches', '\u26BD', 'Matches'], ['corners', '\uD83D\uDEA9', 'Corners']];
   var state = { tab: 'today', teamFilter: '', dateFilter: 'all' };
   var overlay = null, headerSwitcher = null, tickTimer = null, liveTimer = null;
   function safeRender() { try { if (overlay && overlay.style.display !== 'none') render(); } catch (e) {} }
