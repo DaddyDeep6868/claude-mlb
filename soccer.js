@@ -40,7 +40,7 @@
   var LIVE_MIN = 118;
 
   // ---- OddsBlaze live wiring ----
-  var BOOKS = ['draftkings', 'fanatics', 'betmgm', 'caesars'];
+  var BOOKS = ['draftkings', 'fanatics', 'fanduel', 'betmgm', 'caesars'];
   var LEAGUE_SLUGS = window.DL_SOCCER_LEAGUE ? [window.DL_SOCCER_LEAGUE] : ['fifa_world_cup', 'world_cup', 'fifa-world-cup', 'fifaworldcup', 'fifa'];
   var LIVE = null;            // { matches, mk, matchGs } when odds are loaded
   var LIVE_STATE = 'idle';    // idle | loading | ok | fail
@@ -248,8 +248,8 @@
           var hHit = normName(hN) && nm.indexOf(normName(hN)) >= 0, aHit = normName(aN) && nm.indexOf(normName(aN)) >= 0;
           if (/team/.test(m) || hHit || aHit || /home|away/.test(nm)) {
             var tside = (hHit || /home/.test(nm)) ? 'h' : ((aHit || /away/.test(nm)) ? 'a' : '');
-            if (tside === 'h') { if (side === 'over') { o.amHCo = e.best; o.pHCo = avg; o.bkHCo = e.books; o.hcLine = line; } else { o.amHCu = e.best; o.pHCu = avg; o.bkHCu = e.books; if (o.hcLine == null) o.hcLine = line; } return; }
-            if (tside === 'a') { if (side === 'over') { o.amACo = e.best; o.pACo = avg; o.bkACo = e.books; o.acLine = line; } else { o.amACu = e.best; o.pACu = avg; o.bkACu = e.books; if (o.acLine == null) o.acLine = line; } return; }
+            if (tside === 'h') { o.hcLines = o.hcLines || {}; var HL = o.hcLines[line] = o.hcLines[line] || {}; if (side === 'over') { HL.bkO = e.books; o.amHCo = e.best; o.pHCo = avg; o.bkHCo = e.books; o.hcLine = line; } else { HL.bkU = e.books; o.amHCu = e.best; o.pHCu = avg; o.bkHCu = e.books; if (o.hcLine == null) o.hcLine = line; } return; }
+            if (tside === 'a') { o.acLines = o.acLines || {}; var AL = o.acLines[line] = o.acLines[line] || {}; if (side === 'over') { AL.bkO = e.books; o.amACo = e.best; o.pACo = avg; o.bkACo = e.books; o.acLine = line; } else { AL.bkU = e.books; o.amACu = e.best; o.pACu = avg; o.bkACu = e.books; if (o.acLine == null) o.acLine = line; } return; }
           }
           o.cLines = o.cLines || {}; var CL = o.cLines[line] = o.cLines[line] || {};
           if (side === 'over') { CL.amO = e.best; CL.pO = avg; CL.bkO = e.books; } else { CL.amU = e.best; CL.pU = avg; CL.bkU = e.books; }
@@ -611,7 +611,7 @@
       + (fadeBoard ? sectionHead(NEG, 'Overpriced (Fade)', 'negative edge') + fadeBoard : '');
   }
   // ---------------------------------------------------------------- bet slip + line shop
-  var BOOK_LABELS = { draftkings: 'DK', fanatics: 'FAN', betmgm: 'MGM', caesars: 'CZR' };
+  var BOOK_LABELS = { draftkings: 'DK', fanatics: 'FAN', fanduel: 'FD', betmgm: 'MGM', caesars: 'CZR' };
   function decFromAm(am) { am = Number(am); if (!isFinite(am) || am === 0) return 1; return am > 0 ? am / 100 + 1 : 100 / (-am) + 1; }
   function amFromDec(d) { return d >= 2 ? Math.round((d - 1) * 100) : Math.round(-100 / (d - 1)); }
   function loadSlip() { try { var r = localStorage.getItem('dl_slip'); state.slip = r ? JSON.parse(r) : []; } catch (e) { state.slip = []; } if (!Array.isArray(state.slip)) state.slip = []; }
@@ -629,15 +629,23 @@
     return BOOKS.map(function (b) { var a = books[b]; if (a == null) return '<td style="text-align:center;color:' + MUT + ';padding:5px 7px">\u2014</td>'; var isBest = a === best; return '<td style="text-align:center;padding:5px 7px"><span style="font-family:' + FH + ';font-weight:700;font-size:13px;padding:2px 8px;border-radius:6px;' + (isBest ? 'background:rgba(53,208,192,.16);color:' + POS : 'color:' + TXT) + '">' + fmtAm(a) + '</span></td>'; }).join('');
   }
   function shopRow(label, books) { return '<tr style="border-top:1px solid ' + LINE + '"><td style="padding:6px 8px;font-size:12.5px;font-weight:600;white-space:nowrap">' + esc(label) + '</td>' + bookCells(books) + '</tr>'; }
+  function shopHead(txt) { return '<tr><td colspan="' + (BOOKS.length + 1) + '" style="text-align:left;padding:10px 8px 4px;font-size:10.5px;font-weight:700;letter-spacing:.05em;color:' + MUT2 + '">' + txt + '</td></tr>'; }
+  function allCornerRows(o, H, A) {
+    function lineRows(map, prefix) { if (!map) return ''; return Object.keys(map).map(Number).sort(function (a, b) { return a - b; }).map(function (L) { var C = map[L]; return (C.bkO ? shopRow(prefix + ' over ' + L, C.bkO) : '') + (C.bkU ? shopRow(prefix + ' under ' + L, C.bkU) : ''); }).join(''); }
+    var tot = lineRows(o.cLines, 'Total'); var hh = lineRows(o.hcLines, esc(H.name)); var aa = lineRows(o.acLines, esc(A.name));
+    if (!tot && !hh && !aa) return shopHead('No corner lines posted by the books yet.');
+    return (tot ? shopHead('TOTAL CORNERS') + tot : '') + (hh ? shopHead(esc(H.name).toUpperCase() + ' CORNERS') + hh : '') + (aa ? shopHead(esc(A.name).toUpperCase() + ' CORNERS') + aa : '');
+  }
+  function shopToggle() { var v = state.shopView || 'main'; return '<div style="display:flex;gap:6px;margin-bottom:12px">' + [['main', 'All markets'], ['corners', '\uD83D\uDEA9 All corners']].map(function (t) { var on = v === t[0]; return '<button class="dlbtn" data-act="shopview" data-view="' + t[0] + '" style="padding:7px 15px;border-radius:9px;border:1px solid ' + (on ? 'transparent' : 'rgba(255,255,255,.12)') + ';background:' + (on ? AC : CARD) + ';color:' + (on ? '#0a0c11' : MUT) + ';font-weight:700;font-size:12.5px;cursor:pointer">' + t[1] + '</button>'; }).join('') + '</div>'; }
   function renderLineShop() {
     if (LIVE_STATE !== 'ok') return pageHead('LINE SHOP', 'Compare every book', 'Side-by-side prices across DraftKings, Fanatics, BetMGM & Caesars \u2014 best price highlighted.') + '<div style="color:' + MUT + ';font-size:13px;background:' + CARD + ';border:1px solid ' + LINE + ';border-radius:12px;padding:16px">Line shopping needs live OddsBlaze prices from multiple books. Connect the proxy (or wait for the next sync) to compare books side by side. Currently in model-only mode.</div>';
     var head = '<thead><tr><th style="text-align:left;padding:6px 8px;font-size:11px;color:' + MUT + ';font-weight:700">MARKET</th>' + BOOKS.map(function (b) { return '<th style="text-align:center;padding:6px 8px;font-size:11px;color:' + MUT + ';font-weight:700">' + (BOOK_LABELS[b] || b.toUpperCase()) + '</th>'; }).join('') + '</tr></thead>';
     var cards = MATCHES.map(function (m) {
       var o = (LIVE && LIVE.mk) ? LIVE.mk[m.id] : null; if (!o) return ''; var H = TEAMS[m.h], A = TEAMS[m.a];
-      var rows = shopRow(H.name + ' win', o.bkH) + shopRow('Draw', o.bkD) + shopRow(A.name + ' win', o.bkA) + shopRow('Over 2.5 goals', o.bkO25) + shopRow('Under 2.5 goals', o.bkU25) + shopRow('Both to score', o.bkBTTS) + shopRow('Over 9.5 corners', o.bkC9o) + shopRow('Under 9.5 corners', o.bkC9u) + ((o.bkHCo || o.bkHCu) ? shopRow(H.name + ' corners o' + (o.hcLine || 4.5), o.bkHCo) + shopRow(H.name + ' corners u' + (o.hcLine || 4.5), o.bkHCu) : '') + ((o.bkACo || o.bkACu) ? shopRow(A.name + ' corners o' + (o.acLine || 4.5), o.bkACo) + shopRow(A.name + ' corners u' + (o.acLine || 4.5), o.bkACu) : '') + altShopRows(o);
+      var rows = (state.shopView === 'corners') ? allCornerRows(o, H, A) : (shopRow(H.name + ' win', o.bkH) + shopRow('Draw', o.bkD) + shopRow(A.name + ' win', o.bkA) + shopRow('Over 2.5 goals', o.bkO25) + shopRow('Under 2.5 goals', o.bkU25) + shopRow('Both to score', o.bkBTTS) + shopRow('Over 9.5 corners', o.bkC9o) + shopRow('Under 9.5 corners', o.bkC9u) + ((o.bkHCo || o.bkHCu) ? shopRow(H.name + ' corners o' + (o.hcLine || 4.5), o.bkHCo) + shopRow(H.name + ' corners u' + (o.hcLine || 4.5), o.bkHCu) : '') + ((o.bkACo || o.bkACu) ? shopRow(A.name + ' corners o' + (o.acLine || 4.5), o.bkACo) + shopRow(A.name + ' corners u' + (o.acLine || 4.5), o.bkACu) : '') + altShopRows(o));
       return '<div class="dlcard" style="background:' + CARD + ';border:1px solid ' + LINE + ';border-radius:14px;padding:14px 15px;margin-bottom:12px"><div style="display:flex;align-items:center;gap:9px;margin-bottom:8px"><span style="font-size:18px">' + H.flag + '</span><span style="font-weight:700;font-size:14.5px">' + esc(H.name) + ' v ' + esc(A.name) + '</span><span style="font-size:18px">' + A.flag + '</span><span style="margin-left:auto;font-size:11.5px;color:' + MUT + '">' + dayLabel(m.date) + ' ' + fmtTime(m.date) + '</span></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">' + head + '<tbody>' + rows + '</tbody></table></div></div>';
     }).join('');
-    return pageHead('LINE SHOP', 'Compare every book', 'Best price per market highlighted in teal across DraftKings, Fanatics, BetMGM & Caesars.') + (cards || '<div style="color:' + MUT + '">No live markets to compare yet.</div>');
+    return pageHead('LINE SHOP', 'Compare every book', 'Best price highlighted in teal across DraftKings, Fanatics, FanDuel, BetMGM & Caesars.') + shopToggle() + (cards || '<div style="color:' + MUT + '">No live markets to compare yet.</div>');
   }
   function slipUI() {
     var slip = state.slip || [], cnt = slip.length, stake = state.stake || 25;
@@ -668,7 +676,7 @@
 
   // ---------------------------------------------------------------- shell (MLB layout)
   var NAV = [['today', '\u26A1', 'Today'], ['scanner', '\uD83D\uDD0D', 'Edge Scanner'], ['lineshop', '\uD83D\uDCB0', 'Line Shop'], ['radar', '\uD83C\uDFAF', 'Goalscorer Radar'], ['matches', '\u26BD', 'Matches'], ['corners', '\uD83D\uDEA9', 'Corners']];
-  var state = { tab: 'today', teamFilter: '', dateFilter: 'all', slip: [], slipOpen: false, stake: 25, labelFilter: 'all' };
+  var state = { tab: 'today', teamFilter: '', dateFilter: 'all', slip: [], slipOpen: false, stake: 25, labelFilter: 'all', shopView: 'main' };
   var overlay = null, headerSwitcher = null, tickTimer = null, liveTimer = null;
   function safeRender() { try { if (overlay && overlay.style.display !== 'none') render(); } catch (e) {} }
 
@@ -770,6 +778,7 @@
       else if (act === 'toggleslip') { state.slipOpen = !state.slipOpen; render(); }
       else if (act === 'stake') { state.stake = parseInt(el.getAttribute('data-stake'), 10) || 25; render(); }
       else if (act === 'lblfilter') { state.labelFilter = el.getAttribute('data-lbl') || 'all'; render(); }
+      else if (act === 'shopview') { state.shopView = el.getAttribute('data-view') || 'main'; render(); overlay.scrollTop = 0; }
       else if (act === 'tagpick') { var _pid = el.getAttribute('data-pid'); state.slip.forEach(function (p) { if (p.pid === _pid) { var _i = SLIP_TAGS.indexOf(p.tag); p.tag = SLIP_TAGS[_i + 1] || ''; } }); saveSlip(); render(); }
     });
   }
