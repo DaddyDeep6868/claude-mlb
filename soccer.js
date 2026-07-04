@@ -51,6 +51,7 @@
   function seed(str) { var h = 2166136261; for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return ((h >>> 0) % 100000) / 100000; }
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
   function fact(n) { var f = 1; for (var i = 2; i <= n; i++) f *= i; return f; }
+  function comb(nn, kk) { if (kk < 0 || kk > nn) return 0; return fact(nn) / (fact(kk) * fact(nn - kk)); }
   function pois(k, l) { return Math.exp(-l) * Math.pow(l, k) / fact(k); }
   function poisAtMost(k, l) { var s = 0; for (var i = 0; i <= k; i++) s += pois(i, l); return s; }
   function americanFromProb(p) { p = clamp(p, 0.01, 0.985); return p >= 0.5 ? Math.round(-(p / (1 - p)) * 100) : Math.round(((1 - p) / p) * 100); }
@@ -250,6 +251,8 @@
             if (tside === 'h') { if (side === 'over') { o.amHCo = e.best; o.pHCo = avg; o.bkHCo = e.books; o.hcLine = line; } else { o.amHCu = e.best; o.pHCu = avg; o.bkHCu = e.books; if (o.hcLine == null) o.hcLine = line; } return; }
             if (tside === 'a') { if (side === 'over') { o.amACo = e.best; o.pACo = avg; o.bkACo = e.books; o.acLine = line; } else { o.amACu = e.best; o.pACu = avg; o.bkACu = e.books; if (o.acLine == null) o.acLine = line; } return; }
           }
+          o.cLines = o.cLines || {}; var CL = o.cLines[line] = o.cLines[line] || {};
+          if (side === 'over') { CL.amO = e.best; CL.pO = avg; CL.bkO = e.books; } else { CL.amU = e.best; CL.pU = avg; CL.bkU = e.books; }
           if (Number(line) === 9.5) { if (side === 'over') { o.amC9o = e.best; o.pC9o = avg; o.bkC9o = e.books; } else if (side === 'under') { o.amC9u = e.best; o.pC9u = avg; o.bkC9u = e.books; } }
           return;
         }
@@ -273,7 +276,13 @@
     var cxTot = cxH + cxA;
     var over95c = 1 - poisAtMost(9, cxTot);
     var overHc = 1 - poisAtMost(4, cxH), overAc = 1 - poisAtMost(4, cxA);
-    return { xgH: xgH, xgA: xgA, pH: pH, pD: pD, pA: pA, over25: over25, under25: 1 - over25, btts: btts, cxTot: cxTot, cxH: cxH, cxA: cxA, over95c: over95c, under95c: 1 - over95c, hcLine: 4.5, acLine: 4.5, overHc: overHc, underHc: 1 - overHc, overAc: overAc, underAc: 1 - overAc, live: false };
+    var altC = [8.5, 9.5, 10.5, 11.5].map(function (L) { var k = Math.floor(L); return { line: L, over: 1 - poisAtMost(k, cxTot), under: poisAtMost(k, cxTot) }; });
+    var crH = 0, crT = 0, crA = 0, chH15 = 0, chA15 = 0, NC = 24;
+    for (var ci = 0; ci <= NC; ci++) for (var cj = 0; cj <= NC; cj++) { var prc = pois(ci, cxH) * pois(cj, cxA); if (ci > cj) crH += prc; else if (ci === cj) crT += prc; else crA += prc; if (ci - cj >= 2) chH15 += prc; if (cj - ci >= 2) chA15 += prc; }
+    var pfc = cxTot > 0 ? cxH / cxTot : 0.5;
+    function raceWin(X) { var bo = 2 * X - 1, sm = 0; for (var j = X; j <= bo; j++) sm += comb(bo, j) * Math.pow(pfc, j) * Math.pow(1 - pfc, bo - j); return sm; }
+    var race3 = raceWin(3), race5 = raceWin(5);
+    return { xgH: xgH, xgA: xgA, pH: pH, pD: pD, pA: pA, over25: over25, under25: 1 - over25, btts: btts, cxTot: cxTot, cxH: cxH, cxA: cxA, over95c: over95c, under95c: 1 - over95c, hcLine: 4.5, acLine: 4.5, overHc: overHc, underHc: 1 - overHc, overAc: overAc, underAc: 1 - overAc, altC: altC, crH: crH, crT: crT, crA: crA, chH15: chH15, chA15: chA15, pFirstH: pfc, pFirstA: 1 - pfc, race3H: race3, race3A: 1 - race3, race5H: race5, race5A: 1 - race5, live: false };
   }
   function matchModel(m) {
     var mm = poissonModel(m);
@@ -297,6 +306,7 @@
     if (o.amHCu != null) { mm.amHCu = o.amHCu; if (o.pHCu != null) { mm.underHc = o.pHCu; if (o.pHCo != null) { var _sh = o.pHCo + o.pHCu; if (_sh > 0) { mm.overHc = o.pHCo / _sh; mm.underHc = o.pHCu / _sh; } } } }
     if (o.amACo != null) { mm.amACo = o.amACo; if (o.pACo != null) mm.overAc = o.pACo; }
     if (o.amACu != null) { mm.amACu = o.amACu; if (o.pACu != null) { mm.underAc = o.pACu; if (o.pACo != null) { var _sa = o.pACo + o.pACu; if (_sa > 0) { mm.overAc = o.pACo / _sa; mm.underAc = o.pACu / _sa; } } } }
+    if (o.cLines && mm.altC) { mm.altC = mm.altC.map(function (a) { var CL = o.cLines[a.line]; if (!CL) return a; var na = Object.assign({}, a); if (CL.amO != null) na.amO = CL.amO; if (CL.amU != null) na.amU = CL.amU; if (CL.pO != null && CL.pU != null) { var st = CL.pO + CL.pU; if (st > 0) { na.over = CL.pO / st; na.under = CL.pU / st; } } else if (CL.pO != null) { na.over = CL.pO; na.under = 1 - CL.pO; } na.bkO = CL.bkO; na.bkU = CL.bkU; return na; }); }
     return mm;
   }
   function modelGoalscorers() {
@@ -335,7 +345,9 @@
       { grp: 'Goals', label: 'Over 2.5 goals', prob: mm.over25, key: 'o25' + K, am: mm.amO25 }, { grp: 'Goals', label: 'Under 2.5 goals', prob: mm.under25, key: 'u25' + K, am: mm.amU25 }, { grp: 'Goals', label: 'Both teams to score', prob: mm.btts, key: 'btts' + K, am: mm.amBTTS },
       { grp: 'Corners', label: 'Over 9.5 corners', prob: mm.over95c, key: 'c9o' + K, am: mm.amC9o }, { grp: 'Corners', label: 'Under 9.5 corners', prob: mm.under95c, key: 'c9u' + K, am: mm.amC9u },
       { grp: 'Corners', label: H.name + ' over ' + (mm.hcLine || 4.5) + ' corners', prob: mm.overHc, key: 'hco' + K, am: mm.amHCo }, { grp: 'Corners', label: H.name + ' under ' + (mm.hcLine || 4.5) + ' corners', prob: mm.underHc, key: 'hcu' + K, am: mm.amHCu },
-      { grp: 'Corners', label: A.name + ' over ' + (mm.acLine || 4.5) + ' corners', prob: mm.overAc, key: 'aco' + K, am: mm.amACo }, { grp: 'Corners', label: A.name + ' under ' + (mm.acLine || 4.5) + ' corners', prob: mm.underAc, key: 'acu' + K, am: mm.amACu }
+      { grp: 'Corners', label: A.name + ' over ' + (mm.acLine || 4.5) + ' corners', prob: mm.overAc, key: 'aco' + K, am: mm.amACo }, { grp: 'Corners', label: A.name + ' under ' + (mm.acLine || 4.5) + ' corners', prob: mm.underAc, key: 'acu' + K, am: mm.amACu },
+      { grp: 'Corners', label: H.name + ' most corners', prob: mm.crH, key: 'crh' + K, am: mm.amCRH }, { grp: 'Corners', label: A.name + ' most corners', prob: mm.crA, key: 'cra' + K, am: mm.amCRA },
+      { grp: 'Corners', label: H.name + ' first corner', prob: mm.pFirstH, key: 'fch' + K, am: mm.amFCH }, { grp: 'Corners', label: A.name + ' first corner', prob: mm.pFirstA, key: 'fca' + K, am: mm.amFCA }
     ].map(function (s) { return Object.assign(s, market(s.prob, s.key, s.am), { match: lbl, date: m.date }); });
   }
   function bestValueToday() {
@@ -428,6 +440,15 @@
   }
 
   // ---------------------------------------------------------------- cards
+  function cornerExtras(mm, K, cl, H, A) {
+    var alt = (mm.altC || []).filter(function (a) { return a.line !== 9.5; });
+    var altHtml = alt.map(function (a) { return oddRow('Total over ' + a.line + ' corners', a.over, 'co' + a.line + K, a.amO, cl) + oddRow('Total under ' + a.line + ' corners', a.under, 'cu' + a.line + K, a.amU, cl); }).join('');
+    var resHtml = oddRow(H.name + ' most corners', mm.crH, 'crh' + K, mm.amCRH, cl) + oddRow('Tie (equal corners)', mm.crT, 'crt' + K, mm.amCRT, cl) + oddRow(A.name + ' most corners', mm.crA, 'cra' + K, mm.amCRA, cl) + oddRow(H.name + ' -1.5 corners', mm.chH15, 'chh' + K, mm.amCHH, cl) + oddRow(A.name + ' -1.5 corners', mm.chA15, 'cha' + K, mm.amCHA, cl);
+    var raceHtml = oddRow(H.name + ' first corner', mm.pFirstH, 'fch' + K, mm.amFCH, cl) + oddRow(A.name + ' first corner', mm.pFirstA, 'fca' + K, mm.amFCA, cl) + oddRow(H.name + ' race to 3 corners', mm.race3H, 'r3h' + K, null, cl) + oddRow(A.name + ' race to 3 corners', mm.race3A, 'r3a' + K, null, cl) + oddRow(H.name + ' race to 5 corners', mm.race5H, 'r5h' + K, null, cl) + oddRow(A.name + ' race to 5 corners', mm.race5A, 'r5a' + K, null, cl);
+    function sec(t, inner) { return '<div style="margin:12px 0 5px;font-size:11px;font-weight:700;letter-spacing:.06em;color:' + MUT2 + '">' + t + '</div><div style="display:flex;flex-direction:column;gap:7px">' + inner + '</div>'; }
+    return (altHtml ? sec('ALTERNATE TOTALS', altHtml) : '') + sec('MOST CORNERS (3-WAY) + HANDICAP', resHtml) + sec('RACE / FIRST CORNER', raceHtml);
+  }
+  function altShopRows(o) { if (!o.cLines) return ''; return Object.keys(o.cLines).filter(function (L) { return Number(L) !== 9.5; }).sort(function (a, b) { return a - b; }).map(function (L) { var CL = o.cLines[L]; return shopRow('Over ' + L + ' corners', CL.bkO) + shopRow('Under ' + L + ' corners', CL.bkU); }).join(''); }
   function matchCardFull(m, opts) {
     var mm = matchModel(m), H = TEAMS[m.h], A = TEAMS[m.a], st = statusOf(m.date, m.live), K = idk(m), cl = H.name + ' v ' + A.name;
     var meta = esc(m.stage) + ' \u00B7 ' + dayLabel(m.date) + ' ' + fmtTime(m.date) + (m.venue ? ' \u00B7 ' + esc(m.venue) : '');
@@ -441,7 +462,7 @@
       body = '<div style="display:flex;align-items:center;gap:14px;margin-bottom:10px;flex-wrap:wrap"><div style="font-size:12px;color:' + MUT + '">Proj corners <span style="font-family:' + FH + ';font-weight:700;color:' + GOLD + '">' + mm.cxTot.toFixed(1) + '</span> total</div><div style="font-size:12px;color:' + MUT + '">' + esc(H.name) + ' <span style="font-family:' + FH + ';font-weight:700;color:' + TXT + '">' + (mm.cxH || 0).toFixed(1) + '</span></div><div style="font-size:12px;color:' + MUT + '">' + esc(A.name) + ' <span style="font-family:' + FH + ';font-weight:700;color:' + TXT + '">' + (mm.cxA || 0).toFixed(1) + '</span></div></div>'
         + '<div style="display:flex;flex-direction:column;gap:7px">' + oddRow('Total over 9.5 corners', mm.over95c, 'c9o' + K, mm.amC9o, cl) + oddRow('Total under 9.5 corners', mm.under95c, 'c9u' + K, mm.amC9u, cl) + '</div>'
         + '<div style="margin:12px 0 5px;font-size:11px;font-weight:700;letter-spacing:.06em;color:' + MUT2 + '">' + esc(H.name.toUpperCase()) + ' CORNERS</div><div style="display:flex;flex-direction:column;gap:7px">' + oddRow('Over ' + hcl + ' corners', mm.overHc, 'hco' + K, mm.amHCo, cl) + oddRow('Under ' + hcl + ' corners', mm.underHc, 'hcu' + K, mm.amHCu, cl) + '</div>'
-        + '<div style="margin:12px 0 5px;font-size:11px;font-weight:700;letter-spacing:.06em;color:' + MUT2 + '">' + esc(A.name.toUpperCase()) + ' CORNERS</div><div style="display:flex;flex-direction:column;gap:7px">' + oddRow('Over ' + acl + ' corners', mm.overAc, 'aco' + K, mm.amACo, cl) + oddRow('Under ' + acl + ' corners', mm.underAc, 'acu' + K, mm.amACu, cl) + '</div>';
+        + '<div style="margin:12px 0 5px;font-size:11px;font-weight:700;letter-spacing:.06em;color:' + MUT2 + '">' + esc(A.name.toUpperCase()) + ' CORNERS</div><div style="display:flex;flex-direction:column;gap:7px">' + oddRow('Over ' + acl + ' corners', mm.overAc, 'aco' + K, mm.amACo, cl) + oddRow('Under ' + acl + ' corners', mm.underAc, 'acu' + K, mm.amACu, cl) + '</div>' + cornerExtras(mm, K, cl, H, A);
     } else {
       body = '<div style="display:flex;gap:12px;margin-bottom:13px">' + probBar(H.name, mm.pH, AC) + probBar('Draw', mm.pD, MUT3) + probBar(A.name, mm.pA, POS) + '</div>'
         + '<div style="display:flex;flex-direction:column;gap:7px">' + oddRow(H.name + ' to win', mm.pH, '1x2h' + K, mm.amH, cl) + oddRow('Draw', mm.pD, '1x2d' + K, mm.amD, cl) + oddRow(A.name + ' to win', mm.pA, '1x2a' + K, mm.amA, cl)
@@ -613,7 +634,7 @@
     var head = '<thead><tr><th style="text-align:left;padding:6px 8px;font-size:11px;color:' + MUT + ';font-weight:700">MARKET</th>' + BOOKS.map(function (b) { return '<th style="text-align:center;padding:6px 8px;font-size:11px;color:' + MUT + ';font-weight:700">' + (BOOK_LABELS[b] || b.toUpperCase()) + '</th>'; }).join('') + '</tr></thead>';
     var cards = MATCHES.map(function (m) {
       var o = (LIVE && LIVE.mk) ? LIVE.mk[m.id] : null; if (!o) return ''; var H = TEAMS[m.h], A = TEAMS[m.a];
-      var rows = shopRow(H.name + ' win', o.bkH) + shopRow('Draw', o.bkD) + shopRow(A.name + ' win', o.bkA) + shopRow('Over 2.5 goals', o.bkO25) + shopRow('Under 2.5 goals', o.bkU25) + shopRow('Both to score', o.bkBTTS) + shopRow('Over 9.5 corners', o.bkC9o) + shopRow('Under 9.5 corners', o.bkC9u) + ((o.bkHCo || o.bkHCu) ? shopRow(H.name + ' corners o' + (o.hcLine || 4.5), o.bkHCo) + shopRow(H.name + ' corners u' + (o.hcLine || 4.5), o.bkHCu) : '') + ((o.bkACo || o.bkACu) ? shopRow(A.name + ' corners o' + (o.acLine || 4.5), o.bkACo) + shopRow(A.name + ' corners u' + (o.acLine || 4.5), o.bkACu) : '');
+      var rows = shopRow(H.name + ' win', o.bkH) + shopRow('Draw', o.bkD) + shopRow(A.name + ' win', o.bkA) + shopRow('Over 2.5 goals', o.bkO25) + shopRow('Under 2.5 goals', o.bkU25) + shopRow('Both to score', o.bkBTTS) + shopRow('Over 9.5 corners', o.bkC9o) + shopRow('Under 9.5 corners', o.bkC9u) + ((o.bkHCo || o.bkHCu) ? shopRow(H.name + ' corners o' + (o.hcLine || 4.5), o.bkHCo) + shopRow(H.name + ' corners u' + (o.hcLine || 4.5), o.bkHCu) : '') + ((o.bkACo || o.bkACu) ? shopRow(A.name + ' corners o' + (o.acLine || 4.5), o.bkACo) + shopRow(A.name + ' corners u' + (o.acLine || 4.5), o.bkACu) : '') + altShopRows(o);
       return '<div class="dlcard" style="background:' + CARD + ';border:1px solid ' + LINE + ';border-radius:14px;padding:14px 15px;margin-bottom:12px"><div style="display:flex;align-items:center;gap:9px;margin-bottom:8px"><span style="font-size:18px">' + H.flag + '</span><span style="font-weight:700;font-size:14.5px">' + esc(H.name) + ' v ' + esc(A.name) + '</span><span style="font-size:18px">' + A.flag + '</span><span style="margin-left:auto;font-size:11.5px;color:' + MUT + '">' + dayLabel(m.date) + ' ' + fmtTime(m.date) + '</span></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">' + head + '<tbody>' + rows + '</tbody></table></div></div>';
     }).join('');
     return pageHead('LINE SHOP', 'Compare every book', 'Best price per market highlighted in teal across DraftKings, Fanatics, BetMGM & Caesars.') + (cards || '<div style="color:' + MUT + '">No live markets to compare yet.</div>');
