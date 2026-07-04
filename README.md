@@ -1,48 +1,80 @@
-# DingerLab build tools
+# DingerLab v1.0.3 — Stadium Night
 
-Small helper scripts for maintaining the packaged app. Run them from the
-project root (the folder that contains `index.html`).
+MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 
-## Killing `[bundle] error` for good
+---
 
-The app renders with React, which is loaded at runtime. There are three layers
-of protection against the old `[bundle] error` screen:
+## Files
 
-1. **Multi-CDN fallback** - if unpkg is down, it retries jsDelivr.
-2. **Offline self-cache** - the first time the app loads with internet, React
-   and ReactDOM are cached in the browser's `localStorage`. Every load after
-   that works with no network, even fully offline.
-3. **Hard-code (strongest)** - bake React + ReactDOM directly into
-   `index.html` so booting never touches the network at all, even on a
-   first-ever offline open.
+| File | Purpose |
+|---|---|
+| `index.html` | Bundled app — GitHub Pages, open in any browser, no build step |
+| `DingerLab Redesign.dc.html` | Source design component (edit this, re-bundle to update `index.html`) |
+| `dingerlab_server.py` | Flask server — multi-device sync, server-side odds proxy, auto-grading |
+| `streamlit_app.py` | Streamlit wrapper — alternative cloud deploy on Streamlit Community Cloud |
+| `requirements.txt` | Python dependencies |
 
-### Hard-code React (recommended for a truly self-contained file)
+---
 
-```bash
-node tools/inline-react.js
-```
+## Deploy on GitHub Pages (front-end only)
 
-- If you have internet, it downloads React 18.3.1 + ReactDOM 18.3.1 and
-  inlines them.
-- For a fully offline build, first drop the two UMD files into
-  `tools/vendor/`:
-  - `tools/vendor/react.production.min.js`
-  - `tools/vendor/react-dom.production.min.js`
-  then run the command above.
+1. Push this repo to GitHub.
+2. **Settings → Pages → Branch:** `main`, root `/`.
+3. Done — live at `https://<you>.github.io/<repo>/`.
 
-The script is idempotent - running it twice does nothing the second time.
+The app fetches live MLB data automatically (no key needed):
+- Today's slate, rosters, probable pitchers → MLB Stats API
+- Real HR model (park × opposing-starter adjusted) for every qualified hitter
+- Live HR feed once games start
 
-## Updating the version
+**Odds:** open `Tools → Live odds proxy`, enter your Render server URL and hit **Save & reload**. Your `ODDSBLAZE_KEY` env var on Render is used automatically.
 
-Always bump the version on both the UI badge and the zip filename.
+---
+
+## Run the Flask server (multi-device sync + server-side odds)
 
 ```bash
-node tools/set-version.js 1.0.3
+pip install -r requirements.txt
+python dingerlab_server.py
 ```
 
-This updates the on-screen badge in `index.html` and
-`DingerLab Redesign.dc.html`, plus the README title. Then re-zip:
+Then open `http://localhost:8501`.
 
-```bash
-zip -rq ../DingerLab_v1.0.3_StadiumNight.zip .
+Set env vars before running (Render dashboard → Environment):
+
 ```
+ODDSBLAZE_KEY=your-key-here
+PORT=8501                       # optional, defaults to 8501
+DINGERLAB_ALLOWED_ORIGIN=...    # optional, lock CORS to your front-end origin
+```
+
+The server handles:
+- `/api/oddsblaze` — OddsBlaze proxy (reads `ODDSBLAZE_KEY` from env)
+- `/api/state` — saved parlays + board snapshots sync across devices
+- `/api/grade` — auto-grades pending legs from MLB boxscores (matches by MLB player id)
+- `/api/grade_ledger` — name-based grading for ad-hoc bet ledgers
+- `/health` — liveness check
+
+A background worker also re-grades pending slips every 10 min, so results settle even with no tab open.
+
+Data is written to `server_data/dingerlab_server_state.json`. Use a host with persistent disk.
+
+---
+
+## Deploy server on Render
+
+1. New Web Service → connect this repo.
+2. Build command: `pip install -r requirements.txt`
+3. Start command: `python dingerlab_server.py`
+4. Environment → add `ODDSBLAZE_KEY`. Optionally add `DINGERLAB_ALLOWED_ORIGIN=https://<you>.github.io` to restrict CORS.
+5. Your URL (e.g. `https://mlb-slate.onrender.com`) goes in the app's **Tools → Live odds proxy**.
+
+> **CORS:** the server defaults to allowing any origin (`*`) on `/api/*` so an unconfigured deploy works out of the box. For a public deploy, set `DINGERLAB_ALLOWED_ORIGIN` to your GitHub Pages origin so only your front-end can call the API.
+>
+> **Keys:** no credentials are hardcoded — `ODDSBLAZE_KEY` is read from the environment.
+
+---
+
+## Screens
+
+Dashboard (Command Center) · Games · Radar (weather / ball-carry map) · Solver (bankroll-aware Kelly portfolio) · Report Card (model calibration vs results) · Builder (cross-play generator + payoff frontier) · Data (feature store) · Research (steam radar, value plays, what changed) · Tracking (CLV, W/L results) · Tools (odds proxy, model settings, exposure) · Live (HR feed + schedule)
