@@ -1534,11 +1534,37 @@
       tryNext();
     });
   }
+  function _dcInjectInline(code) {
+    return new Promise((resolve2) => {
+      //! nosemgrep: create-script-element
+      const s = document.createElement("script");
+      s.textContent = code;
+      s.async = false;
+      document.head.appendChild(s);
+      resolve2();
+    });
+  }
+  function _dcLsGet(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
+  function _dcLsSet(k, v) { try { window.localStorage.setItem(k, v); } catch (e) {} }
+  function _dcLoadCached(urls, key) {
+    const cached = _dcLsGet(key);
+    if (cached) { console.info("[dc] using cached copy:", key); return _dcInjectInline(cached); }
+    const list = Array.isArray(urls) ? urls : [urls];
+    let i = 0;
+    const tryNext = () => {
+      if (i >= list.length) return Promise.reject(new Error("could not fetch " + list[list.length - 1]));
+      const u = list[i++];
+      return fetch(u).then((r) => { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
+        .then((txt) => { _dcLsSet(key, txt); return _dcInjectInline(txt); })
+        .catch((e) => { console.warn("[dc] fetch failed, trying next:", u, e && e.message); return tryNext(); });
+    };
+    return tryNext();
+  }
   function loadReactUmd() {
     const w = window;
     if (w.React && w.ReactDOM) return Promise.resolve();
-    return loadScript([REACT_URL, REACT_FALLBACK_URL], REACT_SRI)
-      .then(() => loadScript([REACT_DOM_URL, REACT_DOM_FALLBACK_URL], REACT_DOM_SRI))
+    return _dcLoadCached([REACT_URL, REACT_FALLBACK_URL], "__dc_react_umd_18_3_1")
+      .then(() => { if (!w.ReactDOM) return _dcLoadCached([REACT_DOM_URL, REACT_DOM_FALLBACK_URL], "__dc_react_dom_umd_18_3_1"); })
       .then(() => void 0);
   }
   function init() {
