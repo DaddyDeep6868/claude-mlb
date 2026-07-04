@@ -178,15 +178,7 @@
           entry.subs.delete(sub);
         };
       }, []);
-      const defaults = React.useMemo(() => {
-        const d = {};
-        for (const k in entry.propsMeta || {}) {
-          const v = entry.propsMeta?.[k]?.default;
-          if (v !== void 0) d[k] = v;
-        }
-        return d;
-      }, [entry.propsMeta]);
-      return h(Root, { ...defaults, ...entry.propOverrides || {} });
+      return h(Root, entry.propOverrides || null);
     }
     const ReactDOM = getReactDOM();
     if (ReactDOM.createRoot)
@@ -1515,31 +1507,39 @@
   var REACT_SRI = "sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z";
   var REACT_DOM_URL = "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js";
   var REACT_DOM_SRI = "sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1";
+  var REACT_FALLBACK_URL = "https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js";
+  var REACT_DOM_FALLBACK_URL = "https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js";
   function hideRawTemplate() {
     const s = document.createElement("style");
     s.textContent = "x-dc{display:none!important}";
     document.head.appendChild(s);
   }
-  function loadScript(src, integrity) {
+  function loadScript(srcs, integrity) {
+    const list = Array.isArray(srcs) ? srcs : [srcs];
     return new Promise((resolve2, reject) => {
-      //! nosemgrep: create-script-element
-      const s = document.createElement("script");
-      s.src = src;
-      s.integrity = integrity;
-      s.crossOrigin = "anonymous";
-      s.async = false;
-      s.onload = () => resolve2();
-      s.onerror = () => reject(new Error(`failed to load ${src}`));
-      document.head.appendChild(s);
+      let i = 0;
+      const tryNext = () => {
+        if (i >= list.length) { reject(new Error("failed to load " + list[list.length - 1])); return; }
+        const src = list[i++];
+        //! nosemgrep: create-script-element
+        const s = document.createElement("script");
+        s.src = src;
+        if (integrity) s.integrity = integrity;
+        s.crossOrigin = "anonymous";
+        s.async = false;
+        s.onload = () => resolve2();
+        s.onerror = () => { if (i < list.length) { console.warn("[dc] script failed, trying fallback:", src); tryNext(); } else reject(new Error("failed to load " + src)); };
+        document.head.appendChild(s);
+      };
+      tryNext();
     });
   }
   function loadReactUmd() {
     const w = window;
     if (w.React && w.ReactDOM) return Promise.resolve();
-    return Promise.all([
-      loadScript(REACT_URL, REACT_SRI),
-      loadScript(REACT_DOM_URL, REACT_DOM_SRI)
-    ]).then(() => void 0);
+    return loadScript([REACT_URL, REACT_FALLBACK_URL], REACT_SRI)
+      .then(() => loadScript([REACT_DOM_URL, REACT_DOM_FALLBACK_URL], REACT_DOM_SRI))
+      .then(() => void 0);
   }
   function init() {
     const runtime = createRuntime(document);
@@ -1596,8 +1596,18 @@
     else document.addEventListener("DOMContentLoaded", () => api.__dcBoot());
   }
   hideRawTemplate();
+  function showBootError() {
+    try {
+      const d = document.createElement("div");
+      d.style.cssText = "position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;background:#0a0c11;color:#eef1f6;font-family:ui-sans-serif,system-ui,-apple-system,sans-serif;text-align:center";
+      d.innerHTML = '<div style="max-width:380px"><div style="font-size:18px;font-weight:700;margin-bottom:8px">Could not load DingerLab</div><div style="font-size:14px;color:#9aa3b2;line-height:1.5;margin-bottom:18px">The app needs an internet connection to start up. Check your connection and try again.</div><button style="padding:10px 20px;border:none;border-radius:10px;background:#ff8a4c;color:#0a0c11;font-weight:700;font-size:14px;cursor:pointer">Reload</button></div>';
+      const btn = d.querySelector("button");
+      if (btn) btn.onclick = () => location.reload();
+      document.body.appendChild(d);
+    } catch (e) {}
+  }
   loadReactUmd().then(init).catch((err) => {
     console.error("[dc] failed to load React or boot:", err);
-    throw err;
+    showBootError();
   });
 })();

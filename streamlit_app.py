@@ -14,8 +14,11 @@ BOOKS = ["draftkings", "fanatics", "betmgm", "caesars"]
 
 
 def asset_b64(path):
-    with open(path, "rb") as f:
-        return base64.b64encode(f.read()).decode("ascii")
+    try:
+        with open(path, "rb") as f:
+            return base64.b64encode(f.read()).decode("ascii")
+    except OSError:
+        return ""
 
 
 WALLPAPER = asset_b64("login_wallpaper.png")
@@ -92,8 +95,14 @@ def fetch_book(key, book, league):
 
 
 def load_html():
-    with open("DingerLab.html", "r", encoding="utf-8") as f:
-        return f.read()
+    # Serve the new bundled redesign first; fall back to the legacy file.
+    for fname in ("index.html", "DingerLab.html"):
+        try:
+            with open(fname, "r", encoding="utf-8") as f:
+                return f.read()
+        except OSError:
+            continue
+    raise FileNotFoundError("No DingerLab HTML found (looked for index.html, DingerLab.html)")
 
 
 def show_login():
