@@ -184,7 +184,7 @@
         return fetch(base + '/api/oddsblaze?sportsbook=' + bk + '&league=' + encodeURIComponent(slug))
           .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
       })).then(function (jsons) {
-        var built = buildLive(jsons);
+        var built = buildLive(jsons, BOOKS);
         if (built && built.matches.length) {
           Object.assign(TEAMS, built.teams);
           MATCHES = built.matches;
@@ -194,10 +194,10 @@
       }).catch(function () { tryNext(i + 1); });
     })(0);
   }
-  function buildLive(jsons) {
+  function buildLive(jsons, books) {
     var byId = {}, any = false;
-    (jsons || []).forEach(function (j) {
-      if (!j || !Array.isArray(j.events)) return; any = true;
+    (jsons || []).forEach(function (j, bi) {
+      if (!j || !Array.isArray(j.events)) return; any = true; var book = (books && books[bi]) || ("book" + bi);
       j.events.forEach(function (ev) {
         if (!ev || !ev.id || !ev.teams || !ev.teams.home || !ev.teams.away) return;
         var slot = byId[ev.id]; if (!slot) slot = byId[ev.id] = { ev: ev, odds: {} };
@@ -205,8 +205,9 @@
           if (o == null || o.price == null) return; var am = parseInt(String(o.price), 10); if (!isFinite(am) || am === 0) return;
           var sel = o.selection || {};
           var key = (o.market || '') + '|' + (o.name || sel.name || '') + '|' + (sel.side || '') + '|' + (sel.line == null ? '' : sel.line);
-          var e = slot.odds[key]; if (!e) e = slot.odds[key] = { market: o.market || '', name: o.name || (sel.name || ''), side: sel.side || '', line: sel.line, player: o.player || null, best: am, sumImp: 0, cnt: 0 };
+          var e = slot.odds[key]; if (!e) e = slot.odds[key] = { market: o.market || '', name: o.name || (sel.name || ''), side: sel.side || '', line: sel.line, player: o.player || null, best: am, sumImp: 0, cnt: 0, books: {} };
           if (betterAm(am, e.best)) e.best = am;
+          var _pb = e.books[book]; if (_pb == null || betterAm(am, _pb)) e.books[book] = am;
           e.sumImp += impliedProb(am); e.cnt++;
         });
       });
@@ -228,21 +229,21 @@
         // Anytime goalscorer: Player Goals Over 0.5
         if (/goal/.test(m) && e.player && e.player.name && side === 'over' && Number(line) === 0.5 && !/team/.test(m)) {
           var ptn = e.player.team ? e.player.team.name : ''; var pside = normName(ptn) === normName(hN) ? 'h' : normName(ptn) === normName(aN) ? 'a' : '';
-          gsList.push({ name: e.player.name, side: pside, best: e.best, avg: avg }); return;
+          gsList.push({ name: e.player.name, side: pside, best: e.best, avg: avg, books: e.books }); return;
         }
         // 3-way match result / moneyline
         if (/moneyline|match result|full time result|1x2|match winner|to win|match odds/.test(m) && side !== 'over' && side !== 'under') {
-          if (/draw|tie/.test(nm)) { o.amD = e.best; o.pD = avg; }
-          else if (nm === normName(hN) || nm.indexOf(normName(hN)) >= 0) { o.amH = e.best; o.pH = avg; }
-          else if (nm === normName(aN) || nm.indexOf(normName(aN)) >= 0) { o.amA = e.best; o.pA = avg; }
+          if (/draw|tie/.test(nm)) { o.amD = e.best; o.pD = avg; o.bkD = e.books; }
+          else if (nm === normName(hN) || nm.indexOf(normName(hN)) >= 0) { o.amH = e.best; o.pH = avg; o.bkH = e.books; }
+          else if (nm === normName(aN) || nm.indexOf(normName(aN)) >= 0) { o.amA = e.best; o.pA = avg; o.bkA = e.books; }
           return;
         }
         // Total goals 2.5
-        if (/total/.test(m) && /goal/.test(m) && Number(line) === 2.5) { if (side === 'over') { o.amO25 = e.best; o.pO25 = avg; } else if (side === 'under') { o.amU25 = e.best; o.pU25 = avg; } return; }
+        if (/total/.test(m) && /goal/.test(m) && Number(line) === 2.5) { if (side === 'over') { o.amO25 = e.best; o.pO25 = avg; o.bkO25 = e.books; } else if (side === 'under') { o.amU25 = e.best; o.pU25 = avg; o.bkU25 = e.books; } return; }
         // Both teams to score
-        if (/both teams to score|btts/.test(m)) { if (/yes/.test(nm) || /yes/.test(side)) { o.amBTTS = e.best; o.pBTTS = avg; } return; }
+        if (/both teams to score|btts/.test(m)) { if (/yes/.test(nm) || /yes/.test(side)) { o.amBTTS = e.best; o.pBTTS = avg; o.bkBTTS = e.books; } return; }
         // Corners 9.5
-        if (/corner/.test(m) && Number(line) === 9.5) { if (side === 'over') { o.amC9o = e.best; o.pC9o = avg; } else if (side === 'under') { o.amC9u = e.best; o.pC9u = avg; } return; }
+        if (/corner/.test(m) && Number(line) === 9.5) { if (side === 'over') { o.amC9o = e.best; o.pC9o = avg; o.bkC9o = e.books; } else if (side === 'under') { o.amC9u = e.best; o.pC9u = avg; o.bkC9u = e.books; } return; }
       });
       mk[id] = o; matchGs[id] = gsList;
     });
@@ -376,13 +377,13 @@
     return '<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;font-size:11px;color:' + MUT + ';font-weight:600;margin-bottom:4px"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(label) + '</span><span style="font-family:' + FH + ';color:' + color + '">' + Math.round(p * 100) + '%</span></div>'
       + '<div style="height:6px;border-radius:4px;background:' + INSET + ';overflow:hidden"><div style="height:100%;width:' + Math.round(p * 100) + '%;background:' + color + '"></div></div></div>';
   }
-  function oddRow(label, prob, key, realAm) {
+  function oddRow(label, prob, key, realAm, matchLbl) {
     var mk = market(prob, key, realAm);
     return '<div class="dlrow" style="display:flex;align-items:center;justify-content:space-between;padding:9px 11px;border-radius:11px;background:' + INSET + ';border:1px solid ' + LINE + '">'
       + '<div style="font-size:12.5px;font-weight:600">' + esc(label) + ' ' + edgeBadge(mk.edge) + '</div>'
       + '<div style="display:flex;gap:14px;align-items:center"><span style="font-size:12px;color:' + MUT + '">' + pct(prob) + '</span>'
       + '<span style="font-family:' + FH + ';font-weight:700;font-size:15px;color:' + scoreColor(mk.score) + '">' + fmtAm(mk.am) + '</span>'
-      + '<span style="font-family:' + FH + ';font-size:11.5px;color:' + evColor(mk.ev) + ';font-weight:700;width:52px;text-align:right">' + (mk.ev > 0 ? '+' : '') + mk.ev.toFixed(1) + '</span></div></div>';
+      + '<span style="font-family:' + FH + ';font-size:11.5px;color:' + evColor(mk.ev) + ';font-weight:700;width:52px;text-align:right">' + (mk.ev > 0 ? '+' : '') + mk.ev.toFixed(1) + '</span>' + addBtn(key, label, matchLbl, mk.am, prob) + '</div></div>';
   }
 
   // ---- switcher (matches MLB pill toggles) ----
@@ -393,7 +394,7 @@
 
   // ---------------------------------------------------------------- cards
   function matchCardFull(m, opts) {
-    var mm = matchModel(m), H = TEAMS[m.h], A = TEAMS[m.a], st = statusOf(m.date, m.live), K = idk(m);
+    var mm = matchModel(m), H = TEAMS[m.h], A = TEAMS[m.a], st = statusOf(m.date, m.live), K = idk(m), cl = H.name + ' v ' + A.name;
     var meta = esc(m.stage) + ' \u00B7 ' + dayLabel(m.date) + ' ' + fmtTime(m.date) + (m.venue ? ' \u00B7 ' + esc(m.venue) : '');
     var head = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div style="display:flex;align-items:center;gap:11px;min-width:0">' + crest(m.h)
       + '<div style="min-width:0"><div style="font-weight:700;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(H.name) + ' <span style="color:' + MUT + '">v</span> ' + esc(A.name) + '</div>'
@@ -402,11 +403,11 @@
     var body;
     if (opts.corners) {
       body = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div style="font-size:12px;color:' + MUT + '">Projected total corners</div><div style="font-family:' + FH + ';font-weight:700;font-size:16px;color:' + GOLD + '">' + mm.cxTot.toFixed(1) + '</div></div>'
-        + '<div style="display:flex;flex-direction:column;gap:7px">' + oddRow('Over 9.5 corners', mm.over95c, 'c9o' + K, mm.amC9o) + oddRow('Under 9.5 corners', mm.under95c, 'c9u' + K, mm.amC9u) + '</div>';
+        + '<div style="display:flex;flex-direction:column;gap:7px">' + oddRow('Over 9.5 corners', mm.over95c, 'c9o' + K, mm.amC9o, cl) + oddRow('Under 9.5 corners', mm.under95c, 'c9u' + K, mm.amC9u, cl) + '</div>';
     } else {
       body = '<div style="display:flex;gap:12px;margin-bottom:13px">' + probBar(H.name, mm.pH, AC) + probBar('Draw', mm.pD, MUT3) + probBar(A.name, mm.pA, POS) + '</div>'
-        + '<div style="display:flex;flex-direction:column;gap:7px">' + oddRow(H.name + ' to win', mm.pH, '1x2h' + K, mm.amH) + oddRow('Draw', mm.pD, '1x2d' + K, mm.amD) + oddRow(A.name + ' to win', mm.pA, '1x2a' + K, mm.amA)
-        + oddRow('Over 2.5 goals', mm.over25, 'o25' + K, mm.amO25) + oddRow('Under 2.5 goals', mm.under25, 'u25' + K, mm.amU25) + oddRow('Both teams to score', mm.btts, 'btts' + K, mm.amBTTS) + '</div>';
+        + '<div style="display:flex;flex-direction:column;gap:7px">' + oddRow(H.name + ' to win', mm.pH, '1x2h' + K, mm.amH, cl) + oddRow('Draw', mm.pD, '1x2d' + K, mm.amD, cl) + oddRow(A.name + ' to win', mm.pA, '1x2a' + K, mm.amA, cl)
+        + oddRow('Over 2.5 goals', mm.over25, 'o25' + K, mm.amO25, cl) + oddRow('Under 2.5 goals', mm.under25, 'u25' + K, mm.amU25, cl) + oddRow('Both teams to score', mm.btts, 'btts' + K, mm.amBTTS, cl) + '</div>';
     }
     return '<div class="dlcard" style="background:' + CARD + ';border:1px solid ' + LINE + ';border-radius:16px;padding:16px">' + head + body + '</div>';
   }
@@ -436,7 +437,7 @@
       + '<div style="min-width:0"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="font-weight:700;font-size:15px">' + esc(p.name) + '</span>' + edgeBadge(p.edge) + '</div>'
       + '<div style="font-size:12px;color:' + MUT + ';margin-top:2px">' + p.flag + ' ' + esc(p.teamName) + ' ' + (p.home ? 'vs' : '@') + ' ' + esc(p.oppName) + ' \u00B7 ' + esc(p.pos) + ' \u00B7 ' + dayLabel(p.date) + '</div></div>'
       + '<div style="margin-left:auto;text-align:center"><div style="font-size:10px;color:' + MUT + ';font-weight:600">SCORE</div><div style="font-family:' + FH + ';font-weight:700;font-size:22px;color:' + scoreColor(p.score) + '">' + p.score + '</div></div></div>'
-      + '<div style="display:flex;gap:8px">' + miniStat('Goal chance', pct(p.prob), TXT) + miniStat('Anytime', fmtAm(p.am), scoreColor(p.score)) + miniStat('EV /$100', (p.ev > 0 ? '+' : '') + p.ev.toFixed(1), evColor(p.ev)) + '</div></div>';
+      + '<div style="display:flex;gap:8px">' + miniStat('Goal chance', pct(p.prob), TXT) + miniStat('Anytime', fmtAm(p.am), scoreColor(p.score)) + miniStat('EV /$100', (p.ev > 0 ? '+' : '') + p.ev.toFixed(1), evColor(p.ev)) + '<div style="display:flex;align-items:center">' + addBtn('gs|' + p.name + '|' + p.oppName, p.name + ' anytime', p.teamName + (p.home ? ' v ' : ' @ ') + p.oppName, p.am, p.prob) + '</div></div></div>';
   }
   function miniStat(label, val, color) { return '<div style="flex:1;background:' + INSET + ';border:1px solid ' + LINE + ';border-radius:11px;padding:8px 10px"><div style="font-size:10px;color:' + MUT + ';font-weight:600">' + label + '</div><div style="font-family:' + FH + ';font-weight:700;font-size:16px;color:' + color + '">' + val + '</div></div>'; }
   function valueRow(s) {
@@ -526,7 +527,7 @@
       + '<span style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,.05);color:' + grpColor(s2.grp) + ';flex:none">' + s2.grp.toUpperCase() + '</span>'
       + '<div style="min-width:0;flex:1"><div style="font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(s2.label) + '</div><div style="font-size:11px;color:' + MUT + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(s2.match) + esc(d) + '</div></div>'
       + '<div style="text-align:right;flex:none"><div style="font-family:' + FH + ';font-weight:700;font-size:15px">' + fmtAm(s2.am) + '</div><div style="font-size:10.5px;color:' + MUT + '">fair ' + pct(s2.prob) + '</div></div>'
-      + '<div style="text-align:right;flex:none;min-width:58px"><div style="font-family:' + FH + ';font-weight:700;font-size:14px;color:' + evColor(s2.ev) + '">' + (s2.ev > 0 ? '+' : '') + s2.ev.toFixed(1) + '</div><div style="font-size:10px;color:' + MUT + '">EV/100</div></div>' + edgeBadge(s2.edge) + '</div>';
+      + '<div style="text-align:right;flex:none;min-width:58px"><div style="font-family:' + FH + ';font-weight:700;font-size:14px;color:' + evColor(s2.ev) + '">' + (s2.ev > 0 ? '+' : '') + s2.ev.toFixed(1) + '</div><div style="font-size:10px;color:' + MUT + '">EV/100</div></div>' + edgeBadge(s2.edge) + addBtn(s2.grp + '|' + s2.match + '|' + s2.label, s2.label, s2.match, s2.am, s2.prob) + '</div>';
   }
   function renderScanner() {
     var all = scanAll().filter(function (s2) { return isFinite(s2.ev); }).sort(function (a, b) { return b.ev - a.ev; });
@@ -549,11 +550,65 @@
       + sectionHead(AC, 'Top Value Bets', 'ranked by EV per $100') + valueBoard
       + (fadeBoard ? sectionHead(NEG, 'Overpriced (Fade)', 'negative edge') + fadeBoard : '');
   }
-  function body() { if (state.tab === 'today') return renderToday(); if (state.tab === 'scanner') return renderScanner(); if (state.tab === 'radar') return renderRadar(); if (state.tab === 'matches') return renderMatches(false); if (state.tab === 'corners') return renderMatches(true); return ''; }
+  // ---------------------------------------------------------------- bet slip + line shop
+  var BOOK_LABELS = { draftkings: 'DK', fanatics: 'FAN', betmgm: 'MGM', caesars: 'CZR' };
+  function decFromAm(am) { am = Number(am); if (!isFinite(am) || am === 0) return 1; return am > 0 ? am / 100 + 1 : 100 / (-am) + 1; }
+  function amFromDec(d) { return d >= 2 ? Math.round((d - 1) * 100) : Math.round(-100 / (d - 1)); }
+  function loadSlip() { try { var r = localStorage.getItem('dl_slip'); state.slip = r ? JSON.parse(r) : []; } catch (e) { state.slip = []; } if (!Array.isArray(state.slip)) state.slip = []; }
+  function saveSlip() { try { localStorage.setItem('dl_slip', JSON.stringify(state.slip)); } catch (e) {} }
+  function inSlip(pid) { return (state.slip || []).some(function (p) { return p.pid === pid; }); }
+  function togglePick(pick) { var i = -1; (state.slip || []).forEach(function (p, ix) { if (p.pid === pick.pid) i = ix; }); if (i >= 0) state.slip.splice(i, 1); else state.slip.push(pick); saveSlip(); }
+  function addBtn(pid, label, match, am, prob) {
+    if (am == null || !isFinite(am) || am === 0) return '';
+    var on = inSlip(pid);
+    return '<button class="dlbtn" data-act="add" data-pid="' + esc(pid) + '" data-label="' + esc(encodeURIComponent(label)) + '" data-match="' + esc(encodeURIComponent(match || '')) + '" data-am="' + am + '" data-prob="' + (prob || 0) + '" title="' + (on ? 'Remove from slip' : 'Add to bet slip') + '" style="flex:none;margin-left:8px;width:26px;height:26px;border-radius:8px;border:1px solid ' + (on ? AC : 'rgba(255,255,255,.16)') + ';background:' + (on ? AC : 'transparent') + ';color:' + (on ? '#0a0c11' : MUT) + ';font-weight:800;font-size:15px;line-height:1;cursor:pointer">' + (on ? '\u2713' : '+') + '</button>';
+  }
+  function bookCells(books) {
+    if (!books) return BOOKS.map(function () { return '<td style="text-align:center;color:' + MUT + ';padding:5px 7px">\u2014</td>'; }).join('');
+    var best = null; BOOKS.forEach(function (b) { var a = books[b]; if (a != null && (best == null || betterAm(a, best))) best = a; });
+    return BOOKS.map(function (b) { var a = books[b]; if (a == null) return '<td style="text-align:center;color:' + MUT + ';padding:5px 7px">\u2014</td>'; var isBest = a === best; return '<td style="text-align:center;padding:5px 7px"><span style="font-family:' + FH + ';font-weight:700;font-size:13px;padding:2px 8px;border-radius:6px;' + (isBest ? 'background:rgba(53,208,192,.16);color:' + POS : 'color:' + TXT) + '">' + fmtAm(a) + '</span></td>'; }).join('');
+  }
+  function shopRow(label, books) { return '<tr style="border-top:1px solid ' + LINE + '"><td style="padding:6px 8px;font-size:12.5px;font-weight:600;white-space:nowrap">' + esc(label) + '</td>' + bookCells(books) + '</tr>'; }
+  function renderLineShop() {
+    if (LIVE_STATE !== 'ok') return pageHead('LINE SHOP', 'Compare every book', 'Side-by-side prices across DraftKings, Fanatics, BetMGM & Caesars \u2014 best price highlighted.') + '<div style="color:' + MUT + ';font-size:13px;background:' + CARD + ';border:1px solid ' + LINE + ';border-radius:12px;padding:16px">Line shopping needs live OddsBlaze prices from multiple books. Connect the proxy (or wait for the next sync) to compare books side by side. Currently in model-only mode.</div>';
+    var head = '<thead><tr><th style="text-align:left;padding:6px 8px;font-size:11px;color:' + MUT + ';font-weight:700">MARKET</th>' + BOOKS.map(function (b) { return '<th style="text-align:center;padding:6px 8px;font-size:11px;color:' + MUT + ';font-weight:700">' + (BOOK_LABELS[b] || b.toUpperCase()) + '</th>'; }).join('') + '</tr></thead>';
+    var cards = MATCHES.map(function (m) {
+      var o = (LIVE && LIVE.mk) ? LIVE.mk[m.id] : null; if (!o) return ''; var H = TEAMS[m.h], A = TEAMS[m.a];
+      var rows = shopRow(H.name + ' win', o.bkH) + shopRow('Draw', o.bkD) + shopRow(A.name + ' win', o.bkA) + shopRow('Over 2.5 goals', o.bkO25) + shopRow('Under 2.5 goals', o.bkU25) + shopRow('Both to score', o.bkBTTS) + shopRow('Over 9.5 corners', o.bkC9o) + shopRow('Under 9.5 corners', o.bkC9u);
+      return '<div class="dlcard" style="background:' + CARD + ';border:1px solid ' + LINE + ';border-radius:14px;padding:14px 15px;margin-bottom:12px"><div style="display:flex;align-items:center;gap:9px;margin-bottom:8px"><span style="font-size:18px">' + H.flag + '</span><span style="font-weight:700;font-size:14.5px">' + esc(H.name) + ' v ' + esc(A.name) + '</span><span style="font-size:18px">' + A.flag + '</span><span style="margin-left:auto;font-size:11.5px;color:' + MUT + '">' + dayLabel(m.date) + ' ' + fmtTime(m.date) + '</span></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">' + head + '<tbody>' + rows + '</tbody></table></div></div>';
+    }).join('');
+    return pageHead('LINE SHOP', 'Compare every book', 'Best price per market highlighted in teal across DraftKings, Fanatics, BetMGM & Caesars.') + (cards || '<div style="color:' + MUT + '">No live markets to compare yet.</div>');
+  }
+  function slipUI() {
+    var slip = state.slip || [], cnt = slip.length, stake = state.stake || 25;
+    var dec = slip.reduce(function (a, p) { return a * decFromAm(p.am); }, 1);
+    var parlayAm = cnt ? amFromDec(dec) : 0, payout = stake * dec;
+    var fairP = slip.reduce(function (a, p) { return a * (p.prob || 0); }, 1);
+    var parlayEv = cnt ? (fairP * dec - 1) * 100 : 0;
+    var byMatch = {}; slip.forEach(function (p) { var k = p.match || ''; byMatch[k] = (byMatch[k] || 0) + 1; });
+    var corr = Object.keys(byMatch).some(function (k) { return k && byMatch[k] > 1; });
+    var fab = '<button class="dlbtn" data-act="toggleslip" style="position:fixed;right:20px;bottom:20px;z-index:100003;display:flex;align-items:center;gap:9px;padding:12px 18px;border:none;border-radius:30px;cursor:pointer;font-family:' + FB + ';font-weight:700;font-size:14px;color:#0a0c11;background:linear-gradient(135deg,' + AC + ',' + PINK + ');box-shadow:0 8px 24px rgba(255,77,125,.4)">\uD83E\uDDFE Bet Slip' + (cnt ? ' <span style="background:#0a0c11;color:' + AC + ';border-radius:20px;padding:1px 8px;font-size:12px">' + cnt + '</span>' : '') + '</button>';
+    if (!state.slipOpen) return fab;
+    var rows = slip.map(function (p) { return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid ' + LINE + '"><div style="min-width:0;flex:1"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(p.label) + '</div><div style="font-size:11px;color:' + MUT + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(p.match || '') + '</div></div><span style="font-family:' + FH + ';font-weight:700;font-size:14px">' + fmtAm(p.am) + '</span><button class="dlbtn" data-act="rmpick" data-pid="' + esc(p.pid) + '" style="flex:none;width:24px;height:24px;border-radius:7px;border:1px solid rgba(255,107,107,.3);background:transparent;color:' + NEG + ';font-weight:800;cursor:pointer">\u00d7</button></div>'; }).join('');
+    var chips = [10, 25, 50, 100].map(function (v) { var on = stake === v; return '<button class="dlbtn" data-act="stake" data-stake="' + v + '" style="flex:1;padding:7px;border-radius:8px;border:1px solid ' + (on ? 'transparent' : 'rgba(255,255,255,.12)') + ';background:' + (on ? AC : CARD) + ';color:' + (on ? '#0a0c11' : MUT) + ';font-weight:700;font-size:12.5px;cursor:pointer">$' + v + '</button>'; }).join('');
+    var summary = '<div style="margin-top:12px;background:' + CARD + ';border:1px solid ' + LINE + ';border-radius:12px;padding:12px">'
+      + '<div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px"><span style="color:' + MUT + '">' + (cnt > 1 ? 'Parlay odds' : 'Odds') + '</span><span style="font-family:' + FH + ';font-weight:700">' + fmtAm(parlayAm) + ' <span style="color:' + MUT + ';font-weight:500">(' + dec.toFixed(2) + 'x)</span></span></div>'
+      + '<div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px"><span style="color:' + MUT + '">To win</span><span style="font-family:' + FH + ';font-weight:700;color:' + POS + '">$' + (payout - stake).toFixed(2) + '</span></div>'
+      + '<div style="display:flex;justify-content:space-between;font-size:13px;padding-top:6px;border-top:1px solid ' + LINE + '"><span style="color:' + MUT + '">Payout</span><span style="font-family:' + FH + ';font-weight:700;font-size:15px">$' + payout.toFixed(2) + '</span></div>'
+      + '<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:8px"><span style="color:' + MUT + '">Model EV</span><span style="font-family:' + FH + ';font-weight:700;color:' + evColor(parlayEv) + '">' + (parlayEv > 0 ? '+' : '') + parlayEv.toFixed(1) + '% \u00B7 ' + pct(fairP) + ' fair</span></div></div>';
+    var drawer = '<div style="position:fixed;right:20px;bottom:80px;z-index:100003;width:340px;max-width:calc(100vw - 40px);max-height:calc(100vh - 120px);overflow:auto;background:' + INSET2 + ';border:1px solid rgba(255,255,255,.1);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:16px">'
+      + '<div style="display:flex;align-items:center;margin-bottom:6px"><span style="font-family:' + FH + ';font-weight:700;font-size:16px">Bet Slip</span><span style="font-size:12px;color:' + MUT + ';margin-left:8px">' + cnt + ' leg' + (cnt === 1 ? '' : 's') + '</span>' + (cnt ? '<button class="dlbtn" data-act="clearslip" style="margin-left:auto;background:none;border:none;color:' + MUT + ';font-size:12px;cursor:pointer;text-decoration:underline">Clear</button>' : '') + '</div>'
+      + (cnt ? rows + (corr ? '<div style="margin-top:10px;font-size:11.5px;color:' + GOLD + ';background:rgba(255,194,77,.1);border:1px solid rgba(255,194,77,.28);border-radius:9px;padding:8px 10px">\u26a0 Correlated legs (same match). Many books restrict or void same-game parlays.</div>' : '')
+        + '<div style="margin-top:12px;display:flex;gap:6px">' + chips + '</div>' + summary
+        + '<div style="margin-top:8px;font-size:10.5px;color:' + MUT + '">For entertainment only. EV uses de-vigged fair probabilities and assumes independent legs.</div>'
+        : '<div style="color:' + MUT + ';font-size:13px;padding:14px 0">Your slip is empty. Tap <b style="color:' + AC + '">+</b> on any market to add a pick.</div>') + '</div>';
+    return fab + drawer;
+  }
+  function body() { if (state.tab === 'today') return renderToday(); if (state.tab === 'scanner') return renderScanner(); if (state.tab === 'lineshop') return renderLineShop(); if (state.tab === 'radar') return renderRadar(); if (state.tab === 'matches') return renderMatches(false); if (state.tab === 'corners') return renderMatches(true); return ''; }
 
   // ---------------------------------------------------------------- shell (MLB layout)
-  var NAV = [['today', '\u26A1', 'Today'], ['scanner', '\uD83D\uDD0D', 'Edge Scanner'], ['radar', '\uD83C\uDFAF', 'Goalscorer Radar'], ['matches', '\u26BD', 'Matches'], ['corners', '\uD83D\uDEA9', 'Corners']];
-  var state = { tab: 'today', teamFilter: '', dateFilter: 'all' };
+  var NAV = [['today', '\u26A1', 'Today'], ['scanner', '\uD83D\uDD0D', 'Edge Scanner'], ['lineshop', '\uD83D\uDCB0', 'Line Shop'], ['radar', '\uD83C\uDFAF', 'Goalscorer Radar'], ['matches', '\u26BD', 'Matches'], ['corners', '\uD83D\uDEA9', 'Corners']];
+  var state = { tab: 'today', teamFilter: '', dateFilter: 'all', slip: [], slipOpen: false, stake: 25 };
   var overlay = null, headerSwitcher = null, tickTimer = null, liveTimer = null;
   function safeRender() { try { if (overlay && overlay.style.display !== 'none') render(); } catch (e) {} }
 
@@ -621,7 +676,7 @@
       + '</style>'
       + '<div style="min-height:100vh;background:radial-gradient(1200px 600px at 78% -8%,rgba(255,138,76,.10),transparent 60%),radial-gradient(900px 500px at 6% 4%,rgba(53,208,192,.07),transparent 55%),' + BG + ';display:flex;flex-direction:column">'
       + header
-      + '<div id="dl-soccer-shell" style="display:grid;grid-template-columns:208px minmax(0,1fr);gap:0;flex:1;min-height:0">' + rail + main + '</div></div>' + bottomNav;
+      + '<div id="dl-soccer-shell" style="display:grid;grid-template-columns:208px minmax(0,1fr);gap:0;flex:1;min-height:0">' + rail + main + '</div></div>' + bottomNav + slipUI();
   }
 
   function setSport(s) {
@@ -649,6 +704,11 @@
       else if (act === 'tab') { state.tab = el.getAttribute('data-tab'); render(); overlay.scrollTop = 0; }
       else if (act === 'team') { state.teamFilter = el.getAttribute('data-team'); render(); }
       else if (act === 'date') { state.dateFilter = el.getAttribute('data-date'); render(); }
+      else if (act === 'add') { togglePick({ pid: el.getAttribute('data-pid'), label: decodeURIComponent(el.getAttribute('data-label')), match: decodeURIComponent(el.getAttribute('data-match') || ''), am: parseInt(el.getAttribute('data-am'), 10), prob: parseFloat(el.getAttribute('data-prob')) || 0 }); render(); }
+      else if (act === 'rmpick') { var pid = el.getAttribute('data-pid'); state.slip = state.slip.filter(function (p) { return p.pid !== pid; }); saveSlip(); render(); }
+      else if (act === 'clearslip') { state.slip = []; saveSlip(); render(); }
+      else if (act === 'toggleslip') { state.slipOpen = !state.slipOpen; render(); }
+      else if (act === 'stake') { state.stake = parseInt(el.getAttribute('data-stake'), 10) || 25; render(); }
     });
   }
   function updateHeaderSwitcher(active) { if (headerSwitcher) headerSwitcher.innerHTML = switcher(active); }
@@ -662,6 +722,7 @@
     return true;
   }
   function currentSport() { try { return localStorage.getItem('dl_sport') || 'mlb'; } catch (e) { return 'mlb'; } }
+  loadSlip();
   function init() {
     var tries = 0; var iv = setInterval(function () { tries++; if (injectHeaderSwitcher() || tries > 60) clearInterval(iv); }, 250);
     setTimeout(function () {
