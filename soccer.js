@@ -374,6 +374,20 @@
   function scoreColor(s) { return s >= 70 ? POS : s >= 55 ? GOLD : MUT; }
   function evColor(ev) { return ev > 5 ? POS : ev < -8 ? NEG : MUT; }
   function grpColor(g) { return g === 'Result' ? AC : g === 'Goals' ? POS : g === 'Corners' ? GOLD : PINK; }
+  // ---------------------------------------------------------------- labels
+  var TAGDEF = { value: ['VALUE', POS, 'rgba(53,208,192,.14)'], trap: ['TRAP', NEG, 'rgba(255,107,107,.14)'], steam: ['STEAM', GOLD, 'rgba(255,194,77,.14)'], arb: ['ARB', PINK, 'rgba(255,77,125,.14)'] };
+  function tagChip(k) { var d = TAGDEF[k]; if (!d) return ''; return '<span style="font-size:9.5px;font-weight:800;letter-spacing:.03em;padding:2px 6px;border-radius:5px;background:' + d[2] + ';color:' + d[1] + '">' + d[0] + '</span>'; }
+  function autoTagKeys(mk) { var t = []; if (mk.ev >= 3) t.push('value'); if (mk.ev <= -6) t.push('trap'); if (mk.live && mk.edge >= 0.06) t.push('steam'); return t; }
+  function autoTags(mk) { return autoTagKeys(mk).map(tagChip).join(''); }
+  function confGrade(score) { if (score >= 78) return { g: 'A', c: POS }; if (score >= 60) return { g: 'B', c: GOLD }; if (score >= 42) return { g: 'C', c: AC }; return { g: 'D', c: MUT }; }
+  function confChip(score) { var g = confGrade(score); return '<span title="Confidence ' + g.g + '" style="font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:5px;border:1px solid ' + g.c + ';color:' + g.c + '">' + g.g + '</span>'; }
+  function leagueChip() { return '<span style="font-size:9.5px;font-weight:800;letter-spacing:.03em;padding:2px 7px;border-radius:5px;background:rgba(255,138,76,.12);color:' + AC + '">WORLD CUP</span>'; }
+  function stageChip(stage) { return '<span style="font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:5px;background:rgba(255,255,255,.05);color:' + MUT2 + '">' + esc(stage || '') + '</span>'; }
+  function mktTypeChip(opts) { var t = (opts && opts.corners) ? 'CORNERS' : 'RESULT \u00B7 GOALS'; return '<span style="font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:5px;background:rgba(255,255,255,.05);color:' + MUT2 + '">' + t + '</span>'; }
+  function labelFilterBar() { var opts = [['all', 'All'], ['value', 'Value'], ['steam', 'Steam'], ['a', 'A-grade'], ['trap', 'Fade']]; return '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">' + opts.map(function (o) { var on = (state.labelFilter || 'all') === o[0]; return '<button class="dlbtn" data-act="lblfilter" data-lbl="' + o[0] + '" style="padding:6px 13px;border-radius:20px;font-family:' + FB + ';font-weight:700;font-size:12px;cursor:pointer;border:1px solid ' + (on ? 'transparent' : 'rgba(255,255,255,.1)') + ';background:' + (on ? AC : CARD) + ';color:' + (on ? '#0a0c11' : MUT) + '">' + o[1] + '</button>'; }).join('') + '</div>'; }
+  function passLabel(mk) { var f = state.labelFilter || 'all'; if (f === 'all') return true; if (f === 'value') return mk.ev >= 3; if (f === 'trap') return mk.ev <= -6; if (f === 'steam') return mk.live && mk.edge >= 0.06; if (f === 'a') return confGrade(mk.score).g === 'A'; return true; }
+  var SLIP_TAGS = ['Lock', 'Lean', 'Hedge']; var SLIP_TAG_COLOR = { Lock: POS, Lean: GOLD, Hedge: AC };
+  function slipTagBtn(p) { var t = p.tag || ''; var c = t ? SLIP_TAG_COLOR[t] : MUT; return '<button class="dlbtn" data-act="tagpick" data-pid="' + esc(p.pid) + '" title="Cycle label" style="flex:none;font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;border:1px solid ' + (t ? c : 'rgba(255,255,255,.14)') + ';background:transparent;color:' + c + ';cursor:pointer">' + (t ? t.toUpperCase() : '+ TAG') + '</button>'; }
   function edgeBadge(e) {
     if (e >= 0.05) return '<span style="font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;background:rgba(53,208,192,.14);color:' + POS + '">VALUE</span>';
     if (e <= -0.06) return '<span style="font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;background:rgba(255,107,107,.14);color:' + NEG + '">FADE</span>';
@@ -401,7 +415,7 @@
   function oddRow(label, prob, key, realAm, matchLbl) {
     var mk = market(prob, key, realAm);
     return '<div class="dlrow" style="display:flex;align-items:center;justify-content:space-between;padding:9px 11px;border-radius:11px;background:' + INSET + ';border:1px solid ' + LINE + '">'
-      + '<div style="font-size:12.5px;font-weight:600">' + esc(label) + ' ' + edgeBadge(mk.edge) + '</div>'
+      + '<div style="font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span>' + esc(label) + '</span>' + confChip(mk.score) + autoTags(mk) + '</div>'
       + '<div style="display:flex;gap:14px;align-items:center"><span style="font-size:12px;color:' + MUT + '">' + pct(prob) + '</span>'
       + '<span style="font-family:' + FH + ';font-weight:700;font-size:15px;color:' + scoreColor(mk.score) + '">' + fmtAm(mk.am) + '</span>'
       + '<span style="font-family:' + FH + ';font-size:11.5px;color:' + evColor(mk.ev) + ';font-weight:700;width:52px;text-align:right">' + (mk.ev > 0 ? '+' : '') + mk.ev.toFixed(1) + '</span>' + addBtn(key, label, matchLbl, mk.am, prob) + '</div></div>';
@@ -419,7 +433,7 @@
     var meta = esc(m.stage) + ' \u00B7 ' + dayLabel(m.date) + ' ' + fmtTime(m.date) + (m.venue ? ' \u00B7 ' + esc(m.venue) : '');
     var head = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div style="display:flex;align-items:center;gap:11px;min-width:0">' + crest(m.h)
       + '<div style="min-width:0"><div style="font-weight:700;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(H.name) + ' <span style="color:' + MUT + '">v</span> ' + esc(A.name) + '</div>'
-      + '<div style="font-size:11.5px;color:' + MUT + ';margin-top:3px">' + meta + '</div></div>' + crest(m.a) + '</div>'
+      + '<div style="font-size:11.5px;color:' + MUT + ';margin-top:3px">' + meta + '</div><div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">' + leagueChip() + stageChip(m.stage) + mktTypeChip(opts) + '</div></div>' + crest(m.a) + '</div>'
       + '<div style="text-align:right;flex:none;padding-left:10px">' + statusPill(st) + '<div style="font-family:' + FH + ';font-size:10px;color:' + MUT + ';font-weight:600;margin-top:4px">proj ' + Math.round(mm.xgH) + '-' + Math.round(mm.xgA) + '</div></div></div>';
     var body;
     if (opts.corners) {
@@ -440,7 +454,7 @@
     var favHome = mm.pH >= mm.pA, favName = favHome ? H.name : A.name, favP = Math.max(mm.pH, mm.pA);
     var favMk = market(favP, (favHome ? '1x2h' : '1x2a') + idk(m), favHome ? mm.amH : mm.amA);
     return '<button class="dlcard dlbtn" data-act="tab" data-tab="matches" style="text-align:left;width:100%;background:' + CARD + ';border:1px solid ' + LINE + ';border-radius:14px;padding:13px 14px;display:flex;flex-direction:column;gap:9px;cursor:pointer;color:' + TXT + '">'
-      + '<div style="display:flex;align-items:center;justify-content:space-between">' + statusPill(st) + '<span style="font-size:11px;color:' + MUT + '">' + esc(m.stage) + '</span></div>'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px">' + statusPill(st) + '<span style="display:flex;gap:5px;align-items:center">' + leagueChip() + '<span style="font-size:11px;color:' + MUT + '">' + esc(m.stage) + '</span></span></div>'
       + '<div style="display:flex;align-items:center;gap:9px"><span style="font-size:20px">' + H.flag + '</span><span style="font-weight:700;font-size:15px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(H.name) + ' <span style="color:' + MUT + ';font-weight:600">v</span> ' + esc(A.name) + '</span><span style="font-size:20px">' + A.flag + '</span></div>'
       + '<div style="display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid ' + LINE + '"><span style="font-size:11.5px;color:' + MUT + '">' + (mm.live ? 'Best price' : 'Model pick') + '</span>'
       + '<span style="font-size:12.5px;font-weight:600">' + esc(favName) + ' <span style="font-family:' + FH + ';color:' + AC + '">' + Math.round(favP * 100) + '%</span> \u00B7 ' + fmtAm(favMk.am) + '</span></div></div>';
@@ -458,7 +472,7 @@
   function playerCard(p) {
     return '<div class="dlcard" style="background:' + CARD + ';border:1px solid ' + LINE + ';border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:12px">'
       + '<div style="display:flex;align-items:center;gap:12px"><div style="width:52px;height:52px;flex:none;border-radius:50%;background:' + INSET + ';display:grid;place-items:center;font-family:' + FH + ';font-weight:700;font-size:16px;color:' + AC + '">' + esc(p.init) + '</div>'
-      + '<div style="min-width:0"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="font-weight:700;font-size:15px">' + esc(p.name) + '</span>' + edgeBadge(p.edge) + '</div>'
+      + '<div style="min-width:0"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="font-weight:700;font-size:15px">' + esc(p.name) + '</span>' + confChip(p.score) + autoTags(p) + '</div>'
       + '<div style="font-size:12px;color:' + MUT + ';margin-top:2px">' + p.flag + ' ' + esc(p.teamName) + ' ' + (p.home ? 'vs' : '@') + ' ' + esc(p.oppName) + ' \u00B7 ' + esc(p.pos) + ' \u00B7 ' + dayLabel(p.date) + '</div></div>'
       + '<div style="margin-left:auto;text-align:center"><div style="font-size:10px;color:' + MUT + ';font-weight:600">SCORE</div><div style="font-family:' + FH + ';font-weight:700;font-size:22px;color:' + scoreColor(p.score) + '">' + p.score + '</div></div></div>'
       + '<div style="display:flex;gap:8px">' + miniStat('Goal chance', pct(p.prob), TXT) + miniStat('Anytime', fmtAm(p.am), scoreColor(p.score)) + miniStat('EV /$100', (p.ev > 0 ? '+' : '') + p.ev.toFixed(1), evColor(p.ev)) + '<div style="display:flex;align-items:center">' + addBtn('gs|' + p.name + '|' + p.oppName, p.name + ' anytime', p.teamName + (p.home ? ' v ' : ' @ ') + p.oppName, p.am, p.prob) + '</div></div></div>';
@@ -467,7 +481,7 @@
   function valueRow(s) {
     return '<div class="dlrow" style="display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:12px;background:' + CARD + ';border:1px solid ' + LINE + '">'
       + '<span style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,.05);color:' + grpColor(s.grp) + ';flex:none">' + s.grp.toUpperCase() + '</span>'
-      + '<div style="min-width:0;flex:1"><div style="font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(s.label) + '</div><div style="font-size:11px;color:' + MUT + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(s.match) + '</div></div>'
+      + '<div style="min-width:0;flex:1"><div style="display:flex;align-items:center;gap:6px"><span style="font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(s.label) + '</span>' + confChip(s.score) + autoTags(s) + '</div><div style="font-size:11px;color:' + MUT + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(s.match) + '</div></div>'
       + '<div style="text-align:right;flex:none"><div style="font-family:' + FH + ';font-weight:700;font-size:15px;color:' + scoreColor(s.score) + '">' + fmtAm(s.am) + '</div><div style="font-family:' + FH + ';font-size:11px;color:' + POS + ';font-weight:700">EV +' + s.ev.toFixed(1) + '</div></div></div>';
   }
 
@@ -495,7 +509,8 @@
 
     var todayMatches = todays.length ? '<div class="dlgrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">' + todays.map(miniMatch).join('') + '</div>'
       : '<div style="color:' + MUT + ';font-size:13px;padding:20px;text-align:center;background:' + CARD + ';border-radius:14px;border:1px solid ' + LINE + '">No matches today \u2014 see the Matches tab for the upcoming slate.</div>';
-    var valueBoard = value.length ? '<div style="display:flex;flex-direction:column;gap:8px">' + value.map(valueRow).join('') + '</div>' : '<div style="color:' + MUT + ';font-size:13px">No standout value on today\u2019s slate.</div>';
+    var vfil = value.filter(passLabel);
+    var valueBoard = vfil.length ? '<div style="display:flex;flex-direction:column;gap:8px">' + vfil.map(valueRow).join('') + '</div>' : '<div style="color:' + MUT + ';font-size:13px">No markets match this label filter.</div>';
     var gsBoard = (gsToday.length ? gsToday : gsAll).slice(0, 6);
     var gsHtml = gsBoard.length ? '<div class="dlgrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">' + gsBoard.map(playerCard).join('') + '</div>' : '<div style="color:' + MUT + ';font-size:13px">No goalscorer markets available yet.</div>';
     var dateStr = now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
@@ -504,7 +519,7 @@
     return pageHead('COMMAND CENTER', 'Today\u2019s best goals', sub)
       + stats + locksBanner
       + sectionHead(AC, 'Today\u2019s Matches', todays.length + ' scheduled', '<button class="dlbtn" data-act="tab" data-tab="matches" style="background:none;border:1px solid rgba(255,255,255,.12);color:' + MUT + ';font-family:' + FB + ';font-weight:600;font-size:12px;padding:6px 12px;border-radius:9px;cursor:pointer">All matches \u2192</button>') + todayMatches
-      + sectionHead(POS, 'Best Value Today', 'ranked by EV') + valueBoard
+      + sectionHead(POS, 'Best Value Today', 'ranked by EV') + labelFilterBar() + valueBoard
       + sectionHead(GOLD, 'Top Goalscorers', LIVE_STATE === 'ok' ? 'best price vs consensus' : 'model vs book', '<button class="dlbtn" data-act="tab" data-tab="radar" style="background:none;border:1px solid rgba(255,255,255,.12);color:' + MUT + ';font-family:' + FB + ';font-weight:600;font-size:12px;padding:6px 12px;border-radius:9px;cursor:pointer">Full radar \u2192</button>') + gsHtml;
   }
   function dateChips() {
@@ -549,13 +564,13 @@
     var d = s2.date ? ' \u00B7 ' + dayLabel(s2.date) : '';
     return '<div class="dlrow" style="display:flex;align-items:center;gap:12px;padding:10px 13px;border-radius:11px;background:' + CARD + ';border:1px solid ' + LINE + '">'
       + '<span style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,.05);color:' + grpColor(s2.grp) + ';flex:none">' + s2.grp.toUpperCase() + '</span>'
-      + '<div style="min-width:0;flex:1"><div style="font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(s2.label) + '</div><div style="font-size:11px;color:' + MUT + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(s2.match) + esc(d) + '</div></div>'
+      + '<div style="min-width:0;flex:1"><div style="display:flex;align-items:center;gap:6px"><span style="font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(s2.label) + '</span>' + confChip(s2.score) + autoTags(s2) + '</div><div style="font-size:11px;color:' + MUT + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(s2.match) + esc(d) + '</div></div>'
       + '<div style="text-align:right;flex:none"><div style="font-family:' + FH + ';font-weight:700;font-size:15px">' + fmtAm(s2.am) + '</div><div style="font-size:10.5px;color:' + MUT + '">fair ' + pct(s2.prob) + '</div></div>'
-      + '<div style="text-align:right;flex:none;min-width:58px"><div style="font-family:' + FH + ';font-weight:700;font-size:14px;color:' + evColor(s2.ev) + '">' + (s2.ev > 0 ? '+' : '') + s2.ev.toFixed(1) + '</div><div style="font-size:10px;color:' + MUT + '">EV/100</div></div>' + edgeBadge(s2.edge) + addBtn(s2.grp + '|' + s2.match + '|' + s2.label, s2.label, s2.match, s2.am, s2.prob) + '</div>';
+      + '<div style="text-align:right;flex:none;min-width:58px"><div style="font-family:' + FH + ';font-weight:700;font-size:14px;color:' + evColor(s2.ev) + '">' + (s2.ev > 0 ? '+' : '') + s2.ev.toFixed(1) + '</div><div style="font-size:10px;color:' + MUT + '">EV/100</div></div>' + addBtn(s2.grp + '|' + s2.match + '|' + s2.label, s2.label, s2.match, s2.am, s2.prob) + '</div>';
   }
   function renderScanner() {
     var all = scanAll().filter(function (s2) { return isFinite(s2.ev); }).sort(function (a, b) { return b.ev - a.ev; });
-    var value = all.filter(function (s2) { return s2.edge > (LIVE ? 0.005 : 0.02); }).slice(0, 25);
+    var value = all.filter(function (s2) { return s2.edge > (LIVE ? 0.005 : 0.02); }).filter(passLabel).slice(0, 25);
     var fades = all.filter(function (s2) { return s2.edge < -0.05; }).sort(function (a, b) { return a.ev - b.ev; }).slice(0, 6);
     var arbs = findArbs();
     var bestEv = value.length ? value[0].ev : 0;
@@ -571,7 +586,7 @@
     return pageHead('EDGE SCANNER', 'Value & arbitrage', (LIVE_STATE === 'ok' ? 'Live OddsBlaze prices across all books. ' : 'Model prices (connect proxy for live arbitrage). ') + 'Every market ranked by expected value; guaranteed-profit combos flagged.')
       + stats
       + sectionHead(POS, 'Arbitrage Opportunities', arbs.length ? arbs.length + ' found' : 'scanning all books') + arbBoard
-      + sectionHead(AC, 'Top Value Bets', 'ranked by EV per $100') + valueBoard
+      + sectionHead(AC, 'Top Value Bets', 'ranked by EV per $100') + labelFilterBar() + valueBoard
       + (fadeBoard ? sectionHead(NEG, 'Overpriced (Fade)', 'negative edge') + fadeBoard : '');
   }
   // ---------------------------------------------------------------- bet slip + line shop
@@ -613,7 +628,7 @@
     var corr = Object.keys(byMatch).some(function (k) { return k && byMatch[k] > 1; });
     var fab = '<button class="dlbtn" data-act="toggleslip" style="position:fixed;right:20px;bottom:20px;z-index:100003;display:flex;align-items:center;gap:9px;padding:12px 18px;border:none;border-radius:30px;cursor:pointer;font-family:' + FB + ';font-weight:700;font-size:14px;color:#0a0c11;background:linear-gradient(135deg,' + AC + ',' + PINK + ');box-shadow:0 8px 24px rgba(255,77,125,.4)">\uD83E\uDDFE Bet Slip' + (cnt ? ' <span style="background:#0a0c11;color:' + AC + ';border-radius:20px;padding:1px 8px;font-size:12px">' + cnt + '</span>' : '') + '</button>';
     if (!state.slipOpen) return fab;
-    var rows = slip.map(function (p) { return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid ' + LINE + '"><div style="min-width:0;flex:1"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(p.label) + '</div><div style="font-size:11px;color:' + MUT + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(p.match || '') + '</div></div><span style="font-family:' + FH + ';font-weight:700;font-size:14px">' + fmtAm(p.am) + '</span><button class="dlbtn" data-act="rmpick" data-pid="' + esc(p.pid) + '" style="flex:none;width:24px;height:24px;border-radius:7px;border:1px solid rgba(255,107,107,.3);background:transparent;color:' + NEG + ';font-weight:800;cursor:pointer">\u00d7</button></div>'; }).join('');
+    var rows = slip.map(function (p) { return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid ' + LINE + '"><div style="min-width:0;flex:1"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(p.label) + '</div><div style="font-size:11px;color:' + MUT + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(p.match || '') + '</div></div><span style="font-family:' + FH + ';font-weight:700;font-size:14px">' + fmtAm(p.am) + '</span>' + slipTagBtn(p) + '<button class="dlbtn" data-act="rmpick" data-pid="' + esc(p.pid) + '" style="flex:none;width:24px;height:24px;border-radius:7px;border:1px solid rgba(255,107,107,.3);background:transparent;color:' + NEG + ';font-weight:800;cursor:pointer">\u00d7</button></div>'; }).join('');
     var chips = [10, 25, 50, 100].map(function (v) { var on = stake === v; return '<button class="dlbtn" data-act="stake" data-stake="' + v + '" style="flex:1;padding:7px;border-radius:8px;border:1px solid ' + (on ? 'transparent' : 'rgba(255,255,255,.12)') + ';background:' + (on ? AC : CARD) + ';color:' + (on ? '#0a0c11' : MUT) + ';font-weight:700;font-size:12.5px;cursor:pointer">$' + v + '</button>'; }).join('');
     var summary = '<div style="margin-top:12px;background:' + CARD + ';border:1px solid ' + LINE + ';border-radius:12px;padding:12px">'
       + '<div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px"><span style="color:' + MUT + '">' + (cnt > 1 ? 'Parlay odds' : 'Odds') + '</span><span style="font-family:' + FH + ';font-weight:700">' + fmtAm(parlayAm) + ' <span style="color:' + MUT + ';font-weight:500">(' + dec.toFixed(2) + 'x)</span></span></div>'
@@ -632,7 +647,7 @@
 
   // ---------------------------------------------------------------- shell (MLB layout)
   var NAV = [['today', '\u26A1', 'Today'], ['scanner', '\uD83D\uDD0D', 'Edge Scanner'], ['lineshop', '\uD83D\uDCB0', 'Line Shop'], ['radar', '\uD83C\uDFAF', 'Goalscorer Radar'], ['matches', '\u26BD', 'Matches'], ['corners', '\uD83D\uDEA9', 'Corners']];
-  var state = { tab: 'today', teamFilter: '', dateFilter: 'all', slip: [], slipOpen: false, stake: 25 };
+  var state = { tab: 'today', teamFilter: '', dateFilter: 'all', slip: [], slipOpen: false, stake: 25, labelFilter: 'all' };
   var overlay = null, headerSwitcher = null, tickTimer = null, liveTimer = null;
   function safeRender() { try { if (overlay && overlay.style.display !== 'none') render(); } catch (e) {} }
 
@@ -733,6 +748,8 @@
       else if (act === 'clearslip') { state.slip = []; saveSlip(); render(); }
       else if (act === 'toggleslip') { state.slipOpen = !state.slipOpen; render(); }
       else if (act === 'stake') { state.stake = parseInt(el.getAttribute('data-stake'), 10) || 25; render(); }
+      else if (act === 'lblfilter') { state.labelFilter = el.getAttribute('data-lbl') || 'all'; render(); }
+      else if (act === 'tagpick') { var _pid = el.getAttribute('data-pid'); state.slip.forEach(function (p) { if (p.pid === _pid) { var _i = SLIP_TAGS.indexOf(p.tag); p.tag = SLIP_TAGS[_i + 1] || ''; } }); saveSlip(); render(); }
     });
   }
   function updateHeaderSwitcher(active) { if (headerSwitcher) headerSwitcher.innerHTML = switcher(active); }
