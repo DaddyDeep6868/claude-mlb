@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /*
  * set-version.js - update the version string everywhere at once.
- * Updates the on-screen UI badge (index.html + DingerLab Redesign.dc.html)
- * and the README title.
+ * Updates the on-screen UI badge (index.html + DingerLab Redesign.dc.html),
+ * the README title, and a window.__DL_VERSION__ global that standalone
+ * modules (e.g. the inlined soccer overlay) read for their own version pill.
  *
  * Usage (from the project root):
  *   node tools/set-version.js 1.0.3
@@ -54,6 +55,22 @@ function bumpBadge(text) { return text.replace(/>v\d+\.\d+\.\d+</g, '>' + TAG + 
   html = html.slice(0, s) + encoded + html.slice(e);
   fs.writeFileSync(p, html);
   console.log('- updated index.html');
+}
+
+// 4) index.html - window.__DL_VERSION__ global for standalone modules (soccer)
+//    The bundler strips the template tag at runtime, so modules cannot read
+//    the badge from the DOM. This plain <script> in <head> is a reliable,
+//    single-source version signal that runs before the inlined soccer block.
+{
+  const p = P('index.html');
+  let html = fs.readFileSync(p, 'utf8');
+  const re = /<script>window\.__DL_VERSION__="v\d+\.\d+\.\d+";<\/script>/;
+  const tag = '<script>window.__DL_VERSION__="' + TAG + '";</scr' + 'ipt>';
+  if (re.test(html)) html = html.replace(re, tag);
+  else if (html.indexOf('</head>') >= 0) html = html.replace('</head>', tag + '</head>');
+  else html = tag + html;
+  fs.writeFileSync(p, html);
+  console.log('- stamped window.__DL_VERSION__ global');
 }
 
 console.log('Version set to ' + TAG + '. Name the zip DingerLab_' + TAG + '_StadiumNight.zip');
