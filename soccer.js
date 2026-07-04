@@ -242,8 +242,17 @@
         if (/total/.test(m) && /goal/.test(m) && Number(line) === 2.5) { if (side === 'over') { o.amO25 = e.best; o.pO25 = avg; o.bkO25 = e.books; } else if (side === 'under') { o.amU25 = e.best; o.pU25 = avg; o.bkU25 = e.books; } return; }
         // Both teams to score
         if (/both teams to score|btts/.test(m)) { if (/yes/.test(nm) || /yes/.test(side)) { o.amBTTS = e.best; o.pBTTS = avg; o.bkBTTS = e.books; } return; }
-        // Corners 9.5
-        if (/corner/.test(m) && Number(line) === 9.5) { if (side === 'over') { o.amC9o = e.best; o.pC9o = avg; o.bkC9o = e.books; } else if (side === 'under') { o.amC9u = e.best; o.pC9u = avg; o.bkC9u = e.books; } return; }
+        // Corners (total 9.5 + team totals)
+        if (/corner/.test(m) && (side === 'over' || side === 'under')) {
+          var hHit = normName(hN) && nm.indexOf(normName(hN)) >= 0, aHit = normName(aN) && nm.indexOf(normName(aN)) >= 0;
+          if (/team/.test(m) || hHit || aHit || /home|away/.test(nm)) {
+            var tside = (hHit || /home/.test(nm)) ? 'h' : ((aHit || /away/.test(nm)) ? 'a' : '');
+            if (tside === 'h') { if (side === 'over') { o.amHCo = e.best; o.pHCo = avg; o.bkHCo = e.books; o.hcLine = line; } else { o.amHCu = e.best; o.pHCu = avg; o.bkHCu = e.books; if (o.hcLine == null) o.hcLine = line; } return; }
+            if (tside === 'a') { if (side === 'over') { o.amACo = e.best; o.pACo = avg; o.bkACo = e.books; o.acLine = line; } else { o.amACu = e.best; o.pACu = avg; o.bkACu = e.books; if (o.acLine == null) o.acLine = line; } return; }
+          }
+          if (Number(line) === 9.5) { if (side === 'over') { o.amC9o = e.best; o.pC9o = avg; o.bkC9o = e.books; } else if (side === 'under') { o.amC9u = e.best; o.pC9u = avg; o.bkC9u = e.books; } }
+          return;
+        }
       });
       mk[id] = o; matchGs[id] = gsList;
     });
@@ -260,9 +269,11 @@
     for (var i = 0; i <= N; i++) for (var j = 0; j <= N; j++) { var pr = pois(i, xgH) * pois(j, xgA); if (i > j) pH += pr; else if (i === j) pD += pr; else pA += pr; }
     var tot = xgH + xgA, over25 = 1 - poisAtMost(2, tot);
     var btts = (1 - poisAtMost(0, xgH)) * (1 - poisAtMost(0, xgA));
-    var cxTot = H.corners * (H.atk / A.def) + A.corners * (A.atk / H.def);
+    var cxH = H.corners * (H.atk / A.def), cxA = A.corners * (A.atk / H.def);
+    var cxTot = cxH + cxA;
     var over95c = 1 - poisAtMost(9, cxTot);
-    return { xgH: xgH, xgA: xgA, pH: pH, pD: pD, pA: pA, over25: over25, under25: 1 - over25, btts: btts, cxTot: cxTot, over95c: over95c, under95c: 1 - over95c, live: false };
+    var overHc = 1 - poisAtMost(4, cxH), overAc = 1 - poisAtMost(4, cxA);
+    return { xgH: xgH, xgA: xgA, pH: pH, pD: pD, pA: pA, over25: over25, under25: 1 - over25, btts: btts, cxTot: cxTot, cxH: cxH, cxA: cxA, over95c: over95c, under95c: 1 - over95c, hcLine: 4.5, acLine: 4.5, overHc: overHc, underHc: 1 - overHc, overAc: overAc, underAc: 1 - overAc, live: false };
   }
   function matchModel(m) {
     var mm = poissonModel(m);
@@ -280,6 +291,12 @@
     if (o.amBTTS != null) { mm.amBTTS = o.amBTTS; mm.btts = o.pBTTS; }
     if (o.amC9o != null) { mm.amC9o = o.amC9o; mm.over95c = o.pC9o; mm.under95c = 1 - o.pC9o; }
     if (o.amC9u != null) { mm.amC9u = o.amC9u; if (o.pC9u != null) { mm.under95c = o.pC9u; mm.over95c = 1 - o.pC9u; } }
+    if (o.hcLine != null) mm.hcLine = o.hcLine;
+    if (o.acLine != null) mm.acLine = o.acLine;
+    if (o.amHCo != null) { mm.amHCo = o.amHCo; if (o.pHCo != null) mm.overHc = o.pHCo; }
+    if (o.amHCu != null) { mm.amHCu = o.amHCu; if (o.pHCu != null) { mm.underHc = o.pHCu; if (o.pHCo != null) { var _sh = o.pHCo + o.pHCu; if (_sh > 0) { mm.overHc = o.pHCo / _sh; mm.underHc = o.pHCu / _sh; } } } }
+    if (o.amACo != null) { mm.amACo = o.amACo; if (o.pACo != null) mm.overAc = o.pACo; }
+    if (o.amACu != null) { mm.amACu = o.amACu; if (o.pACu != null) { mm.underAc = o.pACu; if (o.pACo != null) { var _sa = o.pACo + o.pACu; if (_sa > 0) { mm.overAc = o.pACo / _sa; mm.underAc = o.pACu / _sa; } } } }
     return mm;
   }
   function modelGoalscorers() {
@@ -316,7 +333,9 @@
     return [
       { grp: 'Result', label: H.name + ' win', prob: mm.pH, key: '1x2h' + K, am: mm.amH }, { grp: 'Result', label: 'Draw', prob: mm.pD, key: '1x2d' + K, am: mm.amD }, { grp: 'Result', label: A.name + ' win', prob: mm.pA, key: '1x2a' + K, am: mm.amA },
       { grp: 'Goals', label: 'Over 2.5 goals', prob: mm.over25, key: 'o25' + K, am: mm.amO25 }, { grp: 'Goals', label: 'Under 2.5 goals', prob: mm.under25, key: 'u25' + K, am: mm.amU25 }, { grp: 'Goals', label: 'Both teams to score', prob: mm.btts, key: 'btts' + K, am: mm.amBTTS },
-      { grp: 'Corners', label: 'Over 9.5 corners', prob: mm.over95c, key: 'c9o' + K, am: mm.amC9o }, { grp: 'Corners', label: 'Under 9.5 corners', prob: mm.under95c, key: 'c9u' + K, am: mm.amC9u }
+      { grp: 'Corners', label: 'Over 9.5 corners', prob: mm.over95c, key: 'c9o' + K, am: mm.amC9o }, { grp: 'Corners', label: 'Under 9.5 corners', prob: mm.under95c, key: 'c9u' + K, am: mm.amC9u },
+      { grp: 'Corners', label: H.name + ' over ' + (mm.hcLine || 4.5) + ' corners', prob: mm.overHc, key: 'hco' + K, am: mm.amHCo }, { grp: 'Corners', label: H.name + ' under ' + (mm.hcLine || 4.5) + ' corners', prob: mm.underHc, key: 'hcu' + K, am: mm.amHCu },
+      { grp: 'Corners', label: A.name + ' over ' + (mm.acLine || 4.5) + ' corners', prob: mm.overAc, key: 'aco' + K, am: mm.amACo }, { grp: 'Corners', label: A.name + ' under ' + (mm.acLine || 4.5) + ' corners', prob: mm.underAc, key: 'acu' + K, am: mm.amACu }
     ].map(function (s) { return Object.assign(s, market(s.prob, s.key, s.am), { match: lbl, date: m.date }); });
   }
   function bestValueToday() {
@@ -345,6 +364,8 @@
       push('Match Result', [{ n: H.name, am: mm.amH }, { n: 'Draw', am: mm.amD }, { n: A.name, am: mm.amA }]);
       push('Goals O/U 2.5', [{ n: 'Over 2.5', am: mm.amO25 }, { n: 'Under 2.5', am: mm.amU25 }]);
       push('Corners O/U 9.5', [{ n: 'Over 9.5', am: mm.amC9o }, { n: 'Under 9.5', am: mm.amC9u }]);
+      push(H.name + ' corners', [{ n: 'Over', am: mm.amHCo }, { n: 'Under', am: mm.amHCu }]);
+      push(A.name + ' corners', [{ n: 'Over', am: mm.amACo }, { n: 'Under', am: mm.amACu }]);
     });
     return arbs.sort(function (a, b) { return b.roi - a.roi; });
   }
@@ -402,8 +423,11 @@
       + '<div style="text-align:right;flex:none;padding-left:10px">' + statusPill(st) + '<div style="font-family:' + FH + ';font-size:10px;color:' + MUT + ';font-weight:600;margin-top:4px">proj ' + Math.round(mm.xgH) + '-' + Math.round(mm.xgA) + '</div></div></div>';
     var body;
     if (opts.corners) {
-      body = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div style="font-size:12px;color:' + MUT + '">Projected total corners</div><div style="font-family:' + FH + ';font-weight:700;font-size:16px;color:' + GOLD + '">' + mm.cxTot.toFixed(1) + '</div></div>'
-        + '<div style="display:flex;flex-direction:column;gap:7px">' + oddRow('Over 9.5 corners', mm.over95c, 'c9o' + K, mm.amC9o, cl) + oddRow('Under 9.5 corners', mm.under95c, 'c9u' + K, mm.amC9u, cl) + '</div>';
+      var hcl = mm.hcLine || 4.5, acl = mm.acLine || 4.5;
+      body = '<div style="display:flex;align-items:center;gap:14px;margin-bottom:10px;flex-wrap:wrap"><div style="font-size:12px;color:' + MUT + '">Proj corners <span style="font-family:' + FH + ';font-weight:700;color:' + GOLD + '">' + mm.cxTot.toFixed(1) + '</span> total</div><div style="font-size:12px;color:' + MUT + '">' + esc(H.name) + ' <span style="font-family:' + FH + ';font-weight:700;color:' + TXT + '">' + (mm.cxH || 0).toFixed(1) + '</span></div><div style="font-size:12px;color:' + MUT + '">' + esc(A.name) + ' <span style="font-family:' + FH + ';font-weight:700;color:' + TXT + '">' + (mm.cxA || 0).toFixed(1) + '</span></div></div>'
+        + '<div style="display:flex;flex-direction:column;gap:7px">' + oddRow('Total over 9.5 corners', mm.over95c, 'c9o' + K, mm.amC9o, cl) + oddRow('Total under 9.5 corners', mm.under95c, 'c9u' + K, mm.amC9u, cl) + '</div>'
+        + '<div style="margin:12px 0 5px;font-size:11px;font-weight:700;letter-spacing:.06em;color:' + MUT2 + '">' + esc(H.name.toUpperCase()) + ' CORNERS</div><div style="display:flex;flex-direction:column;gap:7px">' + oddRow('Over ' + hcl + ' corners', mm.overHc, 'hco' + K, mm.amHCo, cl) + oddRow('Under ' + hcl + ' corners', mm.underHc, 'hcu' + K, mm.amHCu, cl) + '</div>'
+        + '<div style="margin:12px 0 5px;font-size:11px;font-weight:700;letter-spacing:.06em;color:' + MUT2 + '">' + esc(A.name.toUpperCase()) + ' CORNERS</div><div style="display:flex;flex-direction:column;gap:7px">' + oddRow('Over ' + acl + ' corners', mm.overAc, 'aco' + K, mm.amACo, cl) + oddRow('Under ' + acl + ' corners', mm.underAc, 'acu' + K, mm.amACu, cl) + '</div>';
     } else {
       body = '<div style="display:flex;gap:12px;margin-bottom:13px">' + probBar(H.name, mm.pH, AC) + probBar('Draw', mm.pD, MUT3) + probBar(A.name, mm.pA, POS) + '</div>'
         + '<div style="display:flex;flex-direction:column;gap:7px">' + oddRow(H.name + ' to win', mm.pH, '1x2h' + K, mm.amH, cl) + oddRow('Draw', mm.pD, '1x2d' + K, mm.amD, cl) + oddRow(A.name + ' to win', mm.pA, '1x2a' + K, mm.amA, cl)
@@ -574,7 +598,7 @@
     var head = '<thead><tr><th style="text-align:left;padding:6px 8px;font-size:11px;color:' + MUT + ';font-weight:700">MARKET</th>' + BOOKS.map(function (b) { return '<th style="text-align:center;padding:6px 8px;font-size:11px;color:' + MUT + ';font-weight:700">' + (BOOK_LABELS[b] || b.toUpperCase()) + '</th>'; }).join('') + '</tr></thead>';
     var cards = MATCHES.map(function (m) {
       var o = (LIVE && LIVE.mk) ? LIVE.mk[m.id] : null; if (!o) return ''; var H = TEAMS[m.h], A = TEAMS[m.a];
-      var rows = shopRow(H.name + ' win', o.bkH) + shopRow('Draw', o.bkD) + shopRow(A.name + ' win', o.bkA) + shopRow('Over 2.5 goals', o.bkO25) + shopRow('Under 2.5 goals', o.bkU25) + shopRow('Both to score', o.bkBTTS) + shopRow('Over 9.5 corners', o.bkC9o) + shopRow('Under 9.5 corners', o.bkC9u);
+      var rows = shopRow(H.name + ' win', o.bkH) + shopRow('Draw', o.bkD) + shopRow(A.name + ' win', o.bkA) + shopRow('Over 2.5 goals', o.bkO25) + shopRow('Under 2.5 goals', o.bkU25) + shopRow('Both to score', o.bkBTTS) + shopRow('Over 9.5 corners', o.bkC9o) + shopRow('Under 9.5 corners', o.bkC9u) + ((o.bkHCo || o.bkHCu) ? shopRow(H.name + ' corners o' + (o.hcLine || 4.5), o.bkHCo) + shopRow(H.name + ' corners u' + (o.hcLine || 4.5), o.bkHCu) : '') + ((o.bkACo || o.bkACu) ? shopRow(A.name + ' corners o' + (o.acLine || 4.5), o.bkACo) + shopRow(A.name + ' corners u' + (o.acLine || 4.5), o.bkACu) : '');
       return '<div class="dlcard" style="background:' + CARD + ';border:1px solid ' + LINE + ';border-radius:14px;padding:14px 15px;margin-bottom:12px"><div style="display:flex;align-items:center;gap:9px;margin-bottom:8px"><span style="font-size:18px">' + H.flag + '</span><span style="font-weight:700;font-size:14.5px">' + esc(H.name) + ' v ' + esc(A.name) + '</span><span style="font-size:18px">' + A.flag + '</span><span style="margin-left:auto;font-size:11.5px;color:' + MUT + '">' + dayLabel(m.date) + ' ' + fmtTime(m.date) + '</span></div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">' + head + '<tbody>' + rows + '</tbody></table></div></div>';
     }).join('');
     return pageHead('LINE SHOP', 'Compare every book', 'Best price per market highlighted in teal across DraftKings, Fanatics, BetMGM & Caesars.') + (cards || '<div style="color:' + MUT + '">No live markets to compare yet.</div>');
