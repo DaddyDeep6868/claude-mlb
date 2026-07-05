@@ -84,7 +84,8 @@
 
   // src/boot.ts
   var BASE_CSS = `
-    .sc-placeholder{background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
+    .sc-placeholder{background:color-mix(in srgb,currentColor 8%,transparent);
+      border:1px solid color-mix(in srgb,currentColor 50%,transparent);
       border-radius:2px;box-sizing:border-box;overflow:hidden}
     @keyframes sc-shine{0%{background-position:100% 50%}100%{background-position:0% 50%}}
     html.sc-dc-streaming .sc-placeholder,
@@ -100,13 +101,14 @@
     html.sc-dc-streaming .sc-interp.sc-missing:nth-child(n+9 of .sc-interp.sc-missing)::before{animation:none;
       background:color-mix(in srgb,currentColor 8%,transparent)}
     .sc-placeholder-error{padding:4px 8px;font:11px/1.4 ui-monospace,monospace;
-      color:rgba(0,0,0,.7);word-break:break-word}
+      color:color-mix(in srgb,currentColor 70%,transparent);word-break:break-word}
     .sc-interp.sc-missing{display:inline-block;width:2em;height:1em;overflow:hidden;
       vertical-align:text-bottom;background:rgba(255,255,255,.3);border:1px solid rgba(0,0,0,.5);
       border-radius:2px;box-sizing:border-box;color:transparent;
       user-select:none}
     .sc-interp.sc-unresolved{font-family:ui-monospace,monospace;font-size:.85em;
-      color:rgba(0,0,0,.5);background:rgba(0,0,0,.05);border-radius:3px;
+      color:color-mix(in srgb,currentColor 50%,transparent);
+      background:color-mix(in srgb,currentColor 10%,transparent);border-radius:3px;
       padding:0 3px}
     .sc-host.sc-has-error{position:relative}
     .sc-logic-error{position:absolute;top:8px;left:8px;z-index:2147483647;max-width:60ch;
@@ -178,7 +180,15 @@
           entry.subs.delete(sub);
         };
       }, []);
-      return h(Root, entry.propOverrides || null);
+      const defaults = React.useMemo(() => {
+        const d = {};
+        for (const k in entry.propsMeta || {}) {
+          const v = entry.propsMeta?.[k]?.default;
+          if (v !== void 0) d[k] = v;
+        }
+        return d;
+      }, [entry.propsMeta]);
+      return h(Root, { ...defaults, ...entry.propOverrides || {} });
     }
     const ReactDOM = getReactDOM();
     if (ReactDOM.createRoot)
@@ -283,6 +293,11 @@
 
   // src/encode.ts
   var CAMEL_ATTR = "sc-camel-";
+  var INLINE_TEXT_TAGS = new Set(
+    "a abbr b bdi bdo br cite code del dfn em i ins kbd mark q s samp small span strike strong sub sup u var wbr".split(
+      " "
+    )
+  );
   var RAW_WRAP = {
     select: "sc-raw-select",
     table: "sc-raw-table",
@@ -654,13 +669,34 @@
       return wrapper ? h("div", wrapper, h(C, props)) : h(C, props);
     };
   }
+  function contentKey(el) {
+    const clone = el.cloneNode(true);
+    for (const d of clone.querySelectorAll("*")) {
+      while (d.attributes.length) d.removeAttribute(d.attributes[0].name);
+    }
+    const s = clone.innerHTML;
+    let h2 = 5381;
+    for (let i = 0; i < s.length; i++) h2 = (h2 << 5) + h2 + s.charCodeAt(i) | 0;
+    return s.length + "." + (h2 >>> 0).toString(36);
+  }
+  var NEVER_CONTENT_KEYED = new Set(
+    "script style textarea option title select canvas iframe video audio".split(
+      " "
+    )
+  );
+  var NOT_INLINE_SELECTOR = ":not(" + [...INLINE_TEXT_TAGS].join(",") + ")";
   function walkElement(el, host) {
     const realTag = RAW_UNWRAP[el.localName] || el.localName;
     const tplId = el.getAttribute("data-dc-tpl");
+    const inlineOnly = el.childNodes.length > 0 && !NEVER_CONTENT_KEYED.has(realTag) && el.querySelector(NOT_INLINE_SELECTOR) === null;
+    const keySuffix = inlineOnly ? "|" + contentKey(el) : "";
     const { propGetters, pseudoClasses } = collectProps(el, "dom", host);
     const kids = walkChildren(el, host);
     return (vals, ctx, key) => {
-      const props = { key, "data-dc-tpl": tplId };
+      const props = {
+        key: key + keySuffix,
+        "data-dc-tpl": tplId
+      };
       for (const [k, g] of propGetters) {
         let v = g(vals);
         if (k === "style" && typeof v === "string") v = cssToObj(v);
@@ -1009,7 +1045,8 @@
     }
     return cur;
   }
-  var BABEL_URL = "https://unpkg.com/@babel/standalone@7.26.4/babel.min.js";
+  var BABEL_URL = "https://unpkg.com/@babel/standalone@7.29.0/babel.min.js";
+  var BABEL_SRI = "sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y";
   var GLOBAL_POLL_INTERVAL_MS = 50;
   var GLOBAL_POLL_TIMEOUT_MS = 3e4;
   function createExternalModules(onResolved) {
@@ -1023,6 +1060,7 @@
       babelLoading = new Promise((res, rej) => {
         const s = document.createElement("script");
         s.src = BABEL_URL;
+        s.integrity = BABEL_SRI;
         s.crossOrigin = "anonymous";
         s.onload = () => res();
         s.onerror = rej;
@@ -1197,12 +1235,26 @@
 
   // src/helmet.ts
   var DESIGN_DOC_MODE_RE = /<meta\b[^>]*\bname\s*=\s*["']design_doc_mode["'][^>]*\b(?:content|value)\s*=\s*["'](\w+)["']/i;
-  var CANVAS_BG = "#f0eee9";
+  var CANVAS_BG_LIGHT = "#f0eee6";
+  var CANVAS_BG_DARK = "#2e2c26";
   function createHelmetManager(doc, isStreaming) {
     const mounted = /* @__PURE__ */ new Set();
     const live = /* @__PURE__ */ new Map();
     let designDocMode = null;
     let canvasStyleEl = null;
+    let appTheme = "light";
+    try {
+      const ds = doc.documentElement.dataset.theme;
+      appTheme = ds === "dark" || ds === "light" ? ds : new URLSearchParams(doc.defaultView?.location.search ?? "").get(
+        "theme"
+      ) === "dark" ? "dark" : "light";
+    } catch {
+    }
+    function applyCanvasBg() {
+      if (!canvasStyleEl) return;
+      const bg = appTheme === "dark" ? CANVAS_BG_DARK : CANVAS_BG_LIGHT;
+      canvasStyleEl.textContent = `html,body{background:${bg}}#dc-root>.sc-host{position:relative}`;
+    }
     function postDesignMode(mode) {
       if (window.parent === window) return;
       try {
@@ -1218,7 +1270,7 @@
         doc.documentElement.setAttribute("data-dc-canvas", "");
         canvasStyleEl = doc.createElement("style");
         canvasStyleEl.setAttribute("data-dc-canvas", "");
-        canvasStyleEl.textContent = `html,body{background:${CANVAS_BG}}#dc-root>.sc-host{position:relative}`;
+        applyCanvasBg();
         doc.head.appendChild(canvasStyleEl);
       } else {
         doc.documentElement.removeAttribute("data-dc-canvas");
@@ -1227,7 +1279,17 @@
       }
     }
     window.addEventListener("message", (e) => {
-      if (!designDocMode || (e.data && e.data.type) !== "__dc_probe") return;
+      const type = e.data && e.data.type;
+      if (type === "__dc_theme") {
+        const t = e.data.theme;
+        if (t === "light" || t === "dark") {
+          appTheme = t;
+          doc.documentElement.dataset.theme = t;
+          applyCanvasBg();
+        }
+        return;
+      }
+      if (!designDocMode || type !== "__dc_probe") return;
       postDesignMode(designDocMode);
     });
     function compile(node) {
@@ -1502,70 +1564,62 @@
     };
   }
 
+  // src/stream-state.ts
+  function createStreamTracker(staleMs = 6e4, now = Date.now) {
+    const since = /* @__PURE__ */ new Map();
+    const liveOne = (n) => {
+      const t = since.get(n);
+      if (t === void 0) return false;
+      if (now() - t > staleMs) {
+        since.delete(n);
+        return false;
+      }
+      return true;
+    };
+    return {
+      push(name, streaming, viewportKey) {
+        if (viewportKey === "dc-model") return;
+        if (streaming) since.set(name, now());
+        else since.delete(name);
+      },
+      live(name) {
+        if (name !== void 0) return liveOne(name);
+        for (const n of [...since.keys()]) if (liveOne(n)) return true;
+        return false;
+      }
+    };
+  }
+
   // src/index.ts
   var REACT_URL = "https://unpkg.com/react@18.3.1/umd/react.production.min.js";
   var REACT_SRI = "sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z";
   var REACT_DOM_URL = "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js";
   var REACT_DOM_SRI = "sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1";
-  var REACT_FALLBACK_URL = "https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js";
-  var REACT_DOM_FALLBACK_URL = "https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js";
   function hideRawTemplate() {
     const s = document.createElement("style");
     s.textContent = "x-dc{display:none!important}";
     document.head.appendChild(s);
   }
-  function loadScript(srcs, integrity) {
-    const list = Array.isArray(srcs) ? srcs : [srcs];
+  function loadScript(src, integrity) {
     return new Promise((resolve2, reject) => {
-      let i = 0;
-      const tryNext = () => {
-        if (i >= list.length) { reject(new Error("failed to load " + list[list.length - 1])); return; }
-        const src = list[i++];
-        //! nosemgrep: create-script-element
-        const s = document.createElement("script");
-        s.src = src;
-        if (integrity) s.integrity = integrity;
-        s.crossOrigin = "anonymous";
-        s.async = false;
-        s.onload = () => resolve2();
-        s.onerror = () => { if (i < list.length) { console.warn("[dc] script failed, trying fallback:", src); tryNext(); } else reject(new Error("failed to load " + src)); };
-        document.head.appendChild(s);
-      };
-      tryNext();
-    });
-  }
-  function _dcInjectInline(code) {
-    return new Promise((resolve2) => {
       //! nosemgrep: create-script-element
       const s = document.createElement("script");
-      s.textContent = code;
+      s.src = src;
+      s.integrity = integrity;
+      s.crossOrigin = "anonymous";
       s.async = false;
+      s.onload = () => resolve2();
+      s.onerror = () => reject(new Error(`failed to load ${src}`));
       document.head.appendChild(s);
-      resolve2();
     });
-  }
-  function _dcLsGet(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
-  function _dcLsSet(k, v) { try { window.localStorage.setItem(k, v); } catch (e) {} }
-  function _dcLoadCached(urls, key) {
-    const cached = _dcLsGet(key);
-    if (cached) { console.info("[dc] using cached copy:", key); return _dcInjectInline(cached); }
-    const list = Array.isArray(urls) ? urls : [urls];
-    let i = 0;
-    const tryNext = () => {
-      if (i >= list.length) return Promise.reject(new Error("could not fetch " + list[list.length - 1]));
-      const u = list[i++];
-      return fetch(u).then((r) => { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
-        .then((txt) => { _dcLsSet(key, txt); return _dcInjectInline(txt); })
-        .catch((e) => { console.warn("[dc] fetch failed, trying next:", u, e && e.message); return tryNext(); });
-    };
-    return tryNext();
   }
   function loadReactUmd() {
     const w = window;
     if (w.React && w.ReactDOM) return Promise.resolve();
-    return _dcLoadCached([REACT_URL, REACT_FALLBACK_URL], "__dc_react_umd_18_3_1")
-      .then(() => { if (!w.ReactDOM) return _dcLoadCached([REACT_DOM_URL, REACT_DOM_FALLBACK_URL], "__dc_react_dom_umd_18_3_1"); })
-      .then(() => void 0);
+    return Promise.all([
+      loadScript(REACT_URL, REACT_SRI),
+      loadScript(REACT_DOM_URL, REACT_DOM_SRI)
+    ]).then(() => void 0);
   }
   function init() {
     const runtime = createRuntime(document);
@@ -1589,11 +1643,14 @@
       } catch {
       }
     };
+    const streams = createStreamTracker();
     const api = {
-      __dcUpdate: (name, kind, content, streaming) => {
+      __dcUpdate: (name, kind, content, streaming, viewportKey) => {
+        streams.push(name, streaming, viewportKey);
         runtime.dcUpdate(name, kind, content, streaming);
         if (name === rootName && !streaming && kind === "props") notifyHost();
       },
+      __dcStreaming: (name) => streams.live(name),
       __dcSetProps: (name, overrides) => runtime.setProps(name, overrides),
       /** Name of the component currently mounted as the page root — DC tools
        *  push their template-stream here when targeting "the open page". */
@@ -1618,22 +1675,13 @@
       StreamableLogic: runtime.StreamableLogic
     };
     Object.assign(window, api);
+    window.__dcContentKeyed = true;
     if (document.readyState !== "loading") api.__dcBoot();
     else document.addEventListener("DOMContentLoaded", () => api.__dcBoot());
   }
   hideRawTemplate();
-  function showBootError() {
-    try {
-      const d = document.createElement("div");
-      d.style.cssText = "position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;background:#0a0c11;color:#eef1f6;font-family:ui-sans-serif,system-ui,-apple-system,sans-serif;text-align:center";
-      d.innerHTML = '<div style="max-width:380px"><div style="font-size:18px;font-weight:700;margin-bottom:8px">Could not load DingerLab</div><div style="font-size:14px;color:#9aa3b2;line-height:1.5;margin-bottom:18px">The app needs an internet connection to start up. Check your connection and try again.</div><button style="padding:10px 20px;border:none;border-radius:10px;background:#ff8a4c;color:#0a0c11;font-weight:700;font-size:14px;cursor:pointer">Reload</button></div>';
-      const btn = d.querySelector("button");
-      if (btn) btn.onclick = () => location.reload();
-      document.body.appendChild(d);
-    } catch (e) {}
-  }
   loadReactUmd().then(init).catch((err) => {
     console.error("[dc] failed to load React or boot:", err);
-    showBootError();
+    throw err;
   });
 })();

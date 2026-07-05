@@ -18,6 +18,7 @@
 <body>
 <x-dc>
 <helmet>
+<script>window.__DL_VERSION__ = '1.4.0';</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -114,10 +115,12 @@
   <div data-shell style="display:grid;grid-template-columns:208px minmax(0,1fr) {{ slipColWidth }};gap:0;flex:1;min-height:0;transition:grid-template-columns .22s ease">
 
     <!-- RAIL -->
-    <nav data-rail style="padding:18px 12px;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:3px;position:sticky;top:67px;align-self:start">
-      <div style="font-size:10.5px;letter-spacing:.12em;color:#5f6878;font-weight:700;padding:4px 10px 8px">NAVIGATE</div>
+    <nav data-rail style="padding:18px 12px;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:3px;position:sticky;top:67px;align-self:start;max-height:calc(100vh - 67px);overflow-y:auto">
       <sc-for list="{{ nav }}" as="n" hint-placeholder-count="8">
-        <button data-tab="{{ n.id }}" onClick="{{ setTab }}" style="display:flex;align-items:center;gap:11px;padding:10px 11px;border:none;border-radius:10px;cursor:pointer;text-align:left;font-family:'Hanken Grotesk';font-weight:600;font-size:13.5px;background:{{ n.bg }};color:{{ n.fg }};position:relative;transition:background .14s,color .14s" style-hover="background:rgba(255,255,255,.05);color:#eef1f6">
+        <sc-if value="{{ n.header }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:10px;letter-spacing:.13em;color:#5f6878;font-weight:700;padding:11px 10px 5px">{{ n.header }}</div>
+        </sc-if>
+        <button data-tab="{{ n.id }}" onClick="{{ setTab }}" style="display:flex;align-items:center;gap:11px;padding:9px 11px;border:none;border-radius:10px;cursor:pointer;text-align:left;font-family:'Hanken Grotesk';font-weight:600;font-size:13.5px;background:{{ n.bg }};color:{{ n.fg }};position:relative;transition:background .14s,color .14s" style-hover="background:rgba(255,255,255,.05);color:#eef1f6">
           <span style="position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:18px;border-radius:3px;background:{{ n.bar }}"></span>
           <span style="font-size:16px;width:18px;text-align:center">{{ n.icon }}</span>
           <span>{{ n.label }}</span>
@@ -1335,6 +1338,105 @@
       </div>
       </sc-if>
 
+      <!-- PARLAY ENGINE -->
+      <sc-if value="{{ isEngine }}" hint-placeholder-val="{{ false }}">
+      <div style="animation:dlrise .35s ease both">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px">
+          <div>
+            <div style="font-size:11px;letter-spacing:.14em;color:var(--ac,#ff8a4c);font-weight:700;margin-bottom:6px">PARLAY ENGINE</div>
+            <h1 style="margin:0;font-family:'Space Grotesk';font-size:28px;font-weight:700;letter-spacing:-.02em">Today&rsquo;s optimal build</h1>
+            <p style="margin:6px 0 0;color:#8b94a6;font-size:14px;max-width:600px">The engine scans every qualified hitter, blends the HR model with live market prices, and assembles the strongest parlays on the slate — one leg per game, ranked by true probability and confidence.</p>
+          </div>
+          <span style="font-size:11.5px;font-weight:700;padding:6px 12px;border-radius:20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#9aa3b2;white-space:nowrap">{{ engineSource }}</span>
+        </div>
+
+        <sc-if value="{{ engineNo }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:38px 24px;text-align:center">
+            <div style="font-size:26px;margin-bottom:10px">⚡</div>
+            <div style="font-family:'Space Grotesk';font-size:17px;font-weight:700;color:#c3cad6">Engine idle</div>
+            <p style="margin:8px auto 0;font-size:13.5px;color:#7b8597;max-width:420px">{{ engineReason }}</p>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ engineOk }}" hint-placeholder-val="{{ false }}">
+          <div data-mcol2 style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px">
+            <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 16px"><div style="font-size:10px;letter-spacing:.1em;color:#7b8597;font-weight:700;margin-bottom:6px">CANDIDATES</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:22px">{{ engineCandidates }}</div><div style="font-size:11.5px;color:#7b8597;margin-top:2px">{{ engineLineupLabel }}</div></div>
+            <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 16px"><div style="font-size:10px;letter-spacing:.1em;color:#7b8597;font-weight:700;margin-bottom:6px">TOP PICK</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ engineTopName }}</div><div style="font-size:11.5px;color:var(--ac,#ff8a4c);margin-top:2px;font-weight:700">{{ engineTopPct }} true HR</div></div>
+            <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 16px"><div style="font-size:10px;letter-spacing:.1em;color:#7b8597;font-weight:700;margin-bottom:6px">AVG CONFIDENCE</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:22px">{{ engineAvgConf }}</div><div style="font-size:11.5px;color:#7b8597;margin-top:2px">sample · contact · lineup</div></div>
+            <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 16px"><div style="font-size:10px;letter-spacing:.1em;color:#7b8597;font-weight:700;margin-bottom:6px">PRICING</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:15px;color:{{ engineOddsColor }}">{{ engineOddsLabel }}</div></div>
+          </div>
+
+          <sc-if value="{{ engHasRecord }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:13px 18px;margin-bottom:16px">
+              <span style="font-size:10px;letter-spacing:.12em;color:var(--ac,#ff8a4c);font-weight:700">ENGINE RECORD</span>
+              <div style="display:flex;align-items:baseline;gap:6px"><span style="font-family:'Space Grotesk';font-weight:700;font-size:17px">{{ engRecordLabel }}</span><span style="font-size:11px;color:#7b8597">W–L</span></div>
+              <div style="display:flex;align-items:baseline;gap:6px"><span style="font-family:'Space Grotesk';font-weight:700;font-size:17px">{{ engHitLabel }}</span><span style="font-size:11px;color:#7b8597">hit vs {{ engAvgPredLabel }} predicted</span></div>
+              <div style="display:flex;align-items:baseline;gap:6px"><span style="font-family:'Space Grotesk';font-weight:700;font-size:17px;color:{{ engRoiColor }}">{{ engRoiLabel }}</span><span style="font-size:11px;color:#7b8597">ROI</span></div>
+              <span style="margin-left:auto;font-size:11.5px;color:#7b8597">{{ engPendingCount }} pending · auto-grades when games go final</span>
+            </div>
+          </sc-if>
+
+          <div data-mcol1 style="display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:start">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;gap:9px"><span style="width:3px;height:18px;border-radius:2px;background:var(--ac,#ff8a4c);flex:none"></span><h2 style="margin:0;font-family:'Space Grotesk';font-size:17px;font-weight:700">Recommended parlays</h2></div>
+              <sc-for list="{{ engineParlays }}" as="pl" hint-placeholder-count="3">
+                <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 18px;border-bottom:1px solid rgba(255,255,255,.06);background:#0f1218">
+                    <div style="min-width:0"><div style="font-family:'Space Grotesk';font-weight:700;font-size:15.5px">{{ pl.title }}</div><div style="font-size:11.5px;color:#7b8597;margin-top:2px">{{ pl.sub }}</div></div>
+                    <div style="display:flex;align-items:center;gap:8px;flex:none">
+                      <sc-if value="{{ pl.synthetic }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:12px;background:rgba(255,194,77,.12);color:#ffc24d">model prices</span></sc-if>
+                      <span style="width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);font-family:'Space Grotesk';font-weight:700;font-size:15px;color:{{ pl.gradeColor }}">{{ pl.grade }}</span>
+                    </div>
+                  </div>
+                  <div style="padding:6px 18px">
+                    <sc-for list="{{ pl.legs }}" as="l" hint-placeholder-count="3">
+                      <div style="display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+                        <div style="width:34px;height:34px;flex:none;border-radius:50%;background:{{ l.ring }};display:grid;place-items:center"><div style="width:27px;height:27px;border-radius:50%;background:#13161e;overflow:hidden;display:grid;place-items:center"><img src="{{ l.headshot }}" alt="" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;object-position:top center" onerror="this.remove()"/></div></div>
+                        <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ l.name }}</div><div style="font-size:11px;color:#7b8597">{{ l.matchup }}</div></div>
+                        <div style="text-align:right;flex:none"><div style="font-size:10px;color:#7b8597;font-weight:600">TRUE HR</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:13.5px">{{ l.truePct }}</div></div>
+                        <div style="text-align:right;flex:none;min-width:52px"><div style="font-size:10px;color:#7b8597;font-weight:600">ODDS</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:13.5px;color:{{ l.oddsColor }}">{{ l.odds }}</div></div>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:16px;padding:13px 18px;border-top:1px solid rgba(255,255,255,.06);flex-wrap:wrap">
+                    <div><div style="font-size:10px;color:#7b8597;font-weight:600">WIN</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:15px">{{ pl.winPct }}</div></div>
+                    <div><div style="font-size:10px;color:#7b8597;font-weight:600">ODDS</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:15px;color:var(--ac,#ff8a4c)">{{ pl.odds }}</div></div>
+                    <div><div style="font-size:10px;color:#7b8597;font-weight:600">EV</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:15px;color:{{ pl.evColor }}">{{ pl.ev }}</div></div>
+                    <div><div style="font-size:10px;color:#7b8597;font-weight:600">{{ pl.stakeLabel }}</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:15px;color:var(--pos,#35d0c0)">{{ pl.payout }}</div></div>
+                    <div style="margin-left:auto;display:flex;gap:8px">
+                      <button data-parlay="{{ pl.key }}" onClick="{{ addEngineParlay }}" style="padding:9px 14px;border:1px solid rgba(255,255,255,.14);border-radius:10px;cursor:pointer;font-weight:700;font-size:12.5px;color:#eef1f6;background:#161a24" style-hover="border-color:rgba(255,138,76,.5)">Add to slip</button>
+                      <button data-parlay="{{ pl.key }}" onClick="{{ trackEngineParlay }}" style="padding:9px 14px;border:none;border-radius:10px;cursor:pointer;font-weight:700;font-size:12.5px;color:#0a0c11;background:var(--ac,#ff8a4c)">Track bet</button>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;gap:9px"><span style="width:3px;height:18px;border-radius:2px;background:var(--pos,#35d0c0);flex:none"></span><h2 style="margin:0;font-family:'Space Grotesk';font-size:17px;font-weight:700">Best HR bets</h2></div>
+              <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:8px 16px">
+                <sc-for list="{{ enginePicks }}" as="p" hint-placeholder-count="6">
+                  <div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+                    <div style="width:22px;flex:none;font-family:'Space Grotesk';font-weight:700;font-size:13px;color:#5f6878">{{ p.rank }}</div>
+                    <div style="width:36px;height:36px;flex:none;border-radius:50%;background:{{ p.ring }};display:grid;place-items:center"><div style="width:29px;height:29px;border-radius:50%;background:#13161e;overflow:hidden;display:grid;place-items:center"><img src="{{ p.headshot }}" alt="" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;object-position:top center" onerror="this.remove()"/></div></div>
+                    <div style="flex:1;min-width:0">
+                      <div style="font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div>
+                      <div style="font-size:11px;color:#7b8597">{{ p.matchup }} · {{ p.modelLabel }}</div>
+                      <div style="height:4px;border-radius:4px;background:rgba(255,255,255,.07);margin-top:5px;overflow:hidden"><div style="height:100%;width:{{ p.barW }};background:linear-gradient(90deg,var(--ac,#ff8a4c),#ffc24d)"></div></div>
+                    </div>
+                    <div style="text-align:right;flex:none"><div style="font-family:'Space Grotesk';font-weight:700;font-size:14.5px">{{ p.truePct }}</div><div style="font-size:10.5px;color:{{ p.edgeColor }};font-weight:700">{{ p.edgeLabel }}</div></div>
+                    <div style="text-align:right;flex:none;min-width:44px"><div style="font-family:'Space Grotesk';font-weight:700;font-size:13px;color:{{ p.oddsColor }}">{{ p.odds }}</div><div style="font-size:10px;color:#5f6878">conf {{ p.confPct }}</div></div>
+                    <button data-player="{{ p.id }}" onClick="{{ addEnginePick }}" title="Add to slip" style="width:30px;height:30px;flex:none;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:#161a24;color:var(--ac,#ff8a4c);cursor:pointer;font-size:16px;font-weight:700" style-hover="border-color:rgba(255,138,76,.5)">+</button>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="padding:13px 16px;border-radius:13px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);font-size:12px;color:#8b94a6;line-height:1.55">True HR = 60% model + 40% de-vigged market price when a line exists. Confidence weighs sample size, barrel/hard-hit quality, lineup status and model/market agreement. Parlays take one leg per game whenever the slate allows.</div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
       <!-- TOOLS -->
       <sc-if value="{{ isTools }}" hint-placeholder-val="{{ false }}">
       <div style="animation:dlrise .35s ease both">
@@ -1377,15 +1479,22 @@
         </div>
         <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px;margin-bottom:16px">
           <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px"><span style="font-size:17px">🔌</span><div style="font-family:'Space Grotesk';font-weight:700;font-size:15px">Live odds proxy</div></div>
-          <div style="font-size:12.5px;color:#8b94a6;line-height:1.5;margin-bottom:14px">Your OddsBlaze key is read from the <code style="background:#0c0e14;padding:2px 6px;border-radius:5px;font-size:12px">ODDSBLAZE_KEY</code> env variable on your Render server. Point the app at whichever Render deployment URL you use.</div>
+          <div style="font-size:12.5px;color:#8b94a6;line-height:1.5;margin-bottom:14px">Save your <code style="background:#0c0e14;padding:2px 6px;border-radius:5px;font-size:12px">API key</code> here and the app calls OddsBlaze directly. <strong style="color:#c3cad6">Note:</strong> OddsBlaze's API sends no CORS headers, so a browser‑only deploy (e.g. GitHub Pages) can't read it — set the key as <code style="background:#0c0e14;padding:2px 6px;border-radius:5px;font-size:12px">ODDSBLAZE_KEY</code> on your proxy server and point the Proxy URL below at it. A saved key takes priority over the proxy when a CORS‑enabled source is available.</div>
           <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:11px">
             <div style="display:flex;align-items:center;flex:1;min-width:240px;padding:10px 13px;border-radius:11px;background:#0c0e14;border:1px solid rgba(255,138,76,.3)">
+              <span style="font-size:12.5px;color:#9aa3b2;white-space:nowrap;margin-right:8px">OddsBlaze key</span>
+              <input type="text" value="{{ oddsKey }}" onChange="{{ setOddsKey }}" placeholder="paste your API key" style="flex:1;background:transparent;border:none;color:#eef1f6;font-size:13px;font-weight:600;outline:none;min-width:0;font-family:'Space Grotesk',monospace;letter-spacing:.02em">
+            </div>
+            <button onClick="{{ saveOddsKey }}" style="padding:10px 16px;border:none;border-radius:10px;cursor:pointer;font-weight:700;font-size:13px;color:#0a0c11;background:var(--ac,#ff8a4c);white-space:nowrap">Save & reload</button>
+          </div>
+          <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:11px">
+            <div style="display:flex;align-items:center;flex:1;min-width:240px;padding:10px 13px;border-radius:11px;background:#0c0e14;border:1px solid rgba(255,255,255,.1)">
               <span style="font-size:12.5px;color:#9aa3b2;white-space:nowrap;margin-right:8px">Proxy URL</span>
               <input type="text" value="{{ proxyUrl }}" onChange="{{ setProxyUrl }}" placeholder="https://your-app.onrender.com" style="flex:1;background:transparent;border:none;color:#eef1f6;font-size:13px;font-weight:600;outline:none;min-width:0">
             </div>
-            <button onClick="{{ saveProxyUrl }}" style="padding:10px 16px;border:none;border-radius:10px;cursor:pointer;font-weight:700;font-size:13px;color:#0a0c11;background:var(--ac,#ff8a4c);white-space:nowrap">Save & reload</button>
+            <button onClick="{{ saveProxyUrl }}" style="padding:10px 16px;border:none;border-radius:10px;cursor:pointer;font-weight:700;font-size:13px;color:#eef1f6;background:#161a24;border:1px solid rgba(255,255,255,.14);white-space:nowrap">Save & reload</button>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:12.5px"><span style="width:7px;height:7px;border-radius:50%;background:{{ oddsProxyColor }};flex:none"></span><span style="color:{{ oddsProxyColor }};font-weight:600">{{ oddsProxyStatus }}</span></div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12.5px"><span style="width:7px;height:7px;border-radius:50%;background:{{ oddsProxyColor }};flex:none"></span><span style="color:{{ oddsProxyColor }};font-weight:600">{{ oddsProxyStatus }}</span><span style="margin-left:auto;font-size:11px;color:#5f6878;font-weight:600">Source · {{ oddsMode }}</span></div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px">
           <div style="background:#13161e;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px;cursor:pointer" style-hover="border-color:rgba(255,138,76,.4)"><div style="font-size:22px;margin-bottom:9px">✍️</div><div style="font-family:'Space Grotesk';font-weight:700;font-size:14.5px">Manual entry</div><div style="font-size:12.5px;color:#8b94a6;margin-top:5px;line-height:1.4">Add a game or prop by hand when a book hasn't posted.</div></div>
@@ -1667,10 +1776,11 @@
   &quot;compact&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot; }
 }">
 class Component extends DCLogic {
-  state = { tab: 'dashboard', drawerOpen: false, player: null, status: 'loading', data: null, slip: [], tracked: [], stake: '25', builderLegs: 3, builderStyle: 'balanced', builderMarket: 'hr', ulxSel: null, frontierIdx: null, slipOpen: (typeof window !== 'undefined' && window.innerWidth <= 820) ? false : true, proxyUrl: 'https://claude-mlb.onrender.com', autoPoll: true, lastUpdated: null, search: '', watch: [], ulxSeed: 0, copiedId: null, sortBy: 'score', teamFilter: null, compareA: null, compareB: null, wroLegs: 3, wroMode: 'winrate', wroSeed: 0, wroLocked: {}, radarSel: null, bankroll: '1000', kellyFrac: 0.25, solverRisk: 'balanced', predLog: {}, rrSel: [], rrStake: '10' };
+  state = { tab: 'dashboard', drawerOpen: false, player: null, status: 'loading', data: null, slip: [], tracked: [], stake: '25', builderLegs: 3, builderStyle: 'balanced', builderMarket: 'hr', ulxSel: null, frontierIdx: null, slipOpen: (typeof window !== 'undefined' && window.innerWidth <= 820) ? false : true, proxyUrl: 'https://claude-mlb.onrender.com', autoPoll: true, lastUpdated: null, search: '', watch: [], ulxSeed: 0, copiedId: null, sortBy: 'score', teamFilter: null, compareA: null, compareB: null, wroLegs: 3, wroMode: 'winrate', wroSeed: 0, wroLocked: {}, radarSel: null, bankroll: '1000', kellyFrac: 0.25, solverRisk: 'balanced', predLog: {}, rrSel: [], rrStake: '10', oddsKey: '1e4c7dcb-5213-4468-929b-03c86dbea7ee' };
 
   componentDidMount() {
     try { const p = localStorage.getItem('dl_odds_proxy'); if (p) this.setState({ proxyUrl: p }); } catch (e) {}
+    try { const k = localStorage.getItem('dl_oddsblaze_key'); if (k != null) this.setState({ oddsKey: k }); } catch (e) {}
     try { const b = localStorage.getItem('dl_bankroll'); if (b) this.setState({ bankroll: b }); } catch (e) {}
     try { const t = localStorage.getItem('dl_tracked_v1'); if (t) this.setState({ tracked: JSON.parse(t) }); } catch (e) {}
     try { const pl = localStorage.getItem('dl_predlog_v2'); if (pl) this.setState({ predLog: JSON.parse(pl) }); } catch (e) {}
@@ -1804,6 +1914,7 @@ class Component extends DCLogic {
       const gradedTracked = this.gradeTracked(this.state.tracked, homeredSet, statusMap, oddsMap);
       try { localStorage.setItem('dl_tracked_v1', JSON.stringify(gradedTracked.slice(0, 50))); } catch (e) {}
       this.setState({ tracked: gradedTracked, data: Object.assign({}, this.state.data, { oddsCount: Object.keys(oddsMap).length, booksOk, priceDiff, liveHRs }), lastUpdated: Date.now() });
+      this.fetchServerEngine(players).then(eng => { if (eng && this.state.data) this.setState(s => ({ data: Object.assign({}, s.data, { engineServer: eng }) })); });
     } catch (e) {}
     this._refreshing = false;
   }
@@ -1897,10 +2008,8 @@ class Component extends DCLogic {
     const t = ctrl ? setTimeout(() => { try { ctrl.abort(); } catch (e) {} }, ms) : null;
     return fetch(url, o).finally(() => { if (t) clearTimeout(t); });
   }
-  async fetchOdds() {
-    const books = ['draftkings', 'fanatics', 'betmgm', 'caesars'];
-    const proxyBase = ((() => { try { return localStorage.getItem('dl_odds_proxy'); } catch (e) { return null; } })() || 'https://claude-mlb.onrender.com').replace(/\/$/, '');
-    const res = await Promise.all(books.map(bk => fetch(proxyBase + '/api/oddsblaze?sportsbook=' + bk + '&league=mlb').then(r => r.ok ? r.json() : null).catch(() => null)));
+  // Parse a set of per-book OddsBlaze responses into best/perBook price maps.
+  parseOddsResponses(books, res) {
     const best = {}, perBook = {}; let booksOk = 0;
     res.forEach((j, bi) => {
       if (!j || !j.events) return; booksOk++;
@@ -1908,6 +2017,21 @@ class Component extends DCLogic {
       j.events.forEach(ev => { (ev.odds || []).forEach(o => { if (!/home\s*run/i.test(o.market || '')) return; const sel = o.selection || {}; if (sel.side !== 'Over' || sel.line !== 0.5) return; if (!o.player || !o.player.name || o.price == null) return; const a = parseInt(String(o.price), 10); if (!isFinite(a) || a === 0) return; const k = this.normName(o.player.name); if (best[k] == null || a > best[k]) best[k] = a; if (!perBook[k]) perBook[k] = {}; if (perBook[k][bk] == null || a > perBook[k][bk]) perBook[k][bk] = a; }); });
     });
     return { best, perBook, booksOk };
+  }
+  async fetchOdds() {
+    const books = ['draftkings', 'fanatics', 'betmgm', 'caesars'];
+    const key = (() => { try { return (localStorage.getItem('dl_oddsblaze_key') != null ? localStorage.getItem('dl_oddsblaze_key') : this.state.oddsKey) || ''; } catch (e) { return this.state.oddsKey || ''; } })().trim();
+    const grab = async urlFor => this.parseOddsResponses(books, await Promise.all(books.map(bk => fetch(urlFor(bk)).then(r => r.ok ? r.json() : null).catch(() => null))));
+    // 1) Try the OddsBlaze API directly with the saved key. Works wherever CORS is permitted
+    //    (a server-side / CORS-enabled host); browsers hitting the public API get blocked and 0 books.
+    if (key) {
+      const direct = await grab(bk => 'https://odds.oddsblaze.com/?key=' + encodeURIComponent(key) + '&sportsbook=' + bk + '&league=mlb&market_contains=' + encodeURIComponent('Home Run'));
+      if (direct.booksOk > 0) return Object.assign(direct, { source: 'key' });
+    }
+    // 2) Fall back to a proxy server (which holds ODDSBLAZE_KEY in its env and adds CORS headers).
+    const proxyBase = ((() => { try { return localStorage.getItem('dl_odds_proxy'); } catch (e) { return null; } })() || 'https://claude-mlb.onrender.com').replace(/\/$/, '');
+    if (!proxyBase) return { best: {}, perBook: {}, booksOk: 0 };
+    return Object.assign(await grab(bk => proxyBase + '/api/oddsblaze?sportsbook=' + bk + '&league=mlb'), { source: 'proxy' });
   }
   async fetchTodayHRs(games, boardSet) {
     const relevant = games.filter(g => { const s = g.status && g.status.abstractGameState; return s === 'Live' || s === 'Final' || (g.status && /progress/i.test(g.status.detailedState || '')); });
@@ -2013,6 +2137,23 @@ class Component extends DCLogic {
       return out;
     } catch (e) { return {}; }
   }
+  // Team relief-corps HR/9 (one call, all 30 teams). Starters only face ~62% of PAs;
+  // the other ~38% come against the bullpen, so the pitching multiplier blends both.
+  async fetchBullpen(season) {
+    try {
+      const j = await this.tFetch('https://statsapi.mlb.com/api/v1/teams/stats?stats=statSplits&group=pitching&season=' + season + '&sitCodes=rp&sportIds=1').then(r => r.ok ? r.json() : null);
+      const out = {};
+      const splits = (j && j.stats && j.stats[0] && j.stats[0].splits) || [];
+      splits.forEach(s => {
+        const teamId = s.team && s.team.id; const st = s.stat || {};
+        const ipRaw = String(st.inningsPitched || '0');
+        const ip = Math.floor(parseFloat(ipRaw)) + (parseFloat((ipRaw.split('.')[1] || '0')) / 3);
+        const hr = st.homeRuns || 0;
+        if (teamId && ip >= 30) out[teamId] = +(hr * 9 / ip).toFixed(2);
+      });
+      return out;
+    } catch (e) { return {}; }
+  }
   async fetchLineupStatus(games) {
     const out = {};
     await Promise.all(games.filter(g => g.status && g.status.abstractGameState === 'Preview').map(async g => {
@@ -2021,8 +2162,9 @@ class Component extends DCLogic {
         if (!j) return;
         const away = (j.teams && j.teams.away && j.teams.away.battingOrder) || [];
         const home = (j.teams && j.teams.home && j.teams.home.battingOrder) || [];
-        const confirmed = new Set([...away, ...home].map(String));
-        confirmed.forEach(id => { out[id] = true; });
+        // Store the batting-order slot (1–9) — truthy, so existing boolean checks still work.
+        away.forEach((id, i) => { out[String(id)] = i + 1; });
+        home.forEach((id, i) => { out[String(id)] = i + 1; });
       } catch (e) {}
     }));
     return out;
@@ -2109,10 +2251,11 @@ class Component extends DCLogic {
       const hstats = await this.bulkPeople(allHitters, 'hitting', season);
       const weather = await this.fetchWeather(games);
       const weatherByVenue = {};
-      const [statcast, dayNight, lineupConfirmed] = await Promise.all([
+      const [statcast, dayNight, lineupConfirmed, bullpen] = await Promise.all([
         this.fetchStatcast(season),
         this.fetchDayNightSplits(season),
-        this.fetchLineupStatus(games)
+        this.fetchLineupStatus(games),
+        this.fetchBullpen(season)
       ]);
 
       const players = [];
@@ -2129,6 +2272,9 @@ class Component extends DCLogic {
           const oppP = g.teams[opp].probablePitcher;
           const oppHand = (oppP && pstats[oppP.id] && pstats[oppP.id].pitchHand) || null;
           const oppHR9 = oppP ? hr9(oppP.id) : 1.2;
+          // ~62% of PAs come vs the starter, ~38% vs the relief corps
+          const penHR9 = bullpen[oppTeam.id] != null ? bullpen[oppTeam.id] : null;
+          const effHR9 = penHR9 != null ? +(oppHR9 * 0.62 + penHR9 * 0.38).toFixed(2) : oppHR9;
           const form = (oppP && pform[oppP.id]) || {};
           const daysRest = form.daysRest != null ? form.daysRest : null;
           const fatigueMult = daysRest == null ? 1 : daysRest <= 2 ? 1.06 : daysRest === 3 ? 1.03 : 1.0;
@@ -2139,7 +2285,7 @@ class Component extends DCLogic {
             if (!s || (s.plateAppearances || 0) < 40) return;
             const pa = s.plateAppearances, hr = s.homeRuns || 0, ops = parseFloat(s.ops || '0.700');
             const adj = (hr + 130 * 0.0325) / (pa + 130);
-            const pMult = Math.min(1.25, Math.max(0.82, oppHR9 / 1.2));
+            const pMult = Math.min(1.25, Math.max(0.82, effHR9 / 1.2));
             const platoon = this.platoonMult(s.batSide, oppHand);
             const wxMult = wx.mult || 1;
             const ffMult = fatigueMult * formMult;
@@ -2160,14 +2306,21 @@ class Component extends DCLogic {
               dnMult = Math.min(1.12, Math.max(0.9, dnHrRate / dnOtherRate));
             }
             const rate = adj * (parkF / 100) * pMult * platoon * wxMult * ffMult * scMult * dnMult;
-            const hrProb = 1 - Math.pow(1 - rate, 4.1);
+            // Lineup slot → expected PA. League-average exponent 4.1 until the lineup posts;
+            // with a confirmed slot, leadoff (~4.65 PA) vs 9-hole (~3.76 PA) is a real ±8% swing.
+            const slotRaw = lineupConfirmed[String(pid)];
+            const lineupSlot = (typeof slotRaw === 'number' && slotRaw >= 1 && slotRaw <= 9) ? slotRaw : null;
+            const PA_BY_SLOT = [4.65, 4.53, 4.42, 4.31, 4.20, 4.09, 3.98, 3.87, 3.76];
+            const expPA = lineupSlot ? PA_BY_SLOT[lineupSlot - 1] : 4.1;
+            const hrProb = 1 - Math.pow(1 - rate, expPA);
+            const slotMult = lineupSlot ? +(hrProb / (1 - Math.pow(1 - rate, 4.1))).toFixed(3) : 1;
             const score = Math.max(40, Math.min(99, Math.round(34 + hrProb * 195 + (ops - 0.72) * 22)));
             gameModel[g.gamePk] += hrProb;
             // Due badge: high barrel% but cold recent form
             const isDue = barrelPct >= 9 && hardHitPct >= 42 && (recHr9 != null ? recHr9 < 0.8 : false);
             // Lineup confirmation
-            const lineupConfirmedFlag = !!lineupConfirmed[String(pid)];
-            players.push({ id: String(pid), raw: s, name: s.name, teamAbbr: team.abbreviation, oppAbbr: oppTeam.abbreviation, venue, parkF, gameId: g.gamePk, time, oppPitcher: (oppP && oppP.fullName) || 'TBD', hr, pa, ops, iso: ((parseFloat(s.slg || '0') - parseFloat(s.avg || '0')) || 0), modelPct: +(hrProb * 100).toFixed(1), score, oppHR9: +oppHR9.toFixed(2), batSide: s.batSide || null, oppHand, platoon: +platoon.toFixed(2), wx, daysRest, recHr9, fatigueMult: +fatigueMult.toFixed(2), formMult: +formMult.toFixed(2), basePct, pMult: +pMult.toFixed(2), wxMult: +wxMult.toFixed(2), barrelPct, hardHitPct, scMult: +scMult.toFixed(2), dnMult: +dnMult.toFixed(2), isDue, lineupConfirmed: lineupConfirmedFlag });
+            const lineupConfirmedFlag = !!slotRaw;
+            players.push({ id: String(pid), raw: s, name: s.name, teamAbbr: team.abbreviation, oppAbbr: oppTeam.abbreviation, venue, parkF, gameId: g.gamePk, time, oppPitcher: (oppP && oppP.fullName) || 'TBD', hr, pa, ops, iso: ((parseFloat(s.slg || '0') - parseFloat(s.avg || '0')) || 0), modelPct: +(hrProb * 100).toFixed(1), score, oppHR9: +oppHR9.toFixed(2), penHR9, effHR9, batSide: s.batSide || null, oppHand, platoon: +platoon.toFixed(2), wx, daysRest, recHr9, fatigueMult: +fatigueMult.toFixed(2), formMult: +formMult.toFixed(2), basePct, pMult: +pMult.toFixed(2), wxMult: +wxMult.toFixed(2), barrelPct, hardHitPct, scMult: +scMult.toFixed(2), dnMult: +dnMult.toFixed(2), isDue, lineupConfirmed: lineupConfirmedFlag, lineupSlot, paExp: expPA, slotMult });
           });
         });
       });
@@ -2200,6 +2353,8 @@ class Component extends DCLogic {
       this.updatePredLog(players, homeredSet, statusMap, date);
 
       this.setState({ status: 'live', tracked: gradedTracked, data: { date, season, games, players, gameModel, oddsCount: Object.keys(oddsMap).length, booksOk, priceDiff, liveHRs, weatherByVenue, statusMap } });
+      // Non-blocking: ask the server engine for an authoritative build; patch in if it answers.
+      this.fetchServerEngine(players).then(eng => { if (eng && this.state.data) this.setState(s => ({ data: Object.assign({}, s.data, { engineServer: eng }) })); });
     } catch (e) {
       this.setState({ status: 'sample', data: null });
     }
@@ -2280,11 +2435,52 @@ class Component extends DCLogic {
   toggleSlip = () => { this.setState(s => ({ slipOpen: !s.slipOpen })); };
   setProxyUrl = (e) => { this.setState({ proxyUrl: e.target.value }); };
   saveProxyUrl = () => { try { localStorage.setItem('dl_odds_proxy', this.state.proxyUrl.trim()); } catch (e) {} this.load(); };
-  saveTrack = () => {
+  setOddsKey = (e) => { this.setState({ oddsKey: e.target.value }); };
+  saveOddsKey = () => { try { localStorage.setItem('dl_oddsblaze_key', (this.state.oddsKey || '').trim()); } catch (e) {} this.load(); };
+  // ── Engine handlers ──
+  addEnginePick = (e) => { const id = e.currentTarget.dataset.player; const p = (this._engineById || {})[id]; if (p) this._addLegs([p]); };
+  addEngineParlay = (e) => {
+    const key = e.currentTarget.dataset.parlay; const eng = this._engine; if (!eng) return;
+    const par = (eng.parlays || []).find(x => x.key === key); if (!par) return;
+    const legs = (par.legIds || []).map(id => (this._engineById || {})[id]).filter(Boolean);
+    if (legs.length) this._addLegs(legs);
+  };
+  trackEngineParlay = (e) => {
+    const key = e.currentTarget.dataset.parlay; const eng = this._engine; if (!eng) return;
+    const par = (eng.parlays || []).find(x => x.key === key); if (!par) return;
+    const legs = (par.legIds || []).map(id => (this._engineById || {})[id]).filter(Boolean);
+    if (!legs.length) return;
+    const mk = (p) => ({ id: p.id, name: p.name, team: p.teamAbbr, market: 'HR', oddsAm: p.oddsAm != null ? p.oddsAm : null, odds: (p.oddsAm != null ? ((p.oddsAm > 0 ? '+' : '') + p.oddsAm) : '—'), modelPct: p.modelPct, time: p.time });
+    this.setState({ slip: legs.map(mk), slipOpen: true }, () => this.saveTrack({ src: 'engine', engKey: par.key, predWin: par.winPNum != null ? par.winPNum : null }));
+  };
+  // Ask the server engine (if a proxy URL is configured) for an authoritative build.
+  // Best-effort with a strict shape guard — any failure falls back to the on-device engine.
+  async fetchServerEngine(players) {
+    const base = (() => { try { return (localStorage.getItem('dl_odds_proxy') || this.state.proxyUrl || ''); } catch (e) { return this.state.proxyUrl || ''; } })().replace(/\/$/, '');
+    if (!base) return null;
+    try {
+      const sm = (this.state.data && this.state.data.statusMap) || {};
+      const lite = (players || []).filter(p => (p.pa || 0) >= 60 && p.modelPct >= 3 && sm[p.gameId] !== 'Final' && sm[p.gameId] !== 'Live').slice(0, 400).map(p => ({
+        id: String(p.id), name: p.name, team: p.teamAbbr, opp: p.oppAbbr, gameId: p.gameId,
+        modelPct: p.modelPct, oddsAm: p.oddsAm != null ? p.oddsAm : null, pa: p.pa, score: p.score,
+        barrelPct: p.barrelPct || 0, hardHitPct: p.hardHitPct || 0, lineupConfirmed: !!p.lineupConfirmed, lineupSlot: p.lineupSlot || null, time: p.time || ''
+      }));
+      if (lite.length < 2) return null;
+      const r = await this.tFetch(base + '/api/engine', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ players: lite, stake: parseFloat(this.state.stake) || 25 }) }, 10000);
+      if (!r || !r.ok) return null;
+      const j = await r.json();
+      if (!j || j.ok !== true || !Array.isArray(j.parlays) || !Array.isArray(j.picks) || !j.summary) return null;
+      if (!j.parlays.every(p => Array.isArray(p.legIds) && Array.isArray(p.legs))) return null;
+      return j;
+    } catch (e) { return null; }
+  }
+  saveTrack = (evOrMeta) => {
+    // Optional meta ({src, engKey, predWin}) — ignored when invoked as a click handler.
+    const meta = (evOrMeta && !evOrMeta.target && !evOrMeta.currentTarget) ? evOrMeta : null;
     const { slip } = this.state; const stake = parseFloat(this.state.stake) || 0; if (!slip.length) return;
     const byId = {}; ((this.state.data && this.state.data.players) || []).forEach(p => byId[p.id] = p);
     const legs = slip.map(l => { const pl = byId[l.id]; const betAm = l.oddsAm; return { id: l.id, name: l.name, market: l.market, odds: l.odds, key: this.normName(l.name), gameId: pl ? pl.gameId : null, betAm: betAm != null ? betAm : null, betImp: betAm != null ? this.amImp(betAm) : null }; });
-    const entry = { id: Date.now().toString(), date: new Date().toLocaleDateString(), label: slip.map(l => l.name).join(' + '), legs, odds: '—', win: '—', ev: '—', stake, status: 'pending', avgClv: null };
+    const entry = Object.assign({ id: Date.now().toString(), date: new Date().toLocaleDateString(), label: slip.map(l => l.name).join(' + '), legs, odds: '—', win: '—', ev: '—', stake, status: 'pending', avgClv: null }, meta || {});
     if (slip.every(l => l.oddsAm != null)) { const dec = slip.reduce((s, l) => s * this.amDec(l.oddsAm), 1); entry.odds = this.decAm(dec); const win = slip.reduce((s, l) => s * (l.modelPct / 100), 1); entry.win = (win * 100).toFixed(1) + '%'; entry.ev = ((win * dec - 1) * 100).toFixed(1) + '%'; }
     const tracked = [entry, ...this.state.tracked];
     try { localStorage.setItem('dl_tracked_v1', JSON.stringify(tracked.slice(0, 50))); } catch (e) {}
@@ -2374,6 +2570,136 @@ class Component extends DCLogic {
   }
 
   // ─── ROUND-ROBIN HEDGE — pick up to 5 bats, bet every 2-leg parlay combo ───
+  // ── PARLAY ENGINE ──────────────────────────────────────────────────────────
+  // Ranks every qualified hitter by an ensemble "true" HR probability
+  // (0.6 × Poisson model + 0.4 × de-vigged market price when a line exists),
+  // weights each by a confidence score (sample size, contact quality, lineup
+  // status, model/market agreement), then runs a bounded combinatorial search
+  // (top 14 candidates, one leg per game) to build three optimal parlays:
+  // safest cash, best value, max payout. Deterministic — same slate, same answer.
+  computeEngine(enriched, hasOdds, stakeStr) {
+    const amDec = this.amDec.bind(this), decAm = this.decAm.bind(this), amImp = this.amImp.bind(this);
+    const stake = Math.max(1, parseFloat(stakeStr) || 25);
+    // Only playable legs: drop hitters whose games are already live or final.
+    const statusMap = (this.state.data && this.state.data.statusMap) || {};
+    const playable = p => { const st = statusMap[p.gameId]; return st !== 'Final' && st !== 'Live'; };
+    const prePool = (enriched || []).filter(p => (p.pa || 0) >= 80 && p.modelPct >= 4);
+    let pool = prePool.filter(playable);
+    if (prePool.length >= 2 && pool.length < 2) return { ok: false, reason: 'Slate is done for today — every game is live or final. The engine builds again when tomorrow\u2019s games post.' };
+    const distinctGames = arr => new Set(arr.map(p => p.gameId)).size;
+    const confirmedPool = pool.filter(p => p.lineupConfirmed);
+    // Only narrow to confirmed lineups when they span enough games to parlay across;
+    // a single early-posting game must not starve the whole slate.
+    const usingConfirmed = confirmedPool.length >= 2 && distinctGames(confirmedPool) >= 2;
+    if (usingConfirmed) pool = confirmedPool;
+    if (pool.length < 2) return { ok: false, reason: 'Waiting on the slate — the engine needs at least two qualified hitters (80+ PA, 4%+ model HR) to build.' };
+
+    const scored = pool.map(p => {
+      const modelP = Math.max(0.01, Math.min(0.60, p.modelPct / 100));
+      let mktP = null, trueP = modelP;
+      if (p.oddsAm != null) { mktP = Math.max(0.01, Math.min(0.70, amImp(p.oddsAm) * 0.92)); trueP = 0.60 * modelP + 0.40 * mktP; }
+      let conf = 0.46;
+      conf += Math.min(0.18, ((p.pa || 0) - 80) / 900);
+      if ((p.barrelPct || 0) >= 10) conf += 0.08;
+      if ((p.hardHitPct || 0) >= 42) conf += 0.05;
+      if (p.lineupConfirmed) conf += 0.10;
+      if (mktP != null) conf += Math.max(0, 0.13 - Math.abs(modelP - mktP) * 1.6);
+      conf = Math.max(0.20, Math.min(0.97, conf));
+      const dec = p.oddsAm != null ? amDec(p.oddsAm) : Math.max(1.4, (1 / trueP) * 0.92);
+      const edge = mktP != null ? (trueP - mktP) : null;
+      const rankScore = trueP * (0.72 + 0.28 * conf);
+      return Object.assign({}, p, { engModelP: modelP, engMktP: mktP, engTrueP: trueP, engConf: conf, engDec: dec, engEdge: edge, engRank: rankScore });
+    });
+
+    const ranked = scored.slice().sort((a, b) => b.engRank - a.engRank);
+    const ord = n => n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th');
+    const picks = ranked.slice(0, 8).map((p, i) => ({
+      id: p.id, rank: i + 1, name: p.name, matchup: p.matchup || (p.teamAbbr + ' vs ' + p.oppAbbr),
+      ring: p.ring, headshot: p.headshot,
+      truePct: (p.engTrueP * 100).toFixed(1) + '%',
+      modelLabel: 'model ' + p.modelPct + '%' + (p.lineupSlot ? ' · bats ' + ord(p.lineupSlot) : ''),
+      odds: p.oddsAm != null ? ((p.oddsAm > 0 ? '+' : '') + p.oddsAm) : 'no line',
+      oddsColor: p.oddsAm != null ? '#eef1f6' : '#5f6878',
+      edgeLabel: p.engEdge != null ? ((p.engEdge >= 0 ? '+' : '') + (p.engEdge * 100).toFixed(1) + ' pts') : '—',
+      edgeColor: p.engEdge != null ? (p.engEdge >= 0 ? 'var(--pos,#35d0c0)' : '#ff8d8d') : '#5f6878',
+      confPct: Math.round(p.engConf * 100) + '%',
+      barW: Math.min(100, Math.round(p.engTrueP * 220)) + '%'
+    }));
+
+    const topForBuild = ranked.slice(0, 14);
+    const buildGames = new Set(topForBuild.map(p => p.gameId)).size;
+    // One leg per game whenever the slate allows; on a thin slate allow up to 2 per game.
+    const combosOf = (arr, k) => { const cap = buildGames >= k ? 1 : 2; const out = []; const rec = (start, acc) => { if (acc.length === k) { out.push(acc.slice()); return; } for (let i = start; i < arr.length; i++) { if (acc.filter(x => x.gameId === arr[i].gameId).length >= cap) continue; acc.push(arr[i]); rec(i + 1, acc); acc.pop(); } }; rec(0, []); return out; };
+    const statsOf = (legs) => {
+      const winP = legs.reduce((s, l) => s * l.engTrueP, 1);
+      const dec = legs.reduce((s, l) => s * l.engDec, 1);
+      const conf = legs.reduce((s, l) => s + l.engConf, 0) / legs.length;
+      const anyReal = legs.some(l => l.oddsAm != null);
+      const allReal = legs.every(l => l.oddsAm != null);
+      return { winP, dec, ev: winP * dec - 1, conf, anyReal, allReal };
+    };
+    const buildBest = (k, objective, gate) => {
+      let best = null, bestScore = -Infinity;
+      combosOf(topForBuild, k).forEach(legs => {
+        const st = statsOf(legs);
+        if (gate && !gate(st)) return;
+        const sc = objective(st);
+        if (sc > bestScore) { bestScore = sc; best = { legs, st }; }
+      });
+      return best;
+    };
+    const safe = buildBest(2, st => st.winP * (0.7 + 0.3 * st.conf));
+    const balanced = buildBest(3, st => hasOdds ? (st.ev + st.winP * 0.5) : st.winP * (0.7 + 0.3 * st.conf), st => st.winP >= 0.015);
+    const longshot = buildBest(4, st => Math.log(st.dec) * (0.6 + 0.4 * st.conf), st => st.winP >= 0.004);
+
+    const mkParlay = (key, title, sub, built) => {
+      if (!built) return null;
+      const { legs, st } = built;
+      const gradePts = st.conf * 40 + Math.min(30, st.winP * 180) + (st.allReal ? Math.max(-10, Math.min(30, st.ev * 120)) : 10);
+      const grade = gradePts >= 72 ? 'A' : gradePts >= 58 ? 'B' : gradePts >= 45 ? 'C' : 'D';
+      return {
+        key, title, sub, nLegs: legs.length,
+        legIds: legs.map(l => l.id),
+        legs: legs.map(l => ({
+          id: l.id, name: l.name, matchup: l.matchup || (l.teamAbbr + ' vs ' + l.oppAbbr),
+          ring: l.ring, headshot: l.headshot,
+          truePct: (l.engTrueP * 100).toFixed(1) + '%',
+          odds: l.oddsAm != null ? ((l.oddsAm > 0 ? '+' : '') + l.oddsAm) : 'model',
+          oddsColor: l.oddsAm != null ? 'var(--ac,#ff8a4c)' : '#5f6878'
+        })),
+        winPct: (st.winP * 100).toFixed(1) + '%',
+        winPNum: +(st.winP * 100).toFixed(2),
+        odds: decAm(st.dec),
+        ev: st.allReal ? ((st.ev >= 0 ? '+' : '') + (st.ev * 100).toFixed(1) + '%') : 'model-fair',
+        evColor: st.allReal ? (st.ev >= 0 ? 'var(--pos,#35d0c0)' : '#ff8d8d') : '#9aa3b2',
+        payout: '$' + Math.round(stake * st.dec).toLocaleString('en-US'),
+        stakeLabel: '$' + stake + ' returns',
+        confPct: Math.round(st.conf * 100) + '%',
+        grade, gradeColor: grade === 'A' ? 'var(--pos,#35d0c0)' : grade === 'B' ? '#9edb63' : grade === 'C' ? '#ffc24d' : '#ff8d8d',
+        synthetic: !st.anyReal
+      };
+    };
+    const parlays = [
+      mkParlay('safe', 'Safest cash', '2 legs · highest hit rate on the slate', safe),
+      mkParlay('balanced', 'Best value', '3 legs · strongest price vs true probability', balanced),
+      mkParlay('longshot', 'Max payout', '4 legs · biggest return that still clears the gate', longshot)
+    ].filter(Boolean);
+
+    const top = ranked[0];
+    return {
+      ok: true, picks, parlays,
+      summary: {
+        candidates: pool.length,
+        topName: top.name,
+        topPct: (top.engTrueP * 100).toFixed(1) + '%',
+        avgConf: Math.round(scored.reduce((s, p) => s + p.engConf, 0) / scored.length * 100) + '%',
+        oddsLabel: hasOdds ? 'Model + live market blend' : 'Model only — no live odds yet',
+        oddsColor: hasOdds ? 'var(--pos,#35d0c0)' : '#ffc24d',
+        lineupLabel: usingConfirmed ? 'Confirmed lineups only' : (confirmedPool.length ? 'Full slate — few lineups posted' : 'Lineups not posted yet')
+      }
+    };
+  }
+
   // C(n,2) parlays (5 bats → 10 bets). ANY TWO of your bats homering cashes a parlay;
   // because each 2-leg pays multiples of one stake, two HRs usually = a green day.
   computeRoundRobin(enriched, hasOdds, selIds, perStake) {
@@ -2530,12 +2856,13 @@ class Component extends DCLogic {
         const mk = (label, mult) => { const up = mult >= 1.012, dn = mult <= 0.988; return { label, mult: '×' + mult.toFixed(2), pct: Math.min(100, Math.max(6, Math.round((mult - 0.8) / 0.005))) + '%', color: up ? 'var(--pos,#35d0c0)' : dn ? '#ff8d8d' : '#9aa3b2', tone: up ? '▲' : dn ? '▼' : '·' }; };
         return [
           mk('Park factor', (p.parkF || 100) / 100),
-          mk('Pitcher (season)', p.pMult || 1),
+          mk(p.penHR9 != null ? ('Pitching (SP + pen ' + p.penHR9 + ')') : 'Pitcher (season)', p.pMult || 1),
           mk('Form + rest', (p.fatigueMult || 1) * (p.formMult || 1)),
           mk('Platoon', p.platoon || 1),
           mk('Weather', p.wxMult || 1),
           mk('Barrel / HH%', p.scMult || 1),
-          mk('Day/night split', p.dnMult || 1)
+          mk('Day/night split', p.dnMult || 1),
+          mk(p.lineupSlot ? ('Lineup slot (bats ' + p.lineupSlot + (p.lineupSlot === 1 ? 'st' : p.lineupSlot === 2 ? 'nd' : p.lineupSlot === 3 ? 'rd' : 'th') + ')') : 'Lineup slot (TBD)', p.slotMult || 1)
         ];
       })(),
       frontierBase: (p.basePct != null ? p.basePct : p.modelPct) + '%',
@@ -2728,6 +3055,12 @@ class Component extends DCLogic {
     const gamesRaw = live ? this.state.data.games : null;
     const enriched = players.map(p => this.enrich(p, hasOdds));
     const byId = {}; enriched.forEach(p => byId[p.id] = p);
+
+    // ── Parlay Engine: prefer a well-formed server build, else compute on-device ──
+    const engineServer = (live && this.state.data.engineServer && this.state.data.engineServer.ok === true && Array.isArray(this.state.data.engineServer.parlays) && Array.isArray(this.state.data.engineServer.picks) && this.state.data.engineServer.summary) ? this.state.data.engineServer : null;
+    const engine = engineServer || this.computeEngine(enriched, hasOdds, this.state.stake);
+    this._engine = engine; this._engineById = byId;
+    const engineSource = engineServer ? 'Server engine' : 'On-device engine';
 
     // Sort + filter — must come before starPlays and any filtered board usage
     const sortBy = this.state.sortBy || 'score';
@@ -3084,6 +3417,21 @@ class Component extends DCLogic {
     const graded = tracked.filter(t => t.status !== 'pending'), wins = graded.filter(t => t.status === 'won').length;
     const hitRate = graded.length > 0 ? Math.round(wins / graded.length * 100) : null;
     const roi = graded.length > 0 ? +(graded.reduce((s, t) => { const stake = t.stake || 0; if (t.status === 'won') { const dec = t.odds && t.odds !== '—' ? (parseInt(String(t.odds), 10) > 0 ? 1 + parseInt(String(t.odds), 10) / 100 : 1 + 100 / (-parseInt(String(t.odds), 10))) : 1; return s + stake * (dec - 1); } return s - stake; }, 0)).toFixed(2) : null;
+    // Engine self-grading record (slips tracked from the Engine tab, graded by the auto-grader)
+    const engTracked = tracked.filter(t => t.src === 'engine');
+    const engGraded = engTracked.filter(t => t.status !== 'pending');
+    const engWins = engGraded.filter(t => t.status === 'won').length;
+    const engHit = engGraded.length ? Math.round(engWins / engGraded.length * 100) : null;
+    const engPreds = engGraded.filter(t => t.predWin != null);
+    const engAvgPred = engPreds.length ? engPreds.reduce((s, t) => s + t.predWin, 0) / engPreds.length : null;
+    const engProfit = engGraded.reduce((s, t) => {
+      const st = t.stake || 0;
+      if (t.status !== 'won') return s - st;
+      const am = parseInt(String(t.odds || '').replace('+', ''), 10);
+      return s + st * ((isFinite(am) && am !== 0 ? this.amDec(am) : 2) - 1);
+    }, 0);
+    const engStaked = engGraded.reduce((s, t) => s + (t.stake || 0), 0);
+    const engRoi = engStaked > 0 ? Math.round(engProfit / engStaked * 100) : null;
     const clvEntries = tracked.filter(t => t.avgClv != null);
     const beatClose = clvEntries.length ? Math.round(clvEntries.filter(t => t.avgClv > 0).length / clvEntries.length * 100) : null;
     const avgClvAll = clvEntries.length ? +(clvEntries.reduce((s, t) => s + t.avgClv, 0) / clvEntries.length).toFixed(1) : null;
@@ -3196,14 +3544,19 @@ class Component extends DCLogic {
 
     // Nav
     const nav = [
-      { id: 'dashboard', label: 'Dashboard', icon: '◎' }, { id: 'games', label: 'Games', icon: '◆' },
+      { id: 'dashboard', label: 'Dashboard', icon: '◎', header: 'TODAY' },
+      { id: 'engine', label: 'Engine', icon: '⚡' },
+      { id: 'live', label: 'Live', icon: '◉' },
+      { id: 'games', label: 'Games', icon: '◆', header: 'SLATE' },
       { id: 'radar', label: 'Radar', icon: '🛰️' },
+      { id: 'research', label: 'Research', icon: '🔎' },
+      { id: 'data', label: 'Data', icon: '🧠' },
+      { id: 'builder', label: 'Builder', icon: '⊞', header: 'BUILD' },
       { id: 'solver', label: 'Solver', icon: '🎯' },
       { id: 'hedge', label: 'Hedge', icon: '🛡️' },
+      { id: 'track', label: 'Tracking', icon: '◈', header: 'RESULTS' },
       { id: 'report', label: 'Report Card', icon: '🎓' },
-      { id: 'builder', label: 'Builder', icon: '⊞' }, { id: 'data', label: 'Data', icon: '🧠' },
-      { id: 'research', label: 'Research', icon: '🔎' }, { id: 'track', label: 'Tracking', icon: '◈' },
-      { id: 'live', label: 'Live', icon: '◉' }
+      { id: 'tools', label: 'Tools', icon: '⚙', header: 'SYSTEM' }
     ].map(n => { const on = n.id === tab; return Object.assign({}, n, { bg: on ? 'rgba(255,138,76,.13)' : 'transparent', fg: on ? '#eef1f6' : '#9aa3b2', bar: on ? 'var(--ac,#ff8a4c)' : 'transparent', mIcon: on ? 'var(--ac,#ff8a4c)' : '#7b8597' }); });
     const otherMap = { research: ['🔎', 'Research'], tools: ['⚙', 'Tools'] };
     const other = otherMap[tab] || ['◎', 'Section'];
@@ -3302,7 +3655,27 @@ class Component extends DCLogic {
       radarParks, radarTop, radarHot, radarSel, radarHasData: radarParks.length > 0,
       setRadarSel: (e) => this.setState({ radarSel: parseInt(e.currentTarget.dataset.game) }),
       isData: tab === 'data', isTrack: tab === 'track', isLive: tab === 'live',
-      isResearch: tab === 'research', isTools: tab === 'tools', isMisc: false,
+      isResearch: tab === 'research', isTools: tab === 'tools', isEngine: tab === 'engine', isMisc: false,
+      // Parlay Engine
+      engineOk: !!engine.ok, engineNo: !engine.ok, engineReason: engine.reason || '',
+      enginePicks: engine.picks || [], engineParlays: engine.parlays || [],
+      engineSource,
+      engineCandidates: engine.summary ? engine.summary.candidates : 0,
+      engineTopName: engine.summary ? engine.summary.topName : '—',
+      engineTopPct: engine.summary ? engine.summary.topPct : '—',
+      engineAvgConf: engine.summary ? engine.summary.avgConf : '—',
+      engineOddsLabel: engine.summary ? engine.summary.oddsLabel : '',
+      engineOddsColor: engine.summary ? engine.summary.oddsColor : '#9aa3b2',
+      engineLineupLabel: engine.summary ? engine.summary.lineupLabel : '',
+      addEnginePick: this.addEnginePick, addEngineParlay: this.addEngineParlay, trackEngineParlay: this.trackEngineParlay,
+      engHasRecord: engTracked.length > 0,
+      engRecordLabel: engWins + '–' + (engGraded.length - engWins),
+      engPendingCount: engTracked.filter(t => t.status === 'pending').length,
+      engHitLabel: engHit != null ? engHit + '%' : '—',
+      engAvgPredLabel: engAvgPred != null ? engAvgPred.toFixed(1) + '%' : '—',
+      engRoiLabel: engRoi != null ? ((engRoi >= 0 ? '+' : '') + engRoi + '%') : '—',
+      engRoiColor: engRoi == null ? '#9aa3b2' : engRoi >= 0 ? 'var(--pos,#35d0c0)' : '#ff8d8d',
+      engGradedCount: engGraded.length,
       otherIcon: other[0], otherTitle: other[1],
       loading: st === 'loading',
       dateLabel: dl.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }),
@@ -3421,7 +3794,9 @@ class Component extends DCLogic {
       ...frontierVals,
       slipOpen: this.state.slipOpen, slipNotOpen: !this.state.slipOpen, slipOpenStr: this.state.slipOpen ? 'true' : 'false', slipColWidth: this.state.slipOpen ? '320px' : '0', toggleSlip: this.toggleSlip,
       proxyUrl: this.state.proxyUrl, setProxyUrl: this.setProxyUrl, saveProxyUrl: this.saveProxyUrl,
-      oddsProxyStatus: hasOdds ? ('✓ Connected · ' + (live ? this.state.data.booksOk : 0) + ' books · ' + (live ? this.state.data.oddsCount : 0) + ' players priced') : (live ? 'Fetched but no HR props posted yet — retry closer to game time' : 'Not connected'),
+      oddsKey: this.state.oddsKey, setOddsKey: this.setOddsKey, saveOddsKey: this.saveOddsKey,
+      oddsMode: (this.state.oddsKey && this.state.oddsKey.trim()) ? 'Direct API key' : 'Proxy server',
+      oddsProxyStatus: hasOdds ? ('✓ Connected · ' + (live ? this.state.data.booksOk : 0) + ' books · ' + (live ? this.state.data.oddsCount : 0) + ' players priced') : (live ? ((live && this.state.data.booksOk > 0) ? ('Reached ' + this.state.data.booksOk + ' book' + (this.state.data.booksOk === 1 ? '' : 's') + ' but no HR props posted yet — retry closer to game time') : ((this.state.oddsKey && this.state.oddsKey.trim()) ? 'Key saved, but no odds source responded. Browsers can’t read OddsBlaze directly (no CORS) — set a Proxy URL below, or use the key server-side.' : 'No odds source reached — add a Proxy URL below (OddsBlaze can’t be called from the browser directly).')) : 'Not connected'),
       oddsProxyColor: hasOdds ? 'var(--pos,#35d0c0)' : live ? '#ffc24d' : '#ff8d8d',
       // Tracking CLV
       hitRate, roi, gradedCount: graded.length, winsCount: wins,
