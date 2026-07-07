@@ -1,4 +1,4 @@
-# DingerLab v1.2.0 — Stadium Night
+# DingerLab v1.2.1 — Stadium Night
 
 MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 
@@ -80,9 +80,19 @@ Data is written to `server_data/dingerlab_server_state.json`. Use a host with pe
 Dashboard (Command Center) · Games · Radar (weather / ball-carry map) · Solver (bankroll-aware Kelly portfolio) · Report Card (model calibration vs results) · Builder (cross-play generator + payoff frontier) · Data (feature store) · Research (steam radar, value plays, what changed) · Tracking (CLV, W/L results) · Tools (odds proxy, model settings, exposure) · Live (HR feed + schedule)
 
 
-## v1.2.0 — MLB Home Run Prediction Engine
+## v1.2.1 — MLB Home Run Prediction Engine
 - Added a new MLB-side **HR Engine** launcher in the DingerLab app.
 - Runs a calibrated ML home-run model directly in the browser using embedded model data.
 - Daily HR board ranks hitter-vs-pitcher matchups by game HR probability.
 - Click any matchup for Monte Carlo simulation details: simulated PAs, HR count, per-PA HR%, game HR%, confidence, EV/LA/barrel outputs, park/weather factors, and reasons why the model likes or fades the matchup.
 - Current build is labeled **Synthetic Data** until live Statcast ingestion is enabled; the backend training pipeline is ready for real Statcast with `ingest_statcast.py`.
+
+
+## v1.2.1 — MLB HR Engine real-data milestone
+- Removed synthetic-trained HR predictions from the app.
+- Synthetic data is now forbidden for model training, evaluation, backtesting, and prediction.
+- Added a real-data-first HR Data Engine panel inside DingerLab.
+- Added Render-ready backend routes for HR database status, Statcast ingestion, cleaning, feature rows, and EDA.
+- Added `hr_real/` pipeline: real SQLite schema, Statcast ingestion, PA-event cleaning, leakage-safe feature engineering, and EDA reporting.
+- Kept OddsBlaze/Render workflow: `ODDSBLAZE_KEY` stays in Render env vars and `/api/oddsblaze` remains the odds source.
+- ML training is intentionally locked until real historical Statcast rows are loaded.

@@ -465,6 +465,75 @@ def api_grade_ledger():
         return jsonify({"ok": False, "error": str(e)}), 502
 
 
+
+# ---------------------------------------------------------------------------
+# HR Engine real-data milestone routes (v1.2.1)
+# Synthetic data is not accepted for training/evaluation/backtesting/prediction.
+@app.post("/api/hr/init")
+def api_hr_init():
+    try:
+        from hr_real.db import init_db
+        path = init_db()
+        return jsonify({"ok": True, "db": path, "synthetic_training_allowed": False})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+@app.get("/api/hr/status")
+def api_hr_status():
+    try:
+        from hr_real.db import init_db, connect
+        init_db(); con = connect()
+        row = con.execute("SELECT * FROM v_hr_engine_status").fetchone()
+        runs = [dict(r) for r in con.execute("SELECT * FROM ingest_runs ORDER BY id DESC LIMIT 5").fetchall()]
+        con.close()
+        return jsonify({"ok": True, "status": dict(row), "recent_runs": runs,
+                        "network_limited": False, "synthetic_training_allowed": False,
+                        "ml_training_unlocked": (row["feature_rows"] or 0) > 10000})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "network_limited": False,
+                        "synthetic_training_allowed": False}), 500
+
+@app.post("/api/hr/ingest_statcast")
+def api_hr_ingest_statcast():
+    body = request.get_json(silent=True) or {}
+    try:
+        from hr_real.ingest_statcast import ingest_range
+        season = body.get("season")
+        start = body.get("start"); end = body.get("end")
+        if season and not (start and end):
+            start, end = f"{int(season)}-03-01", f"{int(season)}-11-15"
+        if not (start and end):
+            return jsonify({"ok": False, "error": "Provide season or start/end"}), 400
+        res = ingest_range(start, end)
+        return jsonify({"ok": True, **res})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 502
+
+@app.post("/api/hr/build_features")
+def api_hr_build_features():
+    try:
+        from hr_real.clean_features_eda import build_pa_events, build_features, eda_report
+        pa = build_pa_events(); feats = build_features(); eda = eda_report()
+        return jsonify({"ok": True, "pa_events": pa, "feature_rows": feats, "eda": eda,
+                        "synthetic_training_allowed": False})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+@app.get("/api/hr/eda")
+def api_hr_eda():
+    try:
+        from hr_real.clean_features_eda import eda_report
+        return jsonify({"ok": True, **eda_report()})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+@app.get("/api/hr/requirements")
+def api_hr_requirements():
+    return jsonify({"ok": True, "milestone": "real-data-ingestion-first",
+                    "sources": ["Statcast/Baseball Savant via pybaseball", "MLB Stats API", "park factors", "weather", "OddsBlaze via /api/oddsblaze"],
+                    "forbidden": ["synthetic model training", "synthetic evaluation", "synthetic backtesting", "synthetic predictions"]})
+
+
 @app.get("/health")
 def health():
     return {"ok": True, "statePath": str(STATE_PATH)}
