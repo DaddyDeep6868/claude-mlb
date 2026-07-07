@@ -1,4 +1,4 @@
-# DingerLab v1.4.0 — Stadium Night
+# DingerLab v1.2.0 — Stadium Night
 
 MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 
@@ -10,7 +10,6 @@ MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 |---|---|
 | `index.html` | Bundled app — GitHub Pages, open in any browser, no build step |
 | `DingerLab Redesign.dc.html` | Source design component (edit this, re-bundle to update `index.html`) |
-| `engine_server.py` | Parlay Engine server — authoritative `/api/engine` build + OddsBlaze proxy with CORS |
 | `dingerlab_server.py` | Flask server — multi-device sync, server-side odds proxy, auto-grading |
 | `streamlit_app.py` | Streamlit wrapper — alternative cloud deploy on Streamlit Community Cloud |
 | `requirements.txt` | Python dependencies |
@@ -78,42 +77,12 @@ Data is written to `server_data/dingerlab_server_state.json`. Use a host with pe
 
 ## Screens
 
-Dashboard (Command Center) · Engine (parlay engine: ranked HR bets + optimal parlays) · Games · Radar (weather / ball-carry map) · Solver (bankroll-aware Kelly portfolio) · Report Card (model calibration vs results) · Builder (cross-play generator + payoff frontier) · Data (feature store) · Research (steam radar, value plays, what changed) · Tracking (CLV, W/L results) · Tools (odds proxy, model settings, exposure) · Live (HR feed + schedule)
+Dashboard (Command Center) · Games · Radar (weather / ball-carry map) · Solver (bankroll-aware Kelly portfolio) · Report Card (model calibration vs results) · Builder (cross-play generator + payoff frontier) · Data (feature store) · Research (steam radar, value plays, what changed) · Tracking (CLV, W/L results) · Tools (odds proxy, model settings, exposure) · Live (HR feed + schedule)
 
----
 
-## Parlay Engine
-
-The **Engine** tab ranks every qualified hitter by an ensemble true HR probability
-(60% Poisson model + 40% de-vigged market price when a line exists), weights each by a
-confidence score (sample size, barrel/hard-hit quality, lineup status, model/market
-agreement), then runs a combinatorial search (top 14 candidates, one leg per game) to
-build three optimal parlays: **Safest cash** (2 legs), **Best value** (3 legs),
-**Max payout** (4 legs). Deterministic — same slate, same answer.
-
-It runs fully on-device. If a proxy URL is configured in Tools and that server runs
-`engine_server.py`, the app POSTs the slate to `/api/engine` and prefers the server's
-authoritative build (the badge on the Engine tab shows which source you're seeing).
-Both implementations are kept in lockstep.
-
-```bash
-pip install flask requests
-ODDSBLAZE_KEY=your-key python engine_server.py   # port 8502
-```
-
-### Deploy the engine server on Render (~10 min)
-
-1. Push this repo to GitHub (make sure `engine_server.py` is included).
-2. Render → **New Web Service** → connect the repo.
-3. Build command: `pip install flask requests`
-4. Start command: `python engine_server.py`
-5. Environment → add `ODDSBLAZE_KEY` (your OddsBlaze API key). Optionally `DINGERLAB_ALLOWED_ORIGIN=https://<you>.github.io`.
-6. Copy the service URL (e.g. `https://dingerlab-engine.onrender.com`) into the app: **Tools → Proxy URL → Save & reload**.
-
-That one URL unlocks both live odds (`/api/oddsblaze`, CORS-enabled) and the authoritative server build (`/api/engine`) — the Engine tab badge flips to "Server engine".
-
-### Engine record
-
-Every parlay tracked from the Engine tab is tagged and auto-graded when its games go
-final. The **Engine record** strip on the Engine tab shows W–L, actual hit rate vs the
-engine's predicted win %, and ROI — the engine grades itself, no honor system.
+## v1.2.0 — MLB Home Run Prediction Engine
+- Added a new MLB-side **HR Engine** launcher in the DingerLab app.
+- Runs a calibrated ML home-run model directly in the browser using embedded model data.
+- Daily HR board ranks hitter-vs-pitcher matchups by game HR probability.
+- Click any matchup for Monte Carlo simulation details: simulated PAs, HR count, per-PA HR%, game HR%, confidence, EV/LA/barrel outputs, park/weather factors, and reasons why the model likes or fades the matchup.
+- Current build is labeled **Synthetic Data** until live Statcast ingestion is enabled; the backend training pipeline is ready for real Statcast with `ingest_statcast.py`.
