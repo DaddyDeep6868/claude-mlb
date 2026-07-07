@@ -135,6 +135,17 @@ def api_state_post():
     return jsonify({"ok": True, "state": state})
 
 
+@app.get("/api/oddsblaze/status")
+def api_oddsblaze_status():
+    key_present = bool((os.environ.get("ODDSBLAZE_KEY") or ODDSBLAZE_DEFAULT_KEY).strip())
+    return jsonify({
+        "ok": True,
+        "keyPresent": key_present,
+        "books": sorted(ODDSBLAZE_BOOKS),
+        "message": "ODDSBLAZE_KEY is set" if key_present else "Set ODDSBLAZE_KEY in Render environment variables"
+    })
+
+
 @app.get("/api/oddsblaze")
 def api_oddsblaze():
     sportsbook = (request.args.get("sportsbook") or "").strip().lower()
@@ -142,6 +153,14 @@ def api_oddsblaze():
     if sportsbook not in ODDSBLAZE_BOOKS:
         return jsonify({"error": "unsupported sportsbook"}), 400
     key = (os.environ.get("ODDSBLAZE_KEY") or ODDSBLAZE_DEFAULT_KEY).strip()
+    if not key:
+        return jsonify({
+            "error": "ODDSBLAZE_KEY missing",
+            "hint": "Add ODDSBLAZE_KEY in Render environment variables, then redeploy/restart.",
+            "sportsbook": sportsbook,
+            "league": league,
+            "events": []
+        }), 503
     try:
         data = jget(
             "https://odds.oddsblaze.com/",

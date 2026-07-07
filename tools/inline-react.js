@@ -1,75 +1,56 @@
 #!/usr/bin/env node
 /*
  * inline-react.js - permanently hard-code React + ReactDOM into index.html.
- *
- * After running this once, the app boots with ZERO network calls for React,
- * so the "[bundle] error" screen can never appear again - even fully offline.
- *
- * Usage (from the project root):
- *   node tools/inline-react.js
- *
- * It uses tools/vendor/react.production.min.js and
- * tools/vendor/react-dom.production.min.js if present (fully offline builds),
- * otherwise it downloads them from the CDN (needs internet just this once).
+ * Uses locally installed node_modules + esbuild, so it works with no internet.
  */
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
+const esbuild = require('esbuild');
 
 const ROOT = path.resolve(__dirname, '..');
 const INDEX = path.join(ROOT, 'index.html');
-const VENDOR = path.join(__dirname, 'vendor');
+const TMP_ENTRY = path.join(ROOT, '.inline-react-entry.js');
+const TMP_OUT = path.join(ROOT, '.inline-react-bundle.js');
 
-const LIBS = [
-  { key: 'react', file: 'react.production.min.js', url: 'https://unpkg.com/react@18.3.1/umd/react.production.min.js' },
-  { key: 'reactdom', file: 'react-dom.production.min.js', url: 'https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js' },
-];
-
-function download(url) {
-  return new Promise((resolve, reject) => {
-    https.get(url, (res) => {
-      if (res.statusCode > 300 && res.statusCode < 400 && res.headers.location) {
-        resolve(download(res.headers.location));
-        return;
-      }
-      if (res.statusCode !== 200) { reject(new Error('HTTP ' + res.statusCode + ' for ' + url)); return; }
-      let data = '';
-      res.setEncoding('utf8');
-      res.on('data', (c) => (data += c));
-      res.on('end', () => resolve(data));
-    }).on('error', reject);
-  });
-}
-
-async function getSource(lib) {
-  const local = path.join(VENDOR, lib.file);
-  if (fs.existsSync(local)) {
-    console.log('- using local ' + path.relative(ROOT, local));
-    return fs.readFileSync(local, 'utf8');
-  }
-  console.log('- downloading ' + lib.url);
-  return await download(lib.url);
-}
-
-// Make arbitrary JS safe to inline inside a <script> tag.
 function safeInline(js) { return js.replace(/<\/script/gi, '<\\/script'); }
+
+async function bundleReact() {
+  fs.writeFileSync(TMP_ENTRY, `
+    import * as React from 'react';
+    import * as ReactDOMClient from 'react-dom/client';
+    import * as ReactDOMLegacy from 'react-dom';
+    window.React = React;
+    window.ReactDOM = Object.assign({}, ReactDOMLegacy, ReactDOMClient);
+  `);
+  await esbuild.build({
+    entryPoints: [TMP_ENTRY],
+    bundle: true,
+    platform: 'browser',
+    format: 'iife',
+    minify: true,
+    outfile: TMP_OUT,
+    logLevel: 'silent',
+  });
+  const js = fs.readFileSync(TMP_OUT, 'utf8');
+  try { fs.unlinkSync(TMP_ENTRY); } catch (_) {}
+  try { fs.unlinkSync(TMP_OUT); } catch (_) {}
+  return js;
+}
 
 (async () => {
   let html = fs.readFileSync(INDEX, 'utf8');
-  if (html.includes('id="__dc_inlined_react"')) {
-    console.log('React is already hard-coded into index.html - nothing to do.');
-    return;
-  }
-  let blocks = '<script id="__dc_inlined_react"></script>\n';
-  for (const lib of LIBS) {
-    const src = await getSource(lib);
-    blocks += '<script id="__dc_inlined_' + lib.key + '">' + safeInline(src) + '</' + 'script>\n';
-  }
+  // Remove any older inlined React block so reruns are deterministic.
+  html = html.replace(/\n?<script id="__dc_inlined_react_bundle">[\s\S]*?<\/script>\n?/g, '\n');
+  html = html.replace(/\n?<script id="__dc_inlined_react"><\/script>\n?/g, '\n');
+  html = html.replace(/\n?<script id="__dc_inlined_react">[\s\S]*?<\/script>\n?/g, '\n');
+  html = html.replace(/\n?<script id="__dc_inlined_reactdom">[\s\S]*?<\/script>\n?/g, '\n');
+
+  const js = await bundleReact();
+  const block = '\n<script id="__dc_inlined_react_bundle">' + safeInline(js) + '</' + 'script>\n';
   const m = html.match(/<head[^>]*>/i);
   if (!m) throw new Error('could not find <head> in index.html');
   const at = m.index + m[0].length;
-  html = html.slice(0, at) + '\n' + blocks + html.slice(at);
+  html = html.slice(0, at) + block + html.slice(at);
   fs.writeFileSync(INDEX, html);
-  console.log('Done. React + ReactDOM are now hard-coded into index.html.');
-  console.log('The app boots with no network dependency - "[bundle] error" is gone for good.');
-})().catch((e) => { console.error('FAILED: ' + e.message); process.exit(1); });
+  console.log('Done. React + ReactDOM are embedded locally in index.html.');
+})();
