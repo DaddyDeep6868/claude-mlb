@@ -1,6 +1,18 @@
-# DingerLab v1.2.2 — Stadium Night
+# DingerLab v1.2.4 — Stadium Night
 
 MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
+
+---
+
+## Versioning (keep this current)
+
+**On every update, bump the version in three places so the UI, files, and README stay in sync:**
+
+1. **UI** — `index.html`: `<script>window.__DL_VERSION__="vX.Y.Z";</script>` (near `</head>`). This is what the app shows.
+2. **README** — the `# DingerLab vX.Y.Z` title at the top, and add a `## vX.Y.Z — <summary>` changelog section at the bottom.
+3. **Zip** — re-deliver the download so the packaged files carry the new version.
+
+Bump **patch** (Z) for fixes, **minor** (Y) for features, **major** (X) for breaking changes. Current: **v1.2.4**.
 
 ---
 
@@ -97,6 +109,20 @@ Dashboard (Command Center) · Games · Radar (weather / ball-carry map) · Solve
 - Kept OddsBlaze/Render workflow: `ODDSBLAZE_KEY` stays in Render env vars and `/api/oddsblaze` remains the odds source.
 - ML training is intentionally locked until real historical Statcast rows are loaded.
 
+
+## v1.2.4 — HR Data Engine: in-app Statcast ingestion
+- Fixed the HR Data Engine showing all zeros: the panel could initialize the DB and build features, but there was **no way to actually ingest Statcast from the UI** (ingestion was CLI-only), so the database stayed empty.
+- Added a **season picker (2021–2025)** and an **⬇ Ingest Statcast** button to the panel's Status tab.
+- Ingestion runs client-side in **weekly chunks** (regular-season window ~Mar 20 → Oct 5) so it doesn't hit request timeouts on long pulls; progress shows live row counts and can resume if a chunk fails.
+- On completion it **auto-runs Build (PA events → features → EDA)** and refreshes the status counters — no CLI needed.
+- Uses the existing `/api/hr/ingest_statcast`, `/api/hr/build_features`, and `/api/hr/status` routes on the Render server.
+
+## v1.2.3 — Live data via server proxy (board goes live)
+- Routed **all** MLB calls (statsapi + Baseball Savant / Statcast) through the Render server's new `/api/mlb` passthrough, instead of the browser hitting MLB directly.
+- Fixes the board falling back to "Sample data (offline)": direct browser calls were CORS-blocked (`statSplits`, `hydrate=stats(...)`, `venue`) and rate-limited from shared origins. Server-side fetch removes both.
+- Added `/api/mlb` route to `dingerlab_server.py` (restricted to `statsapi.mlb.com` / `baseballsavant.mlb.com`).
+- Front-end `index.html`: odds proxy pinned to the Render URL; head shim rewrites MLB requests to the proxy and strips the CORS-breaking `venue` hydrate token.
+- Result: live board (real qualified hitters + 4-book odds) works in preview **and** on the deployed GitHub Pages site.
 
 ## v1.2.2 — Bundle/offline boot + OddsBlaze proxy fix
 - Embedded React/ReactDOM directly into `index.html` so the main app no longer fails with `[bundle] error` when CDN/network access is unavailable.
