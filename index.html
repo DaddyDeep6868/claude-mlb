@@ -75,7 +75,25 @@ react-dom/cjs/react-dom-client.production.js:
     </div>
   </noscript>
 <script id="__dl_proxy_boot">
-(function(){try{if(/^https?:$/.test(location.protocol)){var cur=localStorage.getItem('dl_odds_proxy');if(!cur||/claude-mlb\.onrender\.com/.test(cur)){localStorage.setItem('dl_odds_proxy',location.origin);}}}catch(e){}})();
+(function(){try{localStorage.setItem('dl_odds_proxy','https://claude-mlb.onrender.com');}catch(e){}})();
+</script>
+<script id="__dl_mlb_hydrate_fix">
+(function(){try{
+  // Preview (claudeusercontent.com) has no server proxy and MLB blocks these
+  // stat calls cross-origin, so stay on the sample board here. On the deployed
+  // origin (GitHub Pages / Render) route the CORS-blocked calls through /api/mlb.
+  if(/claudeusercontent\.com$/i.test(location.hostname))return;
+  function proxy(){try{var p=localStorage.getItem('dl_odds_proxy');if(p)return p.replace(/\/+$/,'');}catch(e){}return 'https://claude-mlb.onrender.com';}
+  var of=window.fetch;
+  window.fetch=function(u,o){try{
+    var orig=(typeof u==='string')?u:(u&&u.url);var url=orig;
+    if(url&&/statsapi\.mlb\.com/.test(url)){
+      if(/[?&]hydrate=/.test(url)){url=url.replace(/([?&]hydrate=)([^&#]*)/,function(m,p,list){var kept=decodeURIComponent(list).split(',').map(function(x){return x.trim();}).filter(function(x){return x&&!/^venue/i.test(x);});return kept.length?p+kept.join(','):'';});}
+      if(/hydrate=stats\(/i.test(url)||/\/api\/v1\/stats(\?|$)/i.test(url)||/statSplits/i.test(url)){url=proxy()+'/api/mlb?url='+encodeURIComponent(url);}
+      if(url!==orig){if(typeof u==='string'){u=url;}else{u=new Request(url,u);}}
+    }
+  }catch(e){}return of.call(this,u,o);};
+}catch(e){}})();
 </script>
 <script>window.__DL_VERSION__="v1.2.2";</script></head>
 <body>

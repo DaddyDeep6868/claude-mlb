@@ -171,6 +171,28 @@ def api_oddsblaze():
         return jsonify({"error": str(e), "sportsbook": sportsbook, "league": league}), 502
 
 
+# Generic server-side passthrough for MLB endpoints the browser can't reach
+# cross-origin (e.g. hydrate=stats(...) and statSplits return no CORS headers).
+# Restricted to MLB hosts so it can't be abused as an open proxy.
+_MLB_PROXY_RE = re.compile(r"^https://(?:statsapi|baseballsavant)\.mlb\.com/", re.I)
+
+
+@app.get("/api/mlb")
+def api_mlb():
+    target = (request.args.get("url") or "").strip()
+    if not _MLB_PROXY_RE.match(target):
+        return jsonify({"error": "blocked host", "url": target}), 400
+    try:
+        r = requests.get(target, timeout=30, headers={"user-agent": "DingerLab server sync"})
+        return app.response_class(
+            r.content,
+            status=r.status_code,
+            mimetype=r.headers.get("content-type", "application/json"),
+        )
+    except Exception as e:
+        return jsonify({"error": str(e), "url": target}), 502
+
+
 def jget(url, **kwargs):
     r = requests.get(url, timeout=30, headers={"user-agent": "DingerLab server sync"}, **kwargs)
     r.raise_for_status()
