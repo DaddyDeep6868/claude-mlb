@@ -1,4 +1,4 @@
-# DingerLab v1.2.4 — Stadium Night
+# DingerLab v1.2.5 — Stadium Night
 
 MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 
@@ -12,7 +12,7 @@ MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 2. **README** — the `# DingerLab vX.Y.Z` title at the top, and add a `## vX.Y.Z — <summary>` changelog section at the bottom.
 3. **Zip** — re-deliver the download so the packaged files carry the new version.
 
-Bump **patch** (Z) for fixes, **minor** (Y) for features, **major** (X) for breaking changes. Current: **v1.2.4**.
+Bump **patch** (Z) for fixes, **minor** (Y) for features, **major** (X) for breaking changes. Current: **v1.2.5**.
 
 ---
 
@@ -58,6 +58,7 @@ Set env vars before running (Render dashboard → Environment):
 ODDSBLAZE_KEY=your-key-here
 PORT=8501                       # optional, defaults to 8501
 DINGERLAB_ALLOWED_ORIGIN=...    # optional, lock CORS to your front-end origin
+DINGERLAB_DISABLE_HR_ENGINE=false  # set to true on Render to keep the HR Data Engine local-Mac-only
 ```
 
 The server handles:
@@ -65,9 +66,18 @@ The server handles:
 - `/api/state` — saved parlays + board snapshots sync across devices
 - `/api/grade` — auto-grades pending legs from MLB boxscores (matches by MLB player id)
 - `/api/grade_ledger` — name-based grading for ad-hoc bet ledgers
+- `/api/hr/*` — HR Data Engine (local-Mac-only by default; see below)
 - `/health` — liveness check
 
 A background worker also re-grades pending slips every 10 min, so results settle even with no tab open.
+
+### HR Data Engine — local Mac only
+
+The HR Data Engine ingests and cleans large Statcast data sets, which needs more RAM than Render’s free tier (512 MB) provides. To keep your Render deploy stable:
+
+- Set `DINGERLAB_DISABLE_HR_ENGINE=true` on Render. The front-end will then show a **Local Mac Only** notice instead of trying to load the engine.
+- To use the HR Data Engine, run the Flask server locally on your Mac (or any machine with ≥4–8 GB free RAM): `python dingerlab_server.py`, then open `http://localhost:8501`.
+- When running locally, keep the default `DINGERLAB_DISABLE_HR_ENGINE=false` (or unset it).
 
 Data is written to `server_data/dingerlab_server_state.json`. Use a host with persistent disk.
 
@@ -79,7 +89,8 @@ Data is written to `server_data/dingerlab_server_state.json`. Use a host with pe
 2. Build command: `pip install -r requirements.txt`
 3. Start command: `python dingerlab_server.py`
 4. Environment → add `ODDSBLAZE_KEY`. Optionally add `DINGERLAB_ALLOWED_ORIGIN=https://<you>.github.io` to restrict CORS.
-5. Your URL (e.g. `https://mlb-slate.onrender.com`) goes in the app's **Tools → Live odds proxy**.
+5. Add `DINGERLAB_DISABLE_HR_ENGINE=true` so Render does not try to run the memory-heavy Statcast pipeline (the HR Data Engine stays available when running locally on your Mac).
+6. Your URL (e.g. `https://mlb-slate.onrender.com`) goes in the app's **Tools → Live odds proxy**.
 
 > **CORS:** the server defaults to allowing any origin (`*`) on `/api/*` so an unconfigured deploy works out of the box. For a public deploy, set `DINGERLAB_ALLOWED_ORIGIN` to your GitHub Pages origin so only your front-end can call the API.
 >
@@ -109,6 +120,12 @@ Dashboard (Command Center) · Games · Radar (weather / ball-carry map) · Solve
 - Kept OddsBlaze/Render workflow: `ODDSBLAZE_KEY` stays in Render env vars and `/api/oddsblaze` remains the odds source.
 - ML training is intentionally locked until real historical Statcast rows are loaded.
 
+
+## v1.2.5 — HR Data Engine works on localhost
+- Fixed the HR Data Engine hitting the Render server instead of your local Flask server when running on localhost.
+- All three proxy resolvers (`proxy()`, HR `proxyBase()`, odds `proxyBase()`) now check `window.DL_SERVER_MODE` **first** — when the app is served by `dingerlab_server.py`, MLB/odds/HR calls go same-origin (`/api/...`) instead of the pinned Render URL in localStorage.
+- Result: local ingest/build/status now read and write your local DB.
+- Note: local Statcast ingestion needs `pybaseball` installed (`pip install -r requirements.txt`) and outbound internet to Baseball Savant.
 
 ## v1.2.4 — HR Data Engine: in-app Statcast ingestion
 - Fixed the HR Data Engine showing all zeros: the panel could initialize the DB and build features, but there was **no way to actually ingest Statcast from the UI** (ingestion was CLI-only), so the database stayed empty.

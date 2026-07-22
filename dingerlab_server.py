@@ -24,6 +24,13 @@ app = Flask(__name__, static_folder=str(APP_DIR), static_url_path="")
 _ALLOWED_ORIGIN = os.environ.get("DINGERLAB_ALLOWED_ORIGIN", "*")
 CORS(app, resources={r"/api/*": {"origins": _ALLOWED_ORIGIN}})
 
+# The HR Data Engine can use a lot of memory during Statcast ingestion and
+# feature building. On memory-constrained hosts like Render's free tier (512 MB),
+# it should be disabled. Set DINGERLAB_DISABLE_HR_ENGINE=true to disable it.
+# When disabled, the UI shows a "Local Mac only" notice and the routes
+# return a clear message so the app doesn't crash trying to load real data.
+HR_ENGINE_DISABLED = os.environ.get("DINGERLAB_DISABLE_HR_ENGINE", "").lower() in ("1", "true", "yes")
+
 ODDSBLAZE_DEFAULT_KEY = ""  # set ODDSBLAZE_KEY in Render env vars — do not hardcode here
 ODDSBLAZE_BOOKS = {"draftkings", "fanatics", "betmgm", "caesars"}
 
@@ -507,11 +514,25 @@ def api_grade_ledger():
 
 
 
+def hr_engine_disabled_response():
+    return jsonify({
+        "ok": False,
+        "disabled": True,
+        "localOnly": True,
+        "message": "HR Data Engine is disabled on this server.",
+        "error": "HR Data Engine needs more RAM than Render's free tier (512 MB) provides. Run DingerLab locally on your Mac (or any machine with enough memory) to use it. Set DINGERLAB_DISABLE_HR_ENGINE=false or unset it to enable."
+    })
+
+
 # ---------------------------------------------------------------------------
 # HR Engine real-data milestone routes (v1.2.1)
 # Synthetic data is not accepted for training/evaluation/backtesting/prediction.
+# These routes are disabled when DINGERLAB_DISABLE_HR_ENGINE=true so Render
+# stays under its 512 MB limit. Run locally on your Mac to use the HR engine.
 @app.post("/api/hr/init")
 def api_hr_init():
+    if HR_ENGINE_DISABLED:
+        return hr_engine_disabled_response()
     try:
         from hr_real.db import init_db
         path = init_db()
@@ -521,6 +542,8 @@ def api_hr_init():
 
 @app.get("/api/hr/status")
 def api_hr_status():
+    if HR_ENGINE_DISABLED:
+        return hr_engine_disabled_response()
     try:
         from hr_real.db import init_db, connect
         init_db(); con = connect()
@@ -536,6 +559,8 @@ def api_hr_status():
 
 @app.post("/api/hr/ingest_statcast")
 def api_hr_ingest_statcast():
+    if HR_ENGINE_DISABLED:
+        return hr_engine_disabled_response()
     body = request.get_json(silent=True) or {}
     try:
         from hr_real.ingest_statcast import ingest_range
@@ -552,6 +577,8 @@ def api_hr_ingest_statcast():
 
 @app.post("/api/hr/build_features")
 def api_hr_build_features():
+    if HR_ENGINE_DISABLED:
+        return hr_engine_disabled_response()
     try:
         from hr_real.clean_features_eda import build_pa_events, build_features, eda_report
         pa = build_pa_events(); feats = build_features(); eda = eda_report()
@@ -562,6 +589,8 @@ def api_hr_build_features():
 
 @app.get("/api/hr/eda")
 def api_hr_eda():
+    if HR_ENGINE_DISABLED:
+        return hr_engine_disabled_response()
     try:
         from hr_real.clean_features_eda import eda_report
         return jsonify({"ok": True, **eda_report()})
@@ -570,6 +599,8 @@ def api_hr_eda():
 
 @app.get("/api/hr/requirements")
 def api_hr_requirements():
+    if HR_ENGINE_DISABLED:
+        return hr_engine_disabled_response()
     return jsonify({"ok": True, "milestone": "real-data-ingestion-first",
                     "sources": ["Statcast/Baseball Savant via pybaseball", "MLB Stats API", "park factors", "weather", "OddsBlaze via /api/oddsblaze"],
                     "forbidden": ["synthetic model training", "synthetic evaluation", "synthetic backtesting", "synthetic predictions"]})
