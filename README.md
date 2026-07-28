@@ -1,4 +1,4 @@
-# DingerLab v1.4.5 — All-Season HR Ingest
+# DingerLab v1.4.6 — All-Season HR Ingest
 
 MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 
@@ -93,6 +93,12 @@ Data is written to `server_data/dingerlab_server_state.json`. Use a host with pe
 
 Dashboard (Command Center) · Games · Radar (weather / ball-carry map) · Solver (bankroll-aware Kelly portfolio) · Report Card (model calibration vs results) · Builder (cross-play generator + payoff frontier) · Data (feature store) · Research (steam radar, value plays, what changed) · Tracking (CLV, W/L results) · Tools (odds proxy, model settings, exposure) · Live (HR feed + schedule)
 
+
+## v1.4.6 — Show sportsbook next to the best price
+- Every player's "Best +price · EV +x%" badge (Intelligence Report drawer) now also shows which book that best price came from, e.g. `Best +850 (Fanatics) · EV +147.0%`.
+- This is driven by the same shared player-enrichment logic used for every player on the board, so it applies everywhere that badge shows up — not just one card.
+- Falls back gracefully to the plain `Best +price · EV +x%` format if per-book pricing isn't available for that player.
+- Verified with mock multi-book pricing (confirmed the correct book is matched to the best price) and with players missing per-book data or odds entirely (no crashes, sensible fallback text).
 
 ## v1.4.5 — Stopped using live in-play odds for HR props
 - Once a game went live, the Top value plays / model board was picking up sportsbooks' live in-play home run prices instead of the original pregame line — that's why odds sometimes showed things like +25000 mid-game (in-play props reprice based on remaining at-bats and are not comparable to the pregame market).
