@@ -1,4 +1,4 @@
-# DingerLab v1.4.2 — All-Season HR Ingest
+# DingerLab v1.4.3 — All-Season HR Ingest
 
 MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 
@@ -93,6 +93,11 @@ Data is written to `server_data/dingerlab_server_state.json`. Use a host with pe
 
 Dashboard (Command Center) · Games · Radar (weather / ball-carry map) · Solver (bankroll-aware Kelly portfolio) · Report Card (model calibration vs results) · Builder (cross-play generator + payoff frontier) · Data (feature store) · Research (steam radar, value plays, what changed) · Tracking (CLV, W/L results) · Tools (odds proxy, model settings, exposure) · Live (HR feed + schedule)
 
+
+## v1.4.3 — Fixed empty "Top value plays" table
+- The Research tab's Top value plays table was rendering completely empty (just a stray `%`) no matter what data was live — not a data/odds issue, a markup bug: the row-repeating loop was closed immediately before the `<table>` even started, so the single row template sat outside the loop with no player in scope.
+- Moved the loop inside `<tbody>` so it correctly repeats one row per ranked player again.
+- Scanned the rest of the app for the same loop-placement mistake — no other instances found.
 
 ## v1.4.2 — Fixed missing Tools tab + nav audit
 - Audited every nav tab (Dashboard, Games, Radar, Solver, Hedge, Report Card, Builder, Research, Tracking, Live, Tools) by exercising each tab's data/render logic end-to-end; all compute cleanly with no dead bindings.
