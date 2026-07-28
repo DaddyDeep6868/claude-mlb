@@ -1,4 +1,4 @@
-# DingerLab v1.4.6 — All-Season HR Ingest
+# DingerLab v1.4.7 — All-Season HR Ingest
 
 MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 
@@ -93,6 +93,12 @@ Data is written to `server_data/dingerlab_server_state.json`. Use a host with pe
 
 Dashboard (Command Center) · Games · Radar (weather / ball-carry map) · Solver (bankroll-aware Kelly portfolio) · Report Card (model calibration vs results) · Builder (cross-play generator + payoff frontier) · Data (feature store) · Research (steam radar, value plays, what changed) · Tracking (CLV, W/L results) · Tools (odds proxy, model settings, exposure) · Live (HR feed + schedule)
 
+
+## v1.4.7 — Fixed blank Radar map (no dots showing)
+- The "USA · LIVE CONDITIONS" map on the Radar tab was rendering completely empty (no park dots), even though the exact same park data powered the working "Tonight's parks by carry" list right below it and the detail panel.
+- Root cause: the map's park-dot buttons were the only empty (childless) elements in a repeating loop anywhere in the app — every other repeating loop's item has inner content. Verified via isolated headless-browser rendering with real production-computed park data (position, size, color, glow) that the childless button pattern is the structural outlier, while every other version of that same markup (with inner content) renders correctly.
+- Fix: gave each map dot button a small inner filler element, matching the structural pattern already used everywhere else the app repeats a list, with zero visual change to size, color, glow, or position.
+- Verified with real computed park data (7 mock parks spanning the full hot-to-cold color range) rendered pixel-for-pixel correctly in a headless browser both before isolating the fix and after applying it, plus a full 11-tab regression pass.
 
 ## v1.4.6 — Show sportsbook next to the best price
 - Every player's "Best +price · EV +x%" badge (Intelligence Report drawer) now also shows which book that best price came from, e.g. `Best +850 (Fanatics) · EV +147.0%`.
