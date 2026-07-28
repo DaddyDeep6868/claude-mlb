@@ -1,4 +1,4 @@
-# DingerLab v1.4.3 — All-Season HR Ingest
+# DingerLab v1.4.4 — All-Season HR Ingest
 
 MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 
@@ -93,6 +93,11 @@ Data is written to `server_data/dingerlab_server_state.json`. Use a host with pe
 
 Dashboard (Command Center) · Games · Radar (weather / ball-carry map) · Solver (bankroll-aware Kelly portfolio) · Report Card (model calibration vs results) · Builder (cross-play generator + payoff frontier) · Data (feature store) · Research (steam radar, value plays, what changed) · Tracking (CLV, W/L results) · Tools (odds proxy, model settings, exposure) · Live (HR feed + schedule)
 
+
+## v1.4.4 — Actually fixed "Top value plays" (v1.4.3 fix didn't survive rendering)
+- v1.4.3's fix moved the row loop inside the table in the source markup, which was correct on paper but got silently undone: real `<table>` elements have strict HTML parsing rules, and any non-standard tag (like the row loop) placed directly inside `<tbody>` gets automatically pulled out by the browser the moment the page is parsed — which is exactly why the table stayed empty even after deploying v1.4.3.
+- Rebuilt the table using CSS `display:table` / `table-row` / `table-cell` divs (the same row-looping technique already used everywhere else in this app), which has no such parsing restriction.
+- Verified this time by actually loading the exact markup in a headless browser before shipping: confirmed the old table structure reproduced the bug, confirmed the new div-based structure survives parsing intact (loop stays in place), and confirmed it visually renders as a normal aligned table with real sample rows.
 
 ## v1.4.3 — Fixed empty "Top value plays" table
 - The Research tab's Top value plays table was rendering completely empty (just a stray `%`) no matter what data was live — not a data/odds issue, a markup bug: the row-repeating loop was closed immediately before the `<table>` even started, so the single row template sat outside the loop with no player in scope.
