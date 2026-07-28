@@ -1,4 +1,4 @@
-# DingerLab v1.4.4 — All-Season HR Ingest
+# DingerLab v1.4.5 — All-Season HR Ingest
 
 MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 
@@ -93,6 +93,12 @@ Data is written to `server_data/dingerlab_server_state.json`. Use a host with pe
 
 Dashboard (Command Center) · Games · Radar (weather / ball-carry map) · Solver (bankroll-aware Kelly portfolio) · Report Card (model calibration vs results) · Builder (cross-play generator + payoff frontier) · Data (feature store) · Research (steam radar, value plays, what changed) · Tracking (CLV, W/L results) · Tools (odds proxy, model settings, exposure) · Live (HR feed + schedule)
 
+
+## v1.4.5 — Stopped using live in-play odds for HR props
+- Once a game went live, the Top value plays / model board was picking up sportsbooks' live in-play home run prices instead of the original pregame line — that's why odds sometimes showed things like +25000 mid-game (in-play props reprice based on remaining at-bats and are not comparable to the pregame market).
+- Confirmed via OddsBlaze's own API docs that every event includes a `live: true/false` flag; the proxy and the odds fetch were not filtering on it.
+- Fixed in two places: the server-side OddsBlaze proxy now requests `live=false` so only pre-match lines are ever fetched, and the front end's odds parser also skips any event flagged `live: true` as a safety net.
+- Verified with a mock odds response containing both a pregame and a live-flagged entry for the same player — confirmed only the pregame price is now used.
 
 ## v1.4.4 — Actually fixed "Top value plays" (v1.4.3 fix didn't survive rendering)
 - v1.4.3's fix moved the row loop inside the table in the source markup, which was correct on paper but got silently undone: real `<table>` elements have strict HTML parsing rules, and any non-standard tag (like the row loop) placed directly inside `<tbody>` gets automatically pulled out by the browser the moment the page is parsed — which is exactly why the table stayed empty even after deploying v1.4.3.

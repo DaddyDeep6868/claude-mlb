@@ -165,7 +165,10 @@ def api_oddsblaze():
     try:
         data = jget(
             "https://odds.oddsblaze.com/",
-            params={"key": key, "sportsbook": sportsbook, "league": league},
+            # live=false keeps this to pre-match "to hit a HR" lines only. Once a
+            # game goes live, books reprice/limit this market for in-play betting
+            # (huge, situational prices) which is not what the model board ranks.
+            params={"key": key, "sportsbook": sportsbook, "league": league, "live": "false"},
         )
         return jsonify(data)
     except Exception as e:
