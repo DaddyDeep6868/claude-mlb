@@ -1,4 +1,4 @@
-# DingerLab v1.2.5 — Stadium Night
+# DingerLab v1.4.2 — All-Season HR Ingest
 
 MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 
@@ -12,7 +12,7 @@ MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 2. **README** — the `# DingerLab vX.Y.Z` title at the top, and add a `## vX.Y.Z — <summary>` changelog section at the bottom.
 3. **Zip** — re-deliver the download so the packaged files carry the new version.
 
-Bump **patch** (Z) for fixes, **minor** (Y) for features, **major** (X) for breaking changes. Current: **v1.2.5**.
+Bump **patch** (Z) for fixes, **minor** (Y) for features, **major** (X) for breaking changes. Current: **v1.4.0**.
 
 ---
 
@@ -23,7 +23,9 @@ Bump **patch** (Z) for fixes, **minor** (Y) for features, **major** (X) for brea
 | `index.html` | Bundled app — GitHub Pages, open in any browser, no build step |
 | `DingerLab Redesign.dc.html` | Source design component (edit this, re-bundle to update `index.html`) |
 | `dingerlab_server.py` | Flask server — multi-device sync, server-side odds proxy, auto-grading |
-| `streamlit_app.py` | Streamlit wrapper — alternative cloud deploy on Streamlit Community Cloud |
+| `soccer.js` / `support.js` | Front-end JS modules used by the app |
+| `tools/` | Build + maintenance scripts (`set-version.js`, `inline-*.js`) |
+| `deploy.sh` / `deploy.py` | Helpers to apply an update zip into a local project |
 | `requirements.txt` | Python dependencies |
 
 ---
@@ -58,7 +60,6 @@ Set env vars before running (Render dashboard → Environment):
 ODDSBLAZE_KEY=your-key-here
 PORT=8501                       # optional, defaults to 8501
 DINGERLAB_ALLOWED_ORIGIN=...    # optional, lock CORS to your front-end origin
-DINGERLAB_DISABLE_HR_ENGINE=false  # set to true on Render to keep the HR Data Engine local-Mac-only
 ```
 
 The server handles:
@@ -66,18 +67,9 @@ The server handles:
 - `/api/state` — saved parlays + board snapshots sync across devices
 - `/api/grade` — auto-grades pending legs from MLB boxscores (matches by MLB player id)
 - `/api/grade_ledger` — name-based grading for ad-hoc bet ledgers
-- `/api/hr/*` — HR Data Engine (local-Mac-only by default; see below)
 - `/health` — liveness check
 
 A background worker also re-grades pending slips every 10 min, so results settle even with no tab open.
-
-### HR Data Engine — local Mac only
-
-The HR Data Engine ingests and cleans large Statcast data sets, which needs more RAM than Render’s free tier (512 MB) provides. To keep your Render deploy stable:
-
-- Set `DINGERLAB_DISABLE_HR_ENGINE=true` on Render. The front-end will then show a **Local Mac Only** notice instead of trying to load the engine.
-- To use the HR Data Engine, run the Flask server locally on your Mac (or any machine with ≥4–8 GB free RAM): `python dingerlab_server.py`, then open `http://localhost:8501`.
-- When running locally, keep the default `DINGERLAB_DISABLE_HR_ENGINE=false` (or unset it).
 
 Data is written to `server_data/dingerlab_server_state.json`. Use a host with persistent disk.
 
@@ -89,8 +81,7 @@ Data is written to `server_data/dingerlab_server_state.json`. Use a host with pe
 2. Build command: `pip install -r requirements.txt`
 3. Start command: `python dingerlab_server.py`
 4. Environment → add `ODDSBLAZE_KEY`. Optionally add `DINGERLAB_ALLOWED_ORIGIN=https://<you>.github.io` to restrict CORS.
-5. Add `DINGERLAB_DISABLE_HR_ENGINE=true` so Render does not try to run the memory-heavy Statcast pipeline (the HR Data Engine stays available when running locally on your Mac).
-6. Your URL (e.g. `https://mlb-slate.onrender.com`) goes in the app's **Tools → Live odds proxy**.
+5. Your URL (e.g. `https://mlb-slate.onrender.com`) goes in the app's **Tools → Live odds proxy**.
 
 > **CORS:** the server defaults to allowing any origin (`*`) on `/api/*` so an unconfigured deploy works out of the box. For a public deploy, set `DINGERLAB_ALLOWED_ORIGIN` to your GitHub Pages origin so only your front-end can call the API.
 >
@@ -102,6 +93,28 @@ Data is written to `server_data/dingerlab_server_state.json`. Use a host with pe
 
 Dashboard (Command Center) · Games · Radar (weather / ball-carry map) · Solver (bankroll-aware Kelly portfolio) · Report Card (model calibration vs results) · Builder (cross-play generator + payoff frontier) · Data (feature store) · Research (steam radar, value plays, what changed) · Tracking (CLV, W/L results) · Tools (odds proxy, model settings, exposure) · Live (HR feed + schedule)
 
+
+## v1.4.2 — Fixed missing Tools tab + nav audit
+- Audited every nav tab (Dashboard, Games, Radar, Solver, Hedge, Report Card, Builder, Research, Tracking, Live, Tools) by exercising each tab's data/render logic end-to-end; all compute cleanly with no dead bindings.
+- Found and fixed a real bug: the **Tools** tab (model settings, exposure guardrails, exports/methodology) had a working content screen but no nav button, so it was unreachable from the sidebar or mobile bottom nav. Added it back to both nav bars.
+- No other broken tabs, dead buttons, or undefined bindings found across the remaining 10 tabs.
+
+## v1.4.1 — Fixed player headshots not loading
+- Player head shots were breaking silently across the app (locks, watchlist, due list, star plays, game cards, radar top bats, solver bets, anchor parlay, round-robin picker, live HR feed, win-rate legs, and the player drawer) because the single Cloudinary-less `midfield.mlbstatic.com/.../spots/120` URL sometimes fails to resolve for a given player.
+- Headshots now load from the primary MLB photo CDN (`img.mlbstatic.com` Cloudinary headshot endpoint) and automatically retry a fallback URL (`midfield.mlbstatic.com`) before giving up and hiding the image, so a bad primary URL no longer means a blank avatar.
+- No API, dependency, or route changes — front-end only.
+
+## v1.4.0 — HR Data Engine removed (slimmer app)
+- Removed the HR Data Engine entirely to cut data + storage usage: the `hr_real/` Statcast pipeline, all `/api/hr/*` routes, the in-app 🧬 HR Data Engine panel + Data tab, trained-model artifacts (`server_data/models/`), and the `pybaseball` / `pandas` / `numpy` / `streamlit` dependencies.
+- Everything else stays: live MLB slate, Dinger Score model %, OddsBlaze odds proxy, EV / edge math, Bet Slip + Kelly solver, round-robin hedge, and bet tracking + auto-grading (`/api/grade`, `/api/grade_ledger`, `/api/state`).
+- `requirements.txt` is down to `requests`, `flask`, `flask-cors`. No Statcast ingestion and no local SQLite training DB.
+- **Action on your Mac:** delete the local training database `server_data/hr_data.db` (~227 MB) and any `server_data/models/` folder — they are no longer used.
+
+## v1.3.0 — Trained-model probabilities API + repo cleanup
+- Added `train_model.score_players()`: scores each player's latest feature row with the newest trained XGBoost model and returns per-player HR probabilities keyed by `player_id` and normalized name.
+- Added `GET /api/hr/model_probs` (optional `?player_ids=` filter) so the front-end EV / edge / Bet Slip engine can run off the trained model instead of the in-browser heuristic.
+- Feature build joins ballpark weather (`temp_f`, `wind_mph` via Open-Meteo) alongside park factors, opposing-starter HR rate, and 30-day recent form.
+- Repo cleanup: removed macOS/bytecode cruft, stale duplicate root build scripts (canonical copies live in `tools/`), the unreferenced `engine_server.py`, and superseded model artifacts (kept the two newest).
 
 ## v1.2.2 — MLB Home Run Prediction Engine
 - Added a new MLB-side **HR Engine** launcher in the DingerLab app.
@@ -120,6 +133,12 @@ Dashboard (Command Center) · Games · Radar (weather / ball-carry map) · Solve
 - Kept OddsBlaze/Render workflow: `ODDSBLAZE_KEY` stays in Render env vars and `/api/oddsblaze` remains the odds source.
 - ML training is intentionally locked until real historical Statcast rows are loaded.
 
+
+## v1.2.7 — All-season Statcast ingestion + database-lock fix
+- The HR Data Engine panel now ingests **all 2021–2025 seasons in one click** instead of one season at a time.
+- The backend `/api/hr/ingest_statcast` route now accepts a list of seasons, runs them sequentially, and retries on transient SQLite `database is locked` errors.
+- `/api/hr/build_features` is now serialized with ingestion behind the same lock so only one SQLite writer runs at a time.
+- Single-season ingestion now sends the full season in one request instead of weekly chunks, reducing HTTP overhead and timeout risk.
 
 ## v1.2.5 — HR Data Engine works on localhost
 - Fixed the HR Data Engine hitting the Render server instead of your local Flask server when running on localhost.

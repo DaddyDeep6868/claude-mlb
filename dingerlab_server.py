@@ -3,6 +3,7 @@ import os
 import sys
 import threading
 import re
+import sqlite3
 import time
 import unicodedata
 from datetime import datetime
@@ -23,13 +24,6 @@ app = Flask(__name__, static_folder=str(APP_DIR), static_url_path="")
 # (e.g. https://you.github.io). Defaults to "*" so an unconfigured deploy still works.
 _ALLOWED_ORIGIN = os.environ.get("DINGERLAB_ALLOWED_ORIGIN", "*")
 CORS(app, resources={r"/api/*": {"origins": _ALLOWED_ORIGIN}})
-
-# The HR Data Engine can use a lot of memory during Statcast ingestion and
-# feature building. On memory-constrained hosts like Render's free tier (512 MB),
-# it should be disabled. Set DINGERLAB_DISABLE_HR_ENGINE=true to disable it.
-# When disabled, the UI shows a "Local Mac only" notice and the routes
-# return a clear message so the app doesn't crash trying to load real data.
-HR_ENGINE_DISABLED = os.environ.get("DINGERLAB_DISABLE_HR_ENGINE", "").lower() in ("1", "true", "yes")
 
 ODDSBLAZE_DEFAULT_KEY = ""  # set ODDSBLAZE_KEY in Render env vars — do not hardcode here
 ODDSBLAZE_BOOKS = {"draftkings", "fanatics", "betmgm", "caesars"}
@@ -361,11 +355,7 @@ def _norm_name(s):
     s = unicodedata.normalize("NFKD", str(s or ""))
     s = "".join(c for c in s if not unicodedata.combining(c))
     s = s.lower().replace(".", " ").replace("'", " ")
-    s = re.sub(r"[^a-z0-9 ]+", " ", s)
-    s = re.sub(r"\s+", " ", s).strip()
-    # strip common suffixes
-    parts = [p for p in s.split() if p not in ("jr", "sr", "ii", "iii", "iv")]
-    return " ".join(parts)
+    return " ".join(s.split())
 
 
 def final_games_by_date(dates):
@@ -512,98 +502,6 @@ def api_grade_ledger():
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 502
 
-
-
-def hr_engine_disabled_response():
-    return jsonify({
-        "ok": False,
-        "disabled": True,
-        "localOnly": True,
-        "message": "HR Data Engine is disabled on this server.",
-        "error": "HR Data Engine needs more RAM than Render's free tier (512 MB) provides. Run DingerLab locally on your Mac (or any machine with enough memory) to use it. Set DINGERLAB_DISABLE_HR_ENGINE=false or unset it to enable."
-    })
-
-
-# ---------------------------------------------------------------------------
-# HR Engine real-data milestone routes (v1.2.1)
-# Synthetic data is not accepted for training/evaluation/backtesting/prediction.
-# These routes are disabled when DINGERLAB_DISABLE_HR_ENGINE=true so Render
-# stays under its 512 MB limit. Run locally on your Mac to use the HR engine.
-@app.post("/api/hr/init")
-def api_hr_init():
-    if HR_ENGINE_DISABLED:
-        return hr_engine_disabled_response()
-    try:
-        from hr_real.db import init_db
-        path = init_db()
-        return jsonify({"ok": True, "db": path, "synthetic_training_allowed": False})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
-
-@app.get("/api/hr/status")
-def api_hr_status():
-    if HR_ENGINE_DISABLED:
-        return hr_engine_disabled_response()
-    try:
-        from hr_real.db import init_db, connect
-        init_db(); con = connect()
-        row = con.execute("SELECT * FROM v_hr_engine_status").fetchone()
-        runs = [dict(r) for r in con.execute("SELECT * FROM ingest_runs ORDER BY id DESC LIMIT 5").fetchall()]
-        con.close()
-        return jsonify({"ok": True, "status": dict(row), "recent_runs": runs,
-                        "network_limited": False, "synthetic_training_allowed": False,
-                        "ml_training_unlocked": (row["feature_rows"] or 0) > 10000})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e), "network_limited": False,
-                        "synthetic_training_allowed": False}), 500
-
-@app.post("/api/hr/ingest_statcast")
-def api_hr_ingest_statcast():
-    if HR_ENGINE_DISABLED:
-        return hr_engine_disabled_response()
-    body = request.get_json(silent=True) or {}
-    try:
-        from hr_real.ingest_statcast import ingest_range
-        season = body.get("season")
-        start = body.get("start"); end = body.get("end")
-        if season and not (start and end):
-            start, end = f"{int(season)}-03-01", f"{int(season)}-11-15"
-        if not (start and end):
-            return jsonify({"ok": False, "error": "Provide season or start/end"}), 400
-        res = ingest_range(start, end)
-        return jsonify({"ok": True, **res})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 502
-
-@app.post("/api/hr/build_features")
-def api_hr_build_features():
-    if HR_ENGINE_DISABLED:
-        return hr_engine_disabled_response()
-    try:
-        from hr_real.clean_features_eda import build_pa_events, build_features, eda_report
-        pa = build_pa_events(); feats = build_features(); eda = eda_report()
-        return jsonify({"ok": True, "pa_events": pa, "feature_rows": feats, "eda": eda,
-                        "synthetic_training_allowed": False})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
-
-@app.get("/api/hr/eda")
-def api_hr_eda():
-    if HR_ENGINE_DISABLED:
-        return hr_engine_disabled_response()
-    try:
-        from hr_real.clean_features_eda import eda_report
-        return jsonify({"ok": True, **eda_report()})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
-
-@app.get("/api/hr/requirements")
-def api_hr_requirements():
-    if HR_ENGINE_DISABLED:
-        return hr_engine_disabled_response()
-    return jsonify({"ok": True, "milestone": "real-data-ingestion-first",
-                    "sources": ["Statcast/Baseball Savant via pybaseball", "MLB Stats API", "park factors", "weather", "OddsBlaze via /api/oddsblaze"],
-                    "forbidden": ["synthetic model training", "synthetic evaluation", "synthetic backtesting", "synthetic predictions"]})
 
 
 @app.get("/health")
