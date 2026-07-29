@@ -1,4 +1,4 @@
-# DingerLab v1.6.0 — All-Season HR Ingest
+# DingerLab v1.6.1 — All-Season HR Ingest
 
 MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 
@@ -12,7 +12,7 @@ MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 2. **README** — the `# DingerLab vX.Y.Z` title at the top, and add a `## vX.Y.Z — <summary>` changelog section at the bottom.
 3. **Zip** — re-deliver the download so the packaged files carry the new version.
 
-Bump **patch** (Z) for fixes, **minor** (Y) for features, **major** (X) for breaking changes. Current: **v1.6.0**.
+Bump **patch** (Z) for fixes, **minor** (Y) for features, **major** (X) for breaking changes. Current: **v1.6.1**.
 
 ---
 
@@ -94,6 +94,22 @@ Data is written to `server_data/dingerlab_server_state.json`. Use a host with pe
 Dashboard (Command Center) · Games · Radar (weather / ball-carry map) · Solver (bankroll-aware Kelly portfolio) · Report Card (model calibration vs results) · Builder (cross-play generator + payoff frontier) · Data (feature store) · Research (steam radar, value plays, what changed) · Tracking (CLV, W/L results) · Tools (odds proxy, model settings, exposure) · Live (HR feed + schedule)
 
 
+## v1.6.1 — Fixed the blank Radar map (actual root cause)
+
+The real fix for the empty Radar map that v1.4.7 and v1.4.8 both failed to solve. Both earlier attempts targeted dot *rendering*; the dots were never the problem — the park list was empty before rendering ever started.
+
+**Two defects, both confirmed by reproduction:**
+
+1. **The radar bailed out entirely whenever the app was not in live mode.** The park builder began with `if (!live || !gamesRaw) return []`. Any time the MLB or odds fetch failed, every other tab fell back to sample data and kept working normally, while Radar alone returned zero parks and painted a blank map. Reproduced in a real headless browser: the app loads in `Sample data (offline)` mode and the map rendered 0 dots.
+2. **Venue-name mismatches silently dropped parks.** The coordinate table was keyed by exact venue name, and three names the MLB API actually returns were absent — `Sutter Health Park` (Athletics), `George M. Steinbrenner Field` (Rays), and the `Angel Stadium of Anaheim` variant. Each unmatched park vanished with no error or warning.
+
+**Fixes:**
+- Parks are now sourced from the live schedule *or*, on sample/fallback data, from the board itself, so the map is never blank.
+- Added the three missing venues, plus `parkGeoLookup()` — a normalized-name fallback (case, punctuation, and `of Anaheim`-style suffixes) so future park renames match instead of silently disappearing.
+- The map corner label is now a live self-diagnostic: `USA · 8 PARKS`, appending `· N UNMAPPED` when a venue misses the lookup and `· SAMPLE` when not on live data. A blank or short map now reports its own cause without needing DevTools.
+
+**Verified:** sample/fallback mode went 0 → 6 parks and a live slate using real 2026 venue names went 5 of 8 → 8 of 8, measured directly against the shipped component code. Confirmed in a real headless browser on the offline path: label reads `USA · 6 PARKS · SAMPLE` with 12 dot buttons across 7 distinct map positions and the detail panel populated. Full 11-tab regression pass.
+
 ## v1.6.0 — Calibration loop, model/market blend, Kelly off true probability
 
 The board now shows probabilities it can defend. Three linked changes:
@@ -124,11 +140,13 @@ Three edge-finding upgrades:
 
 Verified in a real browser run (mocked feeds with two-sided prices and a posted lineup): fair prices render on the odds chip, slot badges appear only for the team that posted, the closing-line store fills, and the Value sort works. 35 unit assertions on the de-vig math, CLV lock behavior, and slot weighting all pass, plus the 11-tab regression.
 
-## v1.4.8 — Radar map hardening + park-count diagnostic
+## v1.4.8 — Radar map hardening + park-count diagnostic [DID NOT SHIP — code was never present in any delivered build, and did not fix the issue; see v1.6.1 for the actual root cause]
+
+Note: this entry was written but the described code never made it into a delivered zip, and the approach was wrong regardless — the dots were not the problem. The blank map was fixed in v1.6.1.
 
 Follow-up after v1.4.7 did not fix the blank map. Dots are now wrapped in their own absolutely-positioned overlay layer, positions/sizes are precomputed and guarded with `Number.isFinite` (with a minimum 15px hit area and explicit z-index), and the map label now reports the live park count — `USA · LIVE CONDITIONS · 7 PARKS` — so a blank map immediately distinguishes "no data arrived" (0 parks) from "data arrived but nothing painted".
 
-## v1.4.7 — Fixed blank Radar map (no dots showing) [superseded by v1.4.8 — did not fix the issue]
+## v1.4.7 — Attempted fix for blank Radar map (no dots showing) [did not fix the issue; actual root cause found in v1.6.1]
 - The "USA · LIVE CONDITIONS" map on the Radar tab was rendering completely empty (no park dots), even though the exact same park data powered the working "Tonight's parks by carry" list right below it and the detail panel.
 - Root cause: the map's park-dot buttons were the only empty (childless) elements in a repeating loop anywhere in the app — every other repeating loop's item has inner content. Verified via isolated headless-browser rendering with real production-computed park data (position, size, color, glow) that the childless button pattern is the structural outlier, while every other version of that same markup (with inner content) renders correctly.
 - Fix: gave each map dot button a small inner filler element, matching the structural pattern already used everywhere else the app repeats a list, with zero visual change to size, color, glow, or position.
