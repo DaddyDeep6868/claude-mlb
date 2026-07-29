@@ -1,4 +1,4 @@
-# DingerLab v1.4.8 — All-Season HR Ingest
+# DingerLab v1.5.0 — All-Season HR Ingest
 
 MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 
@@ -12,7 +12,7 @@ MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 2. **README** — the `# DingerLab vX.Y.Z` title at the top, and add a `## vX.Y.Z — <summary>` changelog section at the bottom.
 3. **Zip** — re-deliver the download so the packaged files carry the new version.
 
-Bump **patch** (Z) for fixes, **minor** (Y) for features, **major** (X) for breaking changes. Current: **v1.4.0**.
+Bump **patch** (Z) for fixes, **minor** (Y) for features, **major** (X) for breaking changes. Current: **v1.5.0**.
 
 ---
 
@@ -94,13 +94,21 @@ Data is written to `server_data/dingerlab_server_state.json`. Use a host with pe
 Dashboard (Command Center) · Games · Radar (weather / ball-carry map) · Solver (bankroll-aware Kelly portfolio) · Report Card (model calibration vs results) · Builder (cross-play generator + payoff frontier) · Data (feature store) · Research (steam radar, value plays, what changed) · Tracking (CLV, W/L results) · Tools (odds proxy, model settings, exposure) · Live (HR feed + schedule)
 
 
-## v1.4.8 — Radar map dots: real-runtime fix + guards
-- The v1.4.7 attempt did **not** resolve the blank Radar map in production. This release replaces it with a fix validated against the real app runtime (headless Chromium driving the actual bundled `index.html` with mocked MLB/weather/odds responses), not a hand-built markup copy.
-- Park dots now live in their own absolutely-positioned overlay layer (`inset:0; z-index:4`) inside the map, so they can never be covered or clipped by the grid backdrop or legend.
-- Dot geometry is precomputed in JS as complete CSS values (`xPct`, `yPct`, `sizePx`) instead of being assembled from bare numbers in the style attribute — a `NaN`/undefined value can no longer collapse a dot to zero size or drop its position.
-- Added `Number.isFinite` guards for x, y, size, glow, and carry, plus a `min-width`/`min-height` of 15px and a colour fallback, so a dot always renders even with incomplete weather data.
-- The map label now reads `USA · LIVE CONDITIONS · N PARKS`, showing how many parks were actually plotted — instant confirmation the loop is producing data.
-- Verified: 7/7 dots rendered, visible, correctly coloured and positioned in the real runtime; all 11 nav tabs still pass the regression harness.
+## v1.5.0 — Fair odds (de-vig), automatic CLV capture, confirmed-lineup gating
+
+Three edge-finding upgrades:
+
+**1. De-vigged fair odds + true EV.** The odds fetch now keeps the **Under 0.5** price alongside the Over. For each book we measure the actual overround (Over% + Under%) and divide it out, then take the median fair probability across books. When a book only posts one side, we fall back to that book's measured median hold (or 1.14 if it never posts two-sided). Every player now carries a **fair price** and a **market EV** — EV measured against the no-vig line instead of the raw posted price. The odds chip reads `Best +850 (DraftKings) · EV +147.0% · Fair +1100`, **Edge** is now model% minus fair% (not raw implied%), and a new **Value** sort ranks the board by market EV.
+
+**2. Automatic closing-line (CLV) capture.** Pre-game prices are now persisted to `dl_close_v1` on every poll. Because the odds feed only returns pre-game events, the last price stored for a player *is* the closing line. When a tracked bet's game goes Live or Final the close is **frozen** (`closeLocked`) so in-play prices can never overwrite it, and legs added late still recover a close from storage. Each leg also records CLV in odds points (`clvCents`) alongside the existing probability-point CLV.
+
+**3. Confirmed-lineup gating + batting-order weighting.** Lineup lookup now returns each hitter's **batting-order slot** and tracks confirmation **per team** instead of per game — so one team posting its card no longer affects the other side. Once a team posts, hitters not on the card are dropped from the board. Expected plate appearances now scale by slot (leadoff 4.65 PA → 9-hole 3.80 PA) instead of a flat 4.1 for everyone, which feeds directly into the HR probability. The badge shows the slot: `✓ IN #3`.
+
+Verified in a real browser run (mocked feeds with two-sided prices and a posted lineup): fair prices render on the odds chip, slot badges appear only for the team that posted, the closing-line store fills, and the Value sort works. 35 unit assertions on the de-vig math, CLV lock behavior, and slot weighting all pass, plus the 11-tab regression.
+
+## v1.4.8 — Radar map hardening + park-count diagnostic
+
+Follow-up after v1.4.7 did not fix the blank map. Dots are now wrapped in their own absolutely-positioned overlay layer, positions/sizes are precomputed and guarded with `Number.isFinite` (with a minimum 15px hit area and explicit z-index), and the map label now reports the live park count — `USA · LIVE CONDITIONS · 7 PARKS` — so a blank map immediately distinguishes "no data arrived" (0 parks) from "data arrived but nothing painted".
 
 ## v1.4.7 — Fixed blank Radar map (no dots showing) [superseded by v1.4.8 — did not fix the issue]
 - The "USA · LIVE CONDITIONS" map on the Radar tab was rendering completely empty (no park dots), even though the exact same park data powered the working "Tonight's parks by carry" list right below it and the detail panel.
