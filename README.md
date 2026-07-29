@@ -1,4 +1,4 @@
-# DingerLab v1.4.7 — All-Season HR Ingest
+# DingerLab v1.4.8 — All-Season HR Ingest
 
 MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 
@@ -94,7 +94,15 @@ Data is written to `server_data/dingerlab_server_state.json`. Use a host with pe
 Dashboard (Command Center) · Games · Radar (weather / ball-carry map) · Solver (bankroll-aware Kelly portfolio) · Report Card (model calibration vs results) · Builder (cross-play generator + payoff frontier) · Data (feature store) · Research (steam radar, value plays, what changed) · Tracking (CLV, W/L results) · Tools (odds proxy, model settings, exposure) · Live (HR feed + schedule)
 
 
-## v1.4.7 — Fixed blank Radar map (no dots showing)
+## v1.4.8 — Radar map dots: real-runtime fix + guards
+- The v1.4.7 attempt did **not** resolve the blank Radar map in production. This release replaces it with a fix validated against the real app runtime (headless Chromium driving the actual bundled `index.html` with mocked MLB/weather/odds responses), not a hand-built markup copy.
+- Park dots now live in their own absolutely-positioned overlay layer (`inset:0; z-index:4`) inside the map, so they can never be covered or clipped by the grid backdrop or legend.
+- Dot geometry is precomputed in JS as complete CSS values (`xPct`, `yPct`, `sizePx`) instead of being assembled from bare numbers in the style attribute — a `NaN`/undefined value can no longer collapse a dot to zero size or drop its position.
+- Added `Number.isFinite` guards for x, y, size, glow, and carry, plus a `min-width`/`min-height` of 15px and a colour fallback, so a dot always renders even with incomplete weather data.
+- The map label now reads `USA · LIVE CONDITIONS · N PARKS`, showing how many parks were actually plotted — instant confirmation the loop is producing data.
+- Verified: 7/7 dots rendered, visible, correctly coloured and positioned in the real runtime; all 11 nav tabs still pass the regression harness.
+
+## v1.4.7 — Fixed blank Radar map (no dots showing) [superseded by v1.4.8 — did not fix the issue]
 - The "USA · LIVE CONDITIONS" map on the Radar tab was rendering completely empty (no park dots), even though the exact same park data powered the working "Tonight's parks by carry" list right below it and the detail panel.
 - Root cause: the map's park-dot buttons were the only empty (childless) elements in a repeating loop anywhere in the app — every other repeating loop's item has inner content. Verified via isolated headless-browser rendering with real production-computed park data (position, size, color, glow) that the childless button pattern is the structural outlier, while every other version of that same markup (with inner content) renders correctly.
 - Fix: gave each map dot button a small inner filler element, matching the structural pattern already used everywhere else the app repeats a list, with zero visual change to size, color, glow, or position.
