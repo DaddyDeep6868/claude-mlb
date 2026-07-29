@@ -1,4 +1,4 @@
-# DingerLab v1.6.1 — All-Season HR Ingest
+# DingerLab v1.7.0 — All-Season HR Ingest
 
 MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 
@@ -12,7 +12,7 @@ MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 2. **README** — the `# DingerLab vX.Y.Z` title at the top, and add a `## vX.Y.Z — <summary>` changelog section at the bottom.
 3. **Zip** — re-deliver the download so the packaged files carry the new version.
 
-Bump **patch** (Z) for fixes, **minor** (Y) for features, **major** (X) for breaking changes. Current: **v1.6.1**.
+Bump **patch** (Z) for fixes, **minor** (Y) for features, **major** (X) for breaking changes. Current: **v1.7.0**.
 
 ---
 
@@ -93,6 +93,40 @@ Data is written to `server_data/dingerlab_server_state.json`. Use a host with pe
 
 Dashboard (Command Center) · Games · Radar (weather / ball-carry map) · Solver (bankroll-aware Kelly portfolio) · Report Card (model calibration vs results) · Builder (cross-play generator + payoff frontier) · Data (feature store) · Research (steam radar, value plays, what changed) · Tracking (CLV, W/L results) · Tools (odds proxy, model settings, exposure) · Live (HR feed + schedule)
 
+
+## v1.7.0 — Pitcher HR-vulnerability profile
+
+The matchup model used to treat every pitcher's handedness split as the same constant. `platoonMult()` returned exactly three numbers for all of baseball: `1.07` when the batter had the platoon advantage, `0.94` when he didn't, `1.05` for switch hitters. A lefty-killer and a lefty-proof pitcher got identical treatment.
+
+Now each pitcher is scored on **his own** HR splits.
+
+**New data pull** — `fetchPitcherSplits(season)` hits the MLB stats endpoint with `stats=statSplits&group=pitching&sitCodes=vl,vr,h,a` (`playerPool=All`, `gameType=R`), one request for the whole league, fetched in the same `Promise.all` as the existing Statcast / day-night / lineup calls, so it adds no extra round trip to load time. Per pitcher per split it stores `{ hr, bf, ip, rate, hr9 }`.
+
+- `ipVal()` converts MLB innings notation to real decimals — `45.1` means 45⅓, not 45.1. Getting this wrong quietly inflates every HR/9 by a few percent.
+
+**How the factor is built** — `pitcherSplitFactor(prof, batSide, pitchHand, pitcherAtHome)`:
+
+- **Regression to league mean.** Raw HR-per-BF on a partial-season split is extremely noisy, so each split is shrunk toward league average: `(hr + LG*K) / (bf + K)` with `LG = 0.031` and `K = 200` batters faced. A pitcher needs real volume before his split moves the number much.
+- **Hand factor** = his regressed rate against the side the batter swings from, divided by his regressed overall rate. Clamped to `[0.80, 1.25]`.
+- **Home/road factor** = same construction on the `h`/`a` splits. Clamped tighter, `[0.92, 1.10]`, and only applied when that pitcher has `>= 100` BF in the home/road split.
+- **Switch hitters** are routed to the side they'll actually bat from: vs RHP they use the pitcher's vLHB split, vs LHP the vRHB split.
+- **Sample gate.** Under 100 BF in the handedness split, we fall back to the old generic constant rather than trusting a tiny sample.
+- **One combined clamp.** The final `handFactor * homeFactor` is clamped once to `[0.78, 1.30]`. This matters because the model already applies a season HR/9 multiplier (`pMult`), a recent-form multiplier (`formMult`), and the v1.6.0 calibration/blend layers — without a single outer clamp, the same "this pitcher gives up homers" signal would get counted three or four times and blow up the projection.
+
+**Recent form window widened** — `fetchPitcherForm` now averages the last **5** starts instead of the last 3. Three starts is roughly 18 innings; one bad afternoon dominated the number.
+
+**Surfaced in the UI** — the player detail panel's existing factor list (no new cards or layout changes):
+
+- `Hand split (his own)` — replaces the old `Handedness` row, showing the faced side plus that pitcher's HR/9 against it. Reads `Handedness (generic)` when we fell back.
+- `Pitcher L/R profile` — `1.62 vL / 0.74 vR`.
+- `Pitcher home/road` — `1.48 home / 0.66 road · at home`.
+- `HR/9 L3` label is now `HR/9 L5`.
+- The frontier row reads `Pitcher hand/venue split` on the real path, `Platoon (generic)` on the fallback, so you can always tell which one produced the number.
+- A reasons line spells out the splits and the combined multiplier, or says plainly that there's no usable split yet.
+
+**Tests** — 26 assertions on the split math (`ipVal` innings conversion, both clamp ceilings and floors, the combined clamp, sample gates, switch-hitter routing, generic-path equivalence with the old constant) and 22 on the detail-panel rows across the splits path, the road variant, the generic fallback, and a bare player with no data. All 11 nav tabs re-verified.
+
+---
 
 ## v1.6.1 — Fixed the blank Radar map (actual root cause)
 
