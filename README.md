@@ -1,4 +1,4 @@
-# DingerLab v1.5.0 — All-Season HR Ingest
+# DingerLab v1.6.0 — All-Season HR Ingest
 
 MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 
@@ -12,7 +12,7 @@ MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 2. **README** — the `# DingerLab vX.Y.Z` title at the top, and add a `## vX.Y.Z — <summary>` changelog section at the bottom.
 3. **Zip** — re-deliver the download so the packaged files carry the new version.
 
-Bump **patch** (Z) for fixes, **minor** (Y) for features, **major** (X) for breaking changes. Current: **v1.5.0**.
+Bump **patch** (Z) for fixes, **minor** (Y) for features, **major** (X) for breaking changes. Current: **v1.6.0**.
 
 ---
 
@@ -93,6 +93,24 @@ Data is written to `server_data/dingerlab_server_state.json`. Use a host with pe
 
 Dashboard (Command Center) · Games · Radar (weather / ball-carry map) · Solver (bankroll-aware Kelly portfolio) · Report Card (model calibration vs results) · Builder (cross-play generator + payoff frontier) · Data (feature store) · Research (steam radar, value plays, what changed) · Tracking (CLV, W/L results) · Tools (odds proxy, model settings, exposure) · Live (HR feed + schedule)
 
+
+## v1.6.0 — Calibration loop, model/market blend, Kelly off true probability
+
+The board now shows probabilities it can defend. Three linked changes:
+
+**1. Calibration from your own ledger.** Every prediction that reaches a Final game is graded, and the model gets a single correction factor (predicted HRs vs actual HRs). The factor is shrunk toward neutral until the sample is real (`n / (n + 200)`) and hard-clamped to ×0.6–×1.4, so one hot week can't wreck the board. With no history the factor is ×1.00 and nothing changes.
+
+**2. Model/market blend.** Board probabilities are now a weighted mix of the calibrated model and the de-vigged market consensus from v1.5.0. The market gets the larger share by default (65%), and the model earns weight as its track record grows — up to 60/40 in the model's favor. Players with no two-sided market fall back to the calibrated model alone.
+
+**3. Kelly stakes off the blended probability.** The Slate Solver now sizes every bet from the blended number instead of the raw model, which stops the systematic over-betting caused by staking against inflated edges.
+
+Also in this release:
+- Headline **EV** on every player is now true EV, priced off the blended probability. The raw model EV is retained internally as `rawEv` for comparison.
+- **Edge** is measured as blended probability minus fair probability.
+- The market chip reads `HR · 21.4% model → 14.8% blended` (or `→ 20.4% adj` when there's no two-sided market).
+- Report Card gained a **Calibration factor** row (with graded-sample count), a **Board blend** row, and a plain-English verdict on whether the model is running hot or cold.
+
+Verified before release: 50 unit assertions covering the calibration math, clamps, blend weighting, EV/edge redefinition and solver staking; the 11-tab regression harness; and a real-browser run with a seeded prediction log confirming the Report Card renders live values (×0.95, 37% model / 63% market, 20 graded).
 
 ## v1.5.0 — Fair odds (de-vig), automatic CLV capture, confirmed-lineup gating
 
