@@ -1,4 +1,4 @@
-# DingerLab v1.7.0 — All-Season HR Ingest
+# DingerLab v1.8.0 — Steam Alerts + Line Shopping
 
 MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 
@@ -12,7 +12,7 @@ MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 2. **README** — the `# DingerLab vX.Y.Z` title at the top, and add a `## vX.Y.Z — <summary>` changelog section at the bottom.
 3. **Zip** — re-deliver the download so the packaged files carry the new version.
 
-Bump **patch** (Z) for fixes, **minor** (Y) for features, **major** (X) for breaking changes. Current: **v1.7.0**.
+Bump **patch** (Z) for fixes, **minor** (Y) for features, **major** (X) for breaking changes. Current: **v1.8.0**.
 
 ---
 
@@ -93,6 +93,14 @@ Data is written to `server_data/dingerlab_server_state.json`. Use a host with pe
 
 Dashboard (Command Center) · Games · Radar (weather / ball-carry map) · Solver (bankroll-aware Kelly portfolio) · Report Card (model calibration vs results) · Builder (cross-play generator + payoff frontier) · Data (feature store) · Research (steam radar, value plays, what changed) · Tracking (CLV, W/L results) · Tools (odds proxy, model settings, exposure) · Live (HR feed + schedule)
 
+
+## v1.8.0 — Steam alerts, stale-line detection, and line shopping
+- Added time-aware steam alerts that require a **≥1.2 percentage-point consensus move** with at least **two books moving together**, reducing false positives from one-book repricing.
+- Added move velocity, elapsed time, synchronized-book count, per-book price paths, and the current best available line to every steam alert.
+- Added stale-line detection for books that have not moved while consensus shortens, plus a cold-start cross-book outlier fallback before enough history exists.
+- Added a four-book line-shopping board ranked by implied-probability savings, with every available price shown inline.
+- Persists a rolling six-hour, per-book local price history; snapshots are capped and pruned automatically.
+- Added an isolated Node harness covering confirmed steam, stale lines, line shopping, single-book false-positive suppression, and snapshot persistence.
 
 ## v1.7.0 — Pitcher HR-vulnerability profile
 
