@@ -1,4 +1,4 @@
-# DingerLab v1.8.0 — Steam Alerts + Line Shopping
+# DingerLab v1.9.0 — Selective Parlay Architect
 
 MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 
@@ -12,7 +12,7 @@ MLB home-run prop & parlay intelligence. Full front-end + server in this repo.
 2. **README** — the `# DingerLab vX.Y.Z` title at the top, and add a `## vX.Y.Z — <summary>` changelog section at the bottom.
 3. **Zip** — re-deliver the download so the packaged files carry the new version.
 
-Bump **patch** (Z) for fixes, **minor** (Y) for features, **major** (X) for breaking changes. Current: **v1.8.0**.
+Bump **patch** (Z) for fixes, **minor** (Y) for features, **major** (X) for breaking changes. Current: **v1.9.0**.
 
 ---
 
@@ -93,6 +93,14 @@ Data is written to `server_data/dingerlab_server_state.json`. Use a host with pe
 
 Dashboard (Command Center) · Games · Radar (weather / ball-carry map) · Solver (bankroll-aware Kelly portfolio) · Report Card (model calibration vs results) · Builder (cross-play generator + payoff frontier) · Data (feature store) · Research (steam radar, value plays, what changed) · Tracking (CLV, W/L results) · Tools (odds proxy, model settings, exposure) · Live (HR feed + schedule)
 
+
+## v1.9.0 — Selective Prediction + Parlay Architect
+- Added player-level **SELECT / LEAN / WATCH / PASS** gates using sample size, confirmed lineups, market depth, model/market agreement, pitcher split quality, expected PA, and true EV.
+- Added explicit parlay decision states: **BET NOW**, **WAIT**, **REBUILD**, and **PASS**, each with a concrete reason and minimum acceptable odds.
+- Replaced the three rotated Builder slips with a cached cross-game search over 2–5 legs that evaluates up to **1.5 million combinations** per slate.
+- Added search-space telemetry, gate-passed counts, confidence, true-win probability, and price thresholds to the Builder.
+- Search is signature-cached and reruns only when relevant players, prices, lineups, or Builder controls change.
+- Added a Node isolation harness covering the 1.5M scan cap, selective abstention, every decision path, leg-count enforcement, and cache reuse.
 
 ## v1.8.0 — Steam alerts, stale-line detection, and line shopping
 - Added time-aware steam alerts that require a **≥1.2 percentage-point consensus move** with at least **two books moving together**, reducing false positives from one-book repricing.

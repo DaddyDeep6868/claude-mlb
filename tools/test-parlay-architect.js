@@ -1,0 +1,32 @@
+const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert');
+const file=path.join(__dirname,'..','index.html');
+const html=fs.readFileSync(file,'utf8'), open='<script type="__bundler/template">';
+const s=html.indexOf(open)+open.length,e=html.indexOf('</script>',s),tpl=JSON.parse(html.slice(s,e));
+const m=tpl.match(/<script type="text\/x-dc"[^>]*>\n([\s\S]*?)<\/script>/); assert(m);
+const mem={}; const sandbox={console,Date,JSON,Math,Set,Map,Promise,AbortController,localStorage:{getItem:k=>mem[k]||null,setItem:(k,v)=>mem[k]=String(v)},DCLogic:class{}};
+vm.createContext(sandbox); vm.runInContext(m[1]+'\n;globalThis.Component=Component;',sandbox,{filename:'Component.js'});
+function app(){return Object.create(sandbox.Component.prototype)}
+function player(i,opts={}){return Object.assign({id:String(i),name:'Slugger '+i,teamAbbr:'T'+i,gameId:'g'+(i%20),pa:300,modelPct:15,blendPct:18,evNum:20,oddsAm:600,score:90-(i%8),lineupConfirmed:true,fairBooks:4,splitSource:'splits',expPA:4.3},opts)}
+let a=app(), full=Array.from({length:60},(_,i)=>player(i));
+let t=Date.now(),r=a.buildParlayArchitect(full,{legs:3,style:'balanced',hasOdds:true});
+const elapsed=Date.now()-t;
+assert.equal(r.scanned,1500000,'full slate hits 1.5M scan cap');
+assert(r.theoretical>1500000,'reports larger theoretical space');
+assert(r.cards.length>0,'returns ranked cards');
+assert.equal(r.cards[0].decision,'BET NOW','strong fully-cleared build is BET NOW');
+assert(r.cards.every(c=>c.legs.length===3),'respects selected leg count');
+assert(r.selectedCount>=50,'strong pool passes selective gate');
+let cached=a.buildParlayArchitect(full,{legs:3,style:'balanced',hasOdds:true}); assert.strictEqual(cached,r,'signature cache reuses result');
+a=app();
+let wait=[player(1),player(2),player(3,{lineupConfirmed:false})];
+r=a.buildParlayArchitect(wait,{legs:3,style:'balanced',hasOdds:true}); assert.equal(r.cards[0].decision,'WAIT','unconfirmed leg forces WAIT');
+a=app();
+let rebuild=[player(1,{evNum:1,oddsAm:500}),player(2,{evNum:1,oddsAm:500}),player(3,{evNum:1,oddsAm:500})];
+r=a.buildParlayArchitect(rebuild,{legs:3,style:'balanced',hasOdds:true}); assert(['REBUILD','WAIT'].includes(r.cards[0].decision),'marginal build is not BET NOW');
+a=app();
+let pass=[player(1,{pa:40,evNum:-20}),player(2,{pa:40,evNum:-20}),player(3,{pa:40,evNum:-20})];
+r=a.buildParlayArchitect(pass,{legs:3,style:'balanced',hasOdds:true}); assert.equal(r.cards.length,0,'abstention removes failed players'); assert(r.passCount===0 || r.poolCount===0,'sub-60 PA excluded before search');
+a=app();
+let noPrice=[player(1,{oddsAm:null,evNum:null}),player(2,{oddsAm:null,evNum:null}),player(3,{oddsAm:null,evNum:null})];
+r=a.buildParlayArchitect(noPrice,{legs:3,style:'balanced',hasOdds:false}); assert.equal(r.cards[0].decision,'WAIT','missing prices force WAIT');
+console.log('PASS Architect harness: '+r.scanLabel+' sample scan; full run 1.50M in '+elapsed+'ms; selective gates, decisions, leg count, cache');
